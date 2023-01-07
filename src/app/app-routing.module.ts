@@ -9,10 +9,6 @@ import { ContactoComponent } from './pages/contacto/contacto.component';
 
 const routes: Routes = [
   {
-    path:'**',
-    redirectTo:'home'
-  },
-  {
     path:'home',
     title:'Home - c0l1nr00t',
     component:HomeComponent
@@ -42,7 +38,6 @@ const routes: Routes = [
     title:'Contacto - c0l1nr00t',
     component:ContactoComponent
   }
-
 ];
 
 @NgModule({
