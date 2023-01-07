@@ -1,0 +1,76 @@
+<div class="navbar bg-base-100 navbar bg-neutral text-neutral-content">
+    <div class="navbar-start">
+      <div class="dropdown">
+        <label tabindex="0" class="btn btn-ghost lg:hidden">
+          <i class="pi pi-bars"></i>
+        </label>
+        <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+          <li><a>Item 1</a></li>
+          <li tabindex="0">
+            <a class="justify-between">
+              Parent
+              <svg class="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/></svg>
+            </a>
+            <ul class="p-2">
+              <li><a>Submenu 1</a></li>
+              <li><a>Submenu 2</a></li>
+            </ul>
+          </li>
+          <li><a>Item 3</a></li>
+        </ul>
+      </div>
+      <a class="btn btn-ghost normal-case text-xl hidden sm:flex">
+        <div class="avatar">
+          <div class="w-12 mask mask-squircle">
+            <img src="assets/image.jpg" />
+          </div>
+          <p style="margin: 10px;">
+            c0l1nr00t
+          </p>
+        </div>
+      </a>
+    </div>
+    <div class="navbar-center hidden lg:flex">
+      <ul class="menu menu-horizontal px-1">
+        <li>
+          <a routerLink="/about">
+            <i class="pi pi-user">
+            Sobre mí
+            </i>
+          </a>
+          
+        </li>
+        <li tabindex="0">
+          <a routerLink="/dev">
+            <i class="pi pi-code"></i>
+            Desarrollador
+          </a>
+        </li>
+        <li>
+          <a routerLink="/hacking">
+            <i class="pi pi-desktop"></i>
+            Ethical Hacker
+          </a>
+        </li>
+        <li>
+          <a routerLink="/hackingOverflow">
+            <i class="fa fa-code-fork" aria-hidden="true"></i>
+            HackingOverFlow
+          </a>
+        </li>
+        <li>
+          <a routerLink="/contacto">
+            <i class="fa fa-phone" aria-hidden="true"></i>
+            Contacto
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="navbar-end">
+      <a class="btn btn-ghost normal-case text-xl">
+        
+        <i class="fa fa-file-pdf-o" style="margin:10px"></i>
+        Descargar CV
+      </a>
+    </div>
+  </div>
