@@ -37,6 +37,10 @@ const routes: Routes = [
     path:'contacto',
     title:'Contacto - c0l1nr00t',
     component:ContactoComponent
+  },
+  {
+    path:"**",
+    redirectTo:'home'
   }
 ];
 
