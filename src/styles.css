@@ -2,3 +2,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face{
+    font-family: 'Spicy';
+    src: url('assets/fonts/SpicyPumpkin.ttf') format('truetype');
+    font-style: normal;
+    font-weight: normal;
+}
+@font-face{
+    font-family: 'Violet';
+    src: url('assets/fonts/VioletSmile.ttf') format('truetype');
+    font-style: normal;
+    font-weight: normal;
+}
+    
+    
+
+
+.text-spicy{
+    font-family: 'Spicy';
+}
+.text-violet{
+    font-family: 'Violet';
+}
