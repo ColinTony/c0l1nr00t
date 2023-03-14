@@ -1,94 +1,97 @@
-<div class="navbar bg-base-100 navbar bg-neutral text-neutral-content">
-    <div class="navbar-start">
-      <div class="dropdown">
-        <label tabindex="0" class="btn btn-ghost lg:hidden">
-            <i class="fa-solid fa-bars"></i>
-        </label>
-        <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+
+  <div class="grid grid-rows-1 grid-flow-col">
+    <div class="navbar bg-base-100 navbar bg-neutral text-neutral-content">
+      <div class="navbar-start">
+        <div class="dropdown">
+          <label tabindex="0" class="btn btn-ghost lg:hidden">
+              <i class="fa-solid fa-bars"></i>
+          </label>
+          <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+            <li>
+            <a routerLink="/about">
+              <i class="fa-solid fa-user"></i>
+              Sobre mí
+            </a>
+            
+          </li>
+          <li tabindex="0">
+            <a routerLink="/dev">
+              <i class="fa-solid fa-code"></i>
+              Developer
+            </a>
+          </li>
           <li>
-          <a routerLink="/about">
-            <i class="fa-solid fa-user"></i>
-            Sobre mí
-          </a>
-          
-        </li>
-        <li tabindex="0">
-          <a routerLink="/dev">
-            <i class="fa-solid fa-code"></i>
-            Developer
-          </a>
-        </li>
-        <li>
-          <a routerLink="/hacking">
-            <i class="fa-solid fa-desktop"></i>
-            Ethical Hacker
-          </a>
-        </li>
-        <li>
-          <a routerLink="/hacking-overflow">
-            <i class="fa fa-code-fork" aria-hidden="true"></i>
-            HackingOverFlow
-          </a>
-        </li>
-        <li>
-          <a routerLink="/contacto">
-            <i class="fa fa-phone" aria-hidden="true"></i>
-            Contacto
-          </a>
-        </li>
+            <a routerLink="/hacking">
+              <i class="fa-solid fa-desktop"></i>
+              Ethical Hacker
+            </a>
+          </li>
+          <li>
+            <a routerLink="/hacking-overflow">
+              <i class="fa fa-code-fork" aria-hidden="true"></i>
+              HackingOverFlow
+            </a>
+          </li>
+          <li>
+            <a routerLink="/contacto">
+              <i class="fa fa-phone" aria-hidden="true"></i>
+              Contacto
+            </a>
+          </li>
+          </ul>
+        </div>
+        <a class="btn btn-ghost normal-case text-xl hidden sm:flex">
+          <div class="avatar">
+            <div class="w-12 mask mask-squircle">
+              <img src="assets/image.jpg" />
+            </div>
+            <p class="prose" style="margin: 10px;">
+              c0l1nr00t
+            </p>
+          </div>
+        </a>
+      </div>
+      <div class="navbar-center hidden lg:flex">
+        <ul class="menu menu-horizontal px-1">
+          <li>
+            <a routerLink="/about" >
+              <i class="fa-solid fa-user"></i>
+              Sobre mí
+            </a>
+            
+          </li>
+          <li tabindex="0">
+            <a routerLink="/dev">
+              <i class="fa-solid fa-code"></i>
+              Developer
+            </a>
+          </li>
+          <li>
+            <a routerLink="/hacking">
+              <i class="fa-solid fa-desktop"></i>
+              Ethical Hacker
+            </a>
+          </li>
+          <li>
+            <a routerLink="/hacking-overflow">
+              <i class="fa fa-code-fork" aria-hidden="true"></i>
+              HackingOverFlow
+            </a>
+          </li>
+          <li>
+            <a routerLink="/contacto">
+              <i class="fa fa-phone" aria-hidden="true"></i>
+              Contacto
+            </a>
+          </li>
         </ul>
       </div>
-      <a class="btn btn-ghost normal-case text-xl hidden sm:flex">
-        <div class="avatar">
-          <div class="w-12 mask mask-squircle">
-            <img src="assets/image.jpg" />
-          </div>
-          <p class="prose" style="margin: 10px;">
-            c0l1nr00t
-          </p>
-        </div>
-      </a>
-    </div>
-    <div class="navbar-center hidden lg:flex">
-      <ul class="menu menu-horizontal px-1">
-        <li>
-          <a routerLink="/about" >
-            <i class="fa-solid fa-user"></i>
-            Sobre mí
-          </a>
+      <div class="navbar-end">
+        <a class="btn btn-ghost normal-case text-xl">
           
-        </li>
-        <li tabindex="0">
-          <a routerLink="/dev">
-            <i class="fa-solid fa-code"></i>
-            Developer
-          </a>
-        </li>
-        <li>
-          <a routerLink="/hacking">
-            <i class="fa-solid fa-desktop"></i>
-            Ethical Hacker
-          </a>
-        </li>
-        <li>
-          <a routerLink="/hacking-overflow">
-            <i class="fa fa-code-fork" aria-hidden="true"></i>
-            HackingOverFlow
-          </a>
-        </li>
-        <li>
-          <a routerLink="/contacto">
-            <i class="fa fa-phone" aria-hidden="true"></i>
-            Contacto
-          </a>
-        </li>
-      </ul>
-    </div>
-    <div class="navbar-end">
-      <a class="btn btn-ghost normal-case text-xl">
-        
-        <i class="fa fa-file-pdf-o" style="margin:10px"></i>
-        <p class="prose"> Descargar CV </p>
-      </a>
+          <i class="fa fa-file-pdf-o" style="margin:10px"></i>
+          <p class="prose"> Descargar CV </p>
+        </a>
+      </div>
     </div>
   </div>
