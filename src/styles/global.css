@@ -1,0 +1,128 @@
+/* src/styles/global.css */
+:root {
+  /* Colors - Dark Terminal Theme */
+  --bg0: #0d1117; /* Deep dark background */
+  --bg1: #161b22; /* Slightly lighter for panels */
+  --panel: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --muted: #8b949e;
+
+  /* Accents */
+  --accent: #2ea043; /* Green - Action/State */
+  --accent-dim: rgba(46, 160, 67, 0.15);
+  --accent2: #58a6ff; /* Cyan/Blue - Links/Secondary */
+  --warn: #d29922; /* Yellow */
+  --danger: #f85149; /* Red */
+
+  /* UI */
+  --radius: 6px;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  
+  /* Fonts */
+  --font-sans: 'Atkinson Hyperlegible', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+}
+
+/* Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background-color: var(--bg0);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Background Effect: Scanlines + Radial Gradient */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.6) 100%),
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background-size: 100% 100%, 100% 3px, 3px 100%;
+  z-index: -1;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  color: #ffffff;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
+h3 { font-size: 1.5rem; }
+
+a {
+  color: var(--accent2);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #79c0ff;
+}
+
+code {
+  font-family: var(--font-mono);
+  background: var(--bg1);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+pre {
+  padding: 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+/* Utilities */
+.container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.text-accent { color: var(--accent); }
+.text-muted { color: var(--muted); }
+
+/* Accessibility */
+:focus-visible {
+  outline: 2px solid var(--accent2);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

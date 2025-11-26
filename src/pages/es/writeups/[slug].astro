@@ -1,0 +1,180 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { useTranslations } from "../../../i18n/utils";
+
+export async function getStaticPaths() {
+    const posts = await getCollection("writeups");
+    const esPosts = posts.filter((post) => post.id.startsWith("es/"));
+    return esPosts.map((post) => ({
+        params: { slug: post.slug.split("/")[1] },
+        props: { post },
+    }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+const lang = "es";
+const t = useTranslations(lang);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+    <article class="container section">
+        <a href={`/${lang}/writeups`} class="back-link mono"
+            >&larr; {t("writeups.back")}</a
+        >
+
+        <header class="post-header">
+            <h1 class="title">{post.data.title}</h1>
+
+            {
+                post.data.redacted && (
+                    <div class="banner-redacted mono">
+                        ⚠️ {t("msg.redacted")}
+                    </div>
+                )
+            }
+
+            <div class="meta-panel mono">
+                <div class="meta-item">
+                    <span class="label">{t("meta.platform")}</span>
+                    <span class="value">{post.data.platform}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="label">{t("meta.category")}</span>
+                    <span class="value">{post.data.category}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="label">{t("meta.difficulty")}</span>
+                    <span class={`value difficulty ${post.data.difficulty}`}
+                        >{post.data.difficulty}</span
+                    >
+                </div>
+                <div class="meta-item">
+                    <span class="label">{t("meta.date")}</span>
+                    <span class="value"
+                        >{post.data.date.toISOString().split("T")[0]}</span
+                    >
+                </div>
+                {
+                    post.data.target && (
+                        <div class="meta-item">
+                            <span class="label">Target</span>
+                            <span class="value">{post.data.target}</span>
+                        </div>
+                    )
+                }
+            </div>
+        </header>
+
+        <div class="markdown-body">
+            <Content />
+        </div>
+    </article>
+</BaseLayout>
+
+<style>
+    .section {
+        padding: 3rem 1rem;
+    }
+    .back-link {
+        display: inline-block;
+        margin-bottom: 2rem;
+        color: var(--muted);
+    }
+    .post-header {
+        margin-bottom: 3rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 2rem;
+    }
+    .title {
+        color: var(--accent2);
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .banner-redacted {
+        background: rgba(210, 153, 34, 0.15);
+        border: 1px solid var(--warn);
+        color: var(--warn);
+        padding: 1rem;
+        border-radius: var(--radius);
+        margin-bottom: 1.5rem;
+    }
+
+    .meta-panel {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        background: var(--bg1);
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+    }
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+    .meta-item .label {
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+    .meta-item .value {
+        color: var(--text);
+        font-weight: bold;
+    }
+
+    .difficulty {
+        text-transform: uppercase;
+    }
+    .difficulty.easy {
+        color: var(--accent);
+    }
+    .difficulty.medium {
+        color: var(--warn);
+    }
+    .difficulty.hard {
+        color: var(--danger);
+    }
+    .difficulty.insane {
+        color: #a371f7;
+    }
+
+    .markdown-body {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    /* Reuse markdown styles from blog or global */
+    .markdown-body :global(h2) {
+        color: var(--accent);
+        margin-top: 2rem;
+    }
+    .markdown-body :global(p) {
+        margin-bottom: 1.5rem;
+        font-size: 1.1rem;
+    }
+    .markdown-body :global(pre) {
+        background: #1e1e1e !important;
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        overflow-x: auto;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border);
+    }
+    .markdown-body :global(code) {
+        font-family: var(--font-mono);
+        color: var(--accent2);
+    }
+    .markdown-body :global(pre code) {
+        color: inherit;
+        background: transparent;
+        padding: 0;
+    }
+    .markdown-body :global(img) {
+        max-width: 100%;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+    }
+</style>

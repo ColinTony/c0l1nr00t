@@ -1,0 +1,52 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Card from "../../../components/Card.astro";
+import { getCollection } from "astro:content";
+import { useTranslations } from "../../../i18n/utils";
+
+const lang = "es";
+const t = useTranslations(lang);
+
+const posts = await getCollection("blog", ({ id, data }) => {
+    return id.startsWith("es/") && !data.draft;
+});
+
+const sortedPosts = posts.sort((a, b) => {
+    if (a.data.pinned && !b.data.pinned) return -1;
+    if (!a.data.pinned && b.data.pinned) return 1;
+    return b.data.date.valueOf() - a.data.date.valueOf();
+});
+---
+
+<BaseLayout title={`c0l1nr00t | ${t("nav.blog")}`} description="Blog posts">
+    <div class="container section">
+        <h1 class="mono">{t("nav.blog")}</h1>
+        <div class="grid">
+            {
+                sortedPosts.map((post) => (
+                    <Card
+                        href={`/${lang}/blog/${post.slug.split("/")[1]}`}
+                        title={post.data.title}
+                        date={post.data.date}
+                        description={post.data.description}
+                    />
+                ))
+            }
+        </div>
+    </div>
+</BaseLayout>
+
+<style>
+    .section {
+        padding: 3rem 1rem;
+    }
+    h1 {
+        color: var(--accent);
+        margin-bottom: 2rem;
+    }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+</style>

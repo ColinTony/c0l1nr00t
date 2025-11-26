@@ -1,0 +1,99 @@
+---
+interface Props {
+    href: string;
+    title: string;
+    date?: Date;
+    description?: string;
+    tags?: string[];
+    difficulty?: string;
+    platform?: string;
+}
+
+const { href, title, date, description, tags, difficulty, platform } =
+    Astro.props;
+---
+
+<article class="card">
+    <a href={href}>
+        <h3>{title}</h3>
+        {date && <p class="date mono">{date.toISOString().split("T")[0]}</p>}
+        {description && <p class="desc">{description}</p>}
+
+        {
+            (difficulty || platform) && (
+                <div class="meta mono">
+                    {difficulty && (
+                        <span class={`difficulty ${difficulty}`}>
+                            {difficulty}
+                        </span>
+                    )}
+                    {platform && <span>{platform}</span>}
+                </div>
+            )
+        }
+    </a>
+</article>
+
+<style>
+    .card {
+        background: var(--bg1);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        transition:
+            transform 0.2s,
+            box-shadow 0.2s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+        border-color: var(--accent2);
+    }
+    .card a {
+        color: inherit;
+        text-decoration: none;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .card h3 {
+        margin-top: 0;
+        color: var(--accent2);
+        margin-bottom: 0.5rem;
+    }
+    .date {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-bottom: 0.5rem;
+    }
+    .desc {
+        flex: 1;
+        margin-bottom: 1rem;
+        color: var(--text);
+    }
+    .meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.85rem;
+        margin-top: auto;
+    }
+    .difficulty {
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+    .difficulty.easy {
+        color: var(--accent);
+    }
+    .difficulty.medium {
+        color: var(--warn);
+    }
+    .difficulty.hard {
+        color: var(--danger);
+    }
+    .difficulty.insane {
+        color: #a371f7;
+    }
+</style>

@@ -1,0 +1,69 @@
+---
+import LangSwitch from "./LangSwitch.astro";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<header>
+    <nav class="container">
+        <a href={`/${lang}`} class="logo">c0l1nr00t</a>
+        <div class="links">
+            <a href={`/${lang}/blog`}>{t("nav.blog")}</a>
+            <a href={`/${lang}/writeups`}>{t("nav.writeups")}</a>
+            <a href={`/${lang}/about`}>{t("nav.about")}</a>
+            <a href={`/${lang}/contact`}>{t("nav.contact")}</a>
+        </div>
+        <LangSwitch />
+    </nav>
+</header>
+
+<style>
+    header {
+        border-bottom: 1px solid var(--border);
+        background: rgba(13, 17, 23, 0.8);
+        backdrop-filter: blur(10px);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: 1rem 0;
+    }
+    nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .logo {
+        font-family: var(--font-mono);
+        font-weight: bold;
+        color: var(--accent);
+        font-size: 1.2rem;
+    }
+    .links {
+        display: flex;
+        gap: 1.5rem;
+    }
+    .links a {
+        color: var(--text);
+        font-size: 0.95rem;
+        font-family: var(--font-mono);
+    }
+    .links a:hover {
+        color: var(--accent2);
+    }
+
+    @media (max-width: 600px) {
+        nav {
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .links {
+            order: 3;
+            width: 100%;
+            justify-content: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>

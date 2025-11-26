@@ -1,0 +1,56 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const lang = "es";
+---
+
+<BaseLayout title="404" description="Not Found">
+    <div class="container section">
+        <h1 class="mono error-code">404</h1>
+        <p class="mono error-msg">FATAL ERROR: ROUTE_NOT_FOUND</p>
+        <p>The requested resource could not be located in the system memory.</p>
+
+        <div class="actions">
+            <a href="/es" class="btn btn-primary mono">INIT_SYSTEM (ES)</a>
+            <a href="/en" class="btn btn-outline mono">INIT_SYSTEM (EN)</a>
+        </div>
+    </div>
+</BaseLayout>
+
+<style>
+    .section {
+        text-align: center;
+        padding: 5rem 1rem;
+    }
+    .error-code {
+        font-size: 6rem;
+        color: var(--danger);
+        margin: 0;
+        line-height: 1;
+    }
+    .error-msg {
+        font-size: 1.5rem;
+        color: var(--warn);
+        margin-bottom: 2rem;
+    }
+    .actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    .btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: var(--radius);
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .btn-primary {
+        background: var(--accent);
+        color: #fff;
+    }
+    .btn-outline {
+        border: 1px solid var(--border);
+        color: var(--text);
+    }
+</style>

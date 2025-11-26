@@ -1,0 +1,197 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Card from "../../../components/Card.astro";
+import { getCollection } from "astro:content";
+import { useTranslations } from "../../../i18n/utils";
+
+const lang = "es";
+const t = useTranslations(lang);
+
+const writeups = await getCollection("writeups", ({ id, data }) => {
+    return id.startsWith("es/") && data.status !== "draft";
+});
+
+const sortedWriteups = writeups.sort(
+    (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+const platforms = [...new Set(writeups.map((w) => w.data.platform))];
+const difficulties = [...new Set(writeups.map((w) => w.data.difficulty))];
+const categories = [...new Set(writeups.map((w) => w.data.category))];
+---
+
+<BaseLayout
+    title={`c0l1nr00t | ${t("nav.writeups")}`}
+    description="Writeups & Research"
+>
+    <div class="container section">
+        <h1 class="mono">{t("nav.writeups")}</h1>
+
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label>{t("meta.platform")}:</label>
+                <select id="platform-filter" class="filter-select mono">
+                    <option value="all">All</option>
+                    {platforms.map((p) => <option value={p}>{p}</option>)}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>{t("meta.difficulty")}:</label>
+                <select id="difficulty-filter" class="filter-select mono">
+                    <option value="all">All</option>
+                    {difficulties.map((d) => <option value={d}>{d}</option>)}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>{t("meta.category")}:</label>
+                <select id="category-filter" class="filter-select mono">
+                    <option value="all">All</option>
+                    {categories.map((c) => <option value={c}>{c}</option>)}
+                </select>
+            </div>
+            <button id="reset-filters" class="btn-reset mono"
+                >{t("writeups.reset")}</button
+            >
+        </div>
+
+        <div class="grid" id="writeups-grid">
+            {
+                sortedWriteups.map((post) => (
+                    <div
+                        class="writeup-item"
+                        data-platform={post.data.platform}
+                        data-difficulty={post.data.difficulty}
+                        data-category={post.data.category}
+                    >
+                        <Card
+                            href={`/${lang}/writeups/${post.slug.split("/")[1]}`}
+                            title={post.data.title}
+                            date={post.data.date}
+                            difficulty={post.data.difficulty}
+                            platform={post.data.platform}
+                        />
+                    </div>
+                ))
+            }
+        </div>
+        <p id="no-results" class="hidden mono">
+            No writeups found matching filters.
+        </p>
+    </div>
+</BaseLayout>
+
+<script>
+    const grid = document.getElementById("writeups-grid");
+    const items = document.querySelectorAll(".writeup-item");
+    const platformSelect = document.getElementById("platform-filter");
+    const difficultySelect = document.getElementById("difficulty-filter");
+    const categorySelect = document.getElementById("category-filter");
+    const resetButton = document.getElementById("reset-filters");
+    const noResults = document.getElementById("no-results");
+
+    function filter() {
+        const p = platformSelect.value;
+        const d = difficultySelect.value;
+        const c = categorySelect.value;
+        let visibleCount = 0;
+
+        items.forEach((item) => {
+            const itemP = item.dataset.platform;
+            const itemD = item.dataset.difficulty;
+            const itemC = item.dataset.category;
+
+            const matchP = p === "all" || p === itemP;
+            const matchD = d === "all" || d === itemD;
+            const matchC = c === "all" || c === itemC;
+
+            if (matchP && matchD && matchC) {
+                item.style.display = "block";
+                visibleCount++;
+            } else {
+                item.style.display = "none";
+            }
+        });
+
+        if (visibleCount === 0) {
+            noResults.classList.remove("hidden");
+        } else {
+            noResults.classList.add("hidden");
+        }
+    }
+
+    platformSelect.addEventListener("change", filter);
+    difficultySelect.addEventListener("change", filter);
+    categorySelect.addEventListener("change", filter);
+
+    resetButton.addEventListener("click", () => {
+        platformSelect.value = "all";
+        difficultySelect.value = "all";
+        categorySelect.value = "all";
+        filter();
+    });
+</script>
+
+<style>
+    .section {
+        padding: 3rem 1rem;
+    }
+    h1 {
+        color: var(--accent);
+        margin-bottom: 2rem;
+    }
+
+    .filters-bar {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        align-items: center;
+        background: var(--bg1);
+        padding: 1rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+    }
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .filter-group label {
+        color: var(--muted);
+        font-size: 0.9rem;
+    }
+    .filter-select {
+        background: var(--bg0);
+        color: var(--text);
+        border: 1px solid var(--border);
+        padding: 0.4rem;
+        border-radius: var(--radius);
+    }
+    .btn-reset {
+        background: transparent;
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        padding: 0.4rem 0.8rem;
+        border-radius: var(--radius);
+        cursor: pointer;
+        margin-left: auto;
+    }
+    .btn-reset:hover {
+        background: var(--danger);
+        color: #fff;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    .hidden {
+        display: none;
+    }
+    #no-results {
+        text-align: center;
+        color: var(--muted);
+        margin-top: 2rem;
+    }
+</style>

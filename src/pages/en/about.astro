@@ -1,0 +1,74 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { useTranslations } from "../../i18n/utils";
+
+const lang = "en";
+const t = useTranslations(lang);
+---
+
+<BaseLayout title={`c0l1nr00t | ${t("nav.about")}`} description="Whoami">
+    <div class="container section">
+        <h1 class="mono">> whoami</h1>
+        <div class="content">
+            <p>Hello, I am <strong>c0l1nr00t</strong>.</p>
+            <p>
+                I am passionate about cybersecurity, ethical hacking, and
+                reverse engineering. This site is my personal lab where I
+                document my findings, CTF writeups, and articles on information
+                security.
+            </p>
+            <p>
+                My goal is to share knowledge and contribute to the community.
+            </p>
+
+            <h2>Stack & Tools</h2>
+            <ul>
+                <li>Reverse Engineering: Ghidra, IDA Pro, x64dbg</li>
+                <li>Web Security: Burp Suite, OWASP ZAP</li>
+                <li>
+                    Languages: Python, C/C++, JavaScript/TypeScript, Assembly
+                </li>
+            </ul>
+
+            <div class="cta">
+                <a href={`/${lang}/contact`} class="btn btn-primary mono"
+                    >{t("nav.contact")}</a
+                >
+            </div>
+        </div>
+    </div>
+</BaseLayout>
+
+<style>
+    .section {
+        padding: 3rem 1rem;
+    }
+    h1 {
+        color: var(--accent);
+        margin-bottom: 2rem;
+    }
+    .content {
+        max-width: 700px;
+        font-size: 1.1rem;
+    }
+    ul {
+        list-style: square;
+        color: var(--accent2);
+    }
+    li {
+        color: var(--text);
+        margin-bottom: 0.5rem;
+    }
+    .cta {
+        margin-top: 2rem;
+    }
+    .btn {
+        display: inline-block;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius);
+        text-decoration: none;
+        font-weight: bold;
+        background: var(--accent);
+        color: #fff;
+    }
+</style>
