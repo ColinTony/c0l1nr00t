@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Card from "../../components/Card.astro";
 import { getCollection } from "astro:content";
 import { useTranslations } from "../../i18n/utils";
 
@@ -45,16 +46,18 @@ const sortedWriteups = writeups
         <h2 class="mono">{t("section.latest_posts")}</h2>
         <div class="grid">
             {
-                sortedPosts.map((post) => (
-                    <article class="card">
-                        <a href={`/${lang}/blog/${post.slug.split("/")[1]}`}>
-                            <h3>{post.data.title}</h3>
-                            <p class="date mono">
-                                {post.data.date.toISOString().split("T")[0]}
-                            </p>
-                            <p>{post.data.description}</p>
-                        </a>
-                    </article>
+                sortedPosts.map((post, i) => (
+                    <div
+                        class="animate__animated animate__fadeInUp"
+                        style={`animation-delay: ${i * 0.1}s`}
+                    >
+                        <Card
+                            href={`/${lang}/blog/${post.slug.split("/")[1]}`}
+                            title={post.data.title}
+                            date={post.data.date}
+                            description={post.data.description}
+                        />
+                    </div>
                 ))
             }
         </div>
@@ -64,22 +67,18 @@ const sortedWriteups = writeups
         <h2 class="mono">{t("section.latest_writeups")}</h2>
         <div class="grid">
             {
-                sortedWriteups.map((post) => (
-                    <article class="card">
-                        <a
+                sortedWriteups.map((post, i) => (
+                    <div
+                        class="animate__animated animate__fadeInUp"
+                        style={`animation-delay: ${i * 0.1}s`}
+                    >
+                        <Card
                             href={`/${lang}/writeups/${post.slug.split("/")[1]}`}
-                        >
-                            <h3>{post.data.title}</h3>
-                            <div class="meta mono">
-                                <span
-                                    class={`difficulty ${post.data.difficulty}`}
-                                >
-                                    {post.data.difficulty}
-                                </span>
-                                <span>{post.data.platform}</span>
-                            </div>
-                        </a>
-                    </article>
+                            title={post.data.title}
+                            difficulty={post.data.difficulty}
+                            platform={post.data.platform}
+                        />
+                    </div>
                 ))
             }
         </div>
@@ -88,102 +87,85 @@ const sortedWriteups = writeups
 
 <style>
     .hero {
-        padding: 4rem 1rem;
+        padding: 6rem 1rem;
         border-bottom: 1px solid var(--border);
+        position: relative;
+        overflow: hidden;
+    }
+    .hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            circle at 50% 50%,
+            rgba(0, 255, 65, 0.05) 0%,
+            transparent 70%
+        );
+        pointer-events: none;
     }
     .kicker {
-        color: var(--accent);
-        margin-bottom: 0.5rem;
+        color: var(--neon-green);
+        margin-bottom: 1rem;
+        font-family: var(--font-mono);
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        background: rgba(0, 255, 65, 0.1);
+        border-radius: 4px;
+        border: 1px solid rgba(0, 255, 65, 0.2);
     }
     .lead {
-        font-size: 1.2rem;
-        color: var(--muted);
+        font-size: 1.3rem;
+        color: var(--text);
         max-width: 600px;
+        margin-top: 1rem;
     }
     .ctas {
-        margin-top: 2rem;
+        margin-top: 2.5rem;
         display: flex;
         gap: 1rem;
     }
     .btn {
         display: inline-block;
-        padding: 0.6rem 1.2rem;
+        padding: 0.8rem 1.5rem;
         border-radius: var(--radius);
         text-decoration: none;
         font-weight: bold;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.9rem;
     }
     .btn-primary {
-        background: var(--accent);
-        color: #fff;
-        border: 1px solid var(--accent);
+        background: rgba(46, 160, 67, 0.2);
+        color: var(--neon-green);
+        border: 1px solid var(--neon-green);
+        box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
     }
     .btn-primary:hover {
-        background: #26853b;
+        background: var(--neon-green);
+        color: #000;
+        box-shadow: 0 0 20px var(--glow-green);
     }
     .btn-outline {
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-bright);
         color: var(--text);
+        background: transparent;
     }
     .btn-outline:hover {
-        border-color: var(--accent2);
-        color: var(--accent2);
+        border-color: var(--neon-cyan);
+        color: var(--neon-cyan);
+        box-shadow: 0 0 15px var(--glow-cyan);
     }
     .section {
-        padding: 3rem 1rem;
+        padding: 4rem 1rem;
     }
     .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
-        margin-top: 1.5rem;
-    }
-    .card {
-        background: var(--bg1);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 1.5rem;
-        transition:
-            transform 0.2s,
-            box-shadow 0.2s;
-    }
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow);
-        border-color: var(--accent2);
-    }
-    .card a {
-        color: inherit;
-        text-decoration: none;
-    }
-    .card h3 {
-        margin-top: 0;
-        color: var(--accent2);
-    }
-    .date {
-        font-size: 0.85rem;
-        color: var(--muted);
-    }
-    .meta {
-        display: flex;
-        gap: 1rem;
-        font-size: 0.85rem;
-        margin-top: 1rem;
-    }
-    .difficulty {
-        text-transform: uppercase;
-        font-weight: bold;
-    }
-    .difficulty.easy {
-        color: var(--accent);
-    }
-    .difficulty.medium {
-        color: var(--warn);
-    }
-    .difficulty.hard {
-        color: var(--danger);
-    }
-    .difficulty.insane {
-        color: #a371f7;
+        gap: 2rem;
+        margin-top: 2rem;
     }
 </style>

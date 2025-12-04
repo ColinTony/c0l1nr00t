@@ -56,9 +56,10 @@ const categories = [...new Set(writeups.map((w) => w.data.category))];
 
         <div class="grid" id="writeups-grid">
             {
-                sortedWriteups.map((post) => (
+                sortedWriteups.map((post, i) => (
                     <div
-                        class="writeup-item"
+                        class="writeup-item animate__animated animate__fadeInUp"
+                        style={`animation-delay: ${i * 0.05}s`}
                         data-platform={post.data.platform}
                         data-difficulty={post.data.difficulty}
                         data-category={post.data.category}
@@ -133,58 +134,82 @@ const categories = [...new Set(writeups.map((w) => w.data.category))];
 
 <style>
     .section {
-        padding: 3rem 1rem;
+        padding: 4rem 1rem;
     }
     h1 {
-        color: var(--accent);
+        color: var(--text-bright);
         margin-bottom: 2rem;
+        text-shadow: 0 0 20px var(--glow-green);
     }
 
     .filters-bar {
         display: flex;
         gap: 1.5rem;
-        margin-bottom: 2rem;
+        margin-bottom: 3rem;
         flex-wrap: wrap;
         align-items: center;
-        background: var(--bg1);
-        padding: 1rem;
+        background: rgba(22, 27, 34, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
         border-radius: var(--radius);
         border: 1px solid var(--border);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
     .filter-group {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.8rem;
     }
     .filter-group label {
-        color: var(--muted);
+        color: var(--neon-green);
         font-size: 0.9rem;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
     }
     .filter-select {
         background: var(--bg0);
         color: var(--text);
         border: 1px solid var(--border);
-        padding: 0.4rem;
+        padding: 0.5rem 1rem;
         border-radius: var(--radius);
+        font-family: var(--font-mono);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .filter-select:focus {
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 10px var(--glow-cyan);
+        outline: none;
+    }
+    .filter-select:hover {
+        border-color: var(--accent2);
     }
     .btn-reset {
         background: transparent;
         border: 1px solid var(--danger);
         color: var(--danger);
-        padding: 0.4rem 0.8rem;
+        padding: 0.5rem 1rem;
         border-radius: var(--radius);
         cursor: pointer;
         margin-left: auto;
+        transition: all 0.3s ease;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        font-size: 0.8rem;
     }
     .btn-reset:hover {
         background: var(--danger);
         color: #fff;
+        box-shadow: 0 0 15px rgba(248, 81, 73, 0.4);
     }
 
     .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
+        gap: 2rem;
+    }
+    .writeup-item {
+        height: 100%;
     }
     .hidden {
         display: none;
@@ -192,6 +217,7 @@ const categories = [...new Set(writeups.map((w) => w.data.category))];
     #no-results {
         text-align: center;
         color: var(--muted);
-        margin-top: 2rem;
+        margin-top: 3rem;
+        font-size: 1.2rem;
     }
 </style>

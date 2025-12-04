@@ -22,12 +22,13 @@ const t = useTranslations(lang);
 <style>
     header {
         border-bottom: 1px solid var(--border);
-        background: rgba(13, 17, 23, 0.8);
-        backdrop-filter: blur(10px);
+        background: rgba(10, 14, 20, 0.85);
+        backdrop-filter: blur(12px);
         position: sticky;
         top: 0;
         z-index: 100;
         padding: 1rem 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
     nav {
         display: flex;
@@ -37,9 +38,29 @@ const t = useTranslations(lang);
     .logo {
         font-family: var(--font-mono);
         font-weight: bold;
-        color: var(--accent);
+        color: var(--neon-green);
         font-size: 1.2rem;
+        text-shadow: 0 0 10px var(--glow-green);
+        display: flex;
+        align-items: center;
     }
+    .logo::after {
+        content: "_";
+        animation: blink 1s step-end infinite;
+        margin-left: 2px;
+        color: var(--neon-green);
+    }
+
+    @keyframes blink {
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0;
+        }
+    }
+
     .links {
         display: flex;
         gap: 1.5rem;
@@ -48,9 +69,26 @@ const t = useTranslations(lang);
         color: var(--text);
         font-size: 0.95rem;
         font-family: var(--font-mono);
+        transition: all 0.3s ease;
+        position: relative;
+        padding: 0.2rem 0;
+    }
+    .links a::before {
+        content: ">";
+        position: absolute;
+        left: -15px;
+        opacity: 0;
+        transition: all 0.3s ease;
+        color: var(--neon-cyan);
     }
     .links a:hover {
-        color: var(--accent2);
+        color: var(--neon-cyan);
+        text-shadow: 0 0 8px var(--glow-cyan);
+        transform: translateX(5px);
+    }
+    .links a:hover::before {
+        opacity: 1;
+        left: -12px;
     }
 
     @media (max-width: 600px) {

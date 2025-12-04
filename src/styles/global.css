@@ -1,31 +1,55 @@
 /* src/styles/global.css */
 :root {
   /* Colors - Dark Terminal Theme */
-  --bg0: #0d1117; /* Deep dark background */
-  --bg1: #161b22; /* Slightly lighter for panels */
+  --bg0: #0a0e14;
+  /* Deeper dark for better contrast */
+  --bg1: #161b22;
+  /* Slightly lighter for panels */
+  --bg2: #1c2128;
+  /* Alternative panel color */
   --panel: #161b22;
   --border: #30363d;
-  --text: #c9d1d9;
+  --border-bright: #484f58;
+  --text: #e6edf3;
+  /* Brighter for better readability */
+  --text-bright: #ffffff;
   --muted: #8b949e;
 
-  /* Accents */
-  --accent: #2ea043; /* Green - Action/State */
+  /* Neon Accents - Hacker Theme */
+  --neon-green: #00ff41;
+  /* Matrix-style green */
+  --neon-cyan: #00ffff;
+  /* Cyan highlight */
+  --accent: #2ea043;
+  /* Original green for consistency */
   --accent-dim: rgba(46, 160, 67, 0.15);
-  --accent2: #58a6ff; /* Cyan/Blue - Links/Secondary */
-  --warn: #d29922; /* Yellow */
-  --danger: #f85149; /* Red */
+  --accent2: #58a6ff;
+  /* Cyan/Blue - Links/Secondary */
+  --warn: #d29922;
+  /* Yellow */
+  --danger: #f85149;
+  /* Red */
+
+  /* Glow Effects */
+  --glow-green: rgba(0, 255, 65, 0.4);
+  --glow-cyan: rgba(0, 255, 255, 0.3);
+  --glow-blue: rgba(88, 166, 255, 0.3);
 
   /* UI */
   --radius: 6px;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px var(--glow-green);
+  --shadow-glow-cyan: 0 0 20px var(--glow-cyan);
+
   /* Fonts */
   --font-sans: 'Atkinson Hyperlegible', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 }
 
 /* Reset & Base */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -42,7 +66,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Background Effect: Scanlines + Radial Gradient */
+/* Background Effect: Enhanced Scanlines + Digital Rain + Grid */
 body::before {
   content: "";
   position: fixed;
@@ -51,35 +75,66 @@ body::before {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  background: 
-    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.6) 100%),
-    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
-    linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-  background-size: 100% 100%, 100% 3px, 3px 100%;
+  background:
+    /* Subtle grid pattern */
+    linear-gradient(90deg, transparent 99%, rgba(0, 255, 65, 0.03) 100%),
+    linear-gradient(0deg, transparent 99%, rgba(0, 255, 65, 0.03) 100%),
+    /* Enhanced scanlines */
+    repeating-linear-gradient(0deg,
+      rgba(0, 0, 0, 0) 0px,
+      rgba(0, 0, 0, 0.05) 1px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0) 4px),
+    /* Vignette effect */
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.5) 100%);
+  background-size: 50px 50px, 50px 50px, 100% 4px, 100% 100%;
   z-index: -1;
+  opacity: 0.8;
 }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
-  color: #ffffff;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-bright);
   margin-top: 1.5em;
   margin-bottom: 0.5em;
   line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
-h3 { font-size: 1.5rem; }
+h1 {
+  font-size: 2.5rem;
+  text-shadow: 0 0 30px var(--glow-green);
+}
+
+h2 {
+  font-size: 2rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3em;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
 
 a {
   color: var(--accent2);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 a:hover {
-  text-decoration: underline;
-  color: #79c0ff;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px var(--glow-cyan);
 }
 
 code {
@@ -109,8 +164,13 @@ pre {
   font-family: var(--font-mono);
 }
 
-.text-accent { color: var(--accent); }
-.text-muted { color: var(--muted); }
+.text-accent {
+  color: var(--accent);
+}
+
+.text-muted {
+  color: var(--muted);
+}
 
 /* Accessibility */
 :focus-visible {
@@ -119,7 +179,10 @@ pre {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
