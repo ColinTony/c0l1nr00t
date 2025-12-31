@@ -1,127 +1,252 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { useTranslations } from "../../i18n/utils";
+import "../../styles/pages/about.css";
 
 const lang = "es";
 const t = useTranslations(lang);
 ---
 
-<BaseLayout title={`c0l1nr00t | ${t("nav.about")}`} description="Whoami">
+<BaseLayout
+    title={`c0l1nr00t | ${t("nav.about")}`}
+    description="Bug Hunter & Pentester | Web Hacking"
+>
     <div class="container section">
-        <h1 class="mono">> whoami</h1>
-        <div class="content">
-            <p>Hola, soy <strong>c0l1nr00t</strong>.</p>
-            <p>
-                Soy un apasionado de la ciberseguridad, el hacking ético y la
-                ingeniería inversa. Este sitio es mi laboratorio personal donde
-                documento mis hallazgos, writeups de CTFs y artículos sobre
-                seguridad informática.
-            </p>
-            <p>
-                Mi objetivo es compartir conocimiento y contribuir a la
-                comunidad.
-            </p>
+        <div class="dossier-header">
+            <h1 class="mono">
+                <span class="prefix">USER_ID:</span> c0l1nr00t
+            </h1>
+            <div class="status-badge mono">STATUS: ACTIVE</div>
+        </div>
 
-            <h2>Stack & Tools</h2>
-            <ul>
-                <li>Reverse Engineering: Ghidra, IDA Pro, x64dbg</li>
-                <li>Web Security: Burp Suite, OWASP ZAP</li>
-                <li>
-                    Languages: Python, C/C++, JavaScript/TypeScript, Assembly
-                </li>
-            </ul>
+        <div class="dossier-grid">
+            <!-- Left Column: Bio & Stats -->
+            <div class="col-main">
+                <section class="panel bio-panel">
+                    <div class="panel-header mono">
+                        <span>01_BIO_DATA</span>
+                        <div class="decors">
+                            <span class="decor"></span><span class="decor"
+                            ></span>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <p class="tagline mono text-accent">
+                            &gt; Bug Hunter &amp; Pentester · Web Hacking ·
+                            Research aplicado
+                        </p>
+                        <p>
+                            Soy <strong>Bug Hunter & Pentester</strong> y este blog
+                            es mi bitácora: pruebas, writeups y notas técnicas. Me
+                            muevo entre <strong>hacking web</strong> (recon, cadenas
+                            e evidencia reproducible) y <strong
+                                >reversing</strong
+                            > (Linux/embedded) porque ahí es donde se construye criterio
+                            de verdad. Si algo está aquí, es porque lo ejecuté, lo
+                            entendí y puedo explicarlo con claridad.
+                        </p>
+                    </div>
+                </section>
 
-            <div class="cta">
-                <a href={`/${lang}/contact`} class="btn btn-primary mono"
-                    >{t("nav.contact")}</a
-                >
+                <section class="panel stats-panel">
+                    <div class="panel-header mono">
+                        <span>02_METRICS</span>
+                    </div>
+                    <div class="highlights" aria-label="Highlights">
+                        <div class="hl">
+                            <div class="hl-num mono">+4</div>
+                            <div class="hl-label mono">
+                                HACKERONE<br />REPORTS
+                            </div>
+                        </div>
+                        <div class="hl">
+                            <div class="hl-num mono">+35</div>
+                            <div class="hl-label mono">
+                                PRIVATE<br />FINDINGS
+                            </div>
+                        </div>
+                        <div class="hl">
+                            <div class="hl-num mono">TOP 20</div>
+                            <div class="hl-label mono">
+                                CYSCOPE<br />RANKING
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel focus-panel">
+                    <div class="panel-header mono">
+                        <span>03_RE_PIPELINE</span>
+                    </div>
+                    <div class="panel-content">
+                        <ul class="data-list">
+                            <li>
+                                <span class="key mono">TARGETS</span>
+                                <span class="val"
+                                    >Linux binaries · Embedded firmware · Kindle
+                                    surfaces</span
+                                >
+                            </li>
+                            <li>
+                                <span class="key mono">ANALYSIS</span>
+                                <span class="val"
+                                    >Flow mapping → call paths → trust
+                                    boundaries → assumptions</span
+                                >
+                            </li>
+                            <li>
+                                <span class="key mono">DEBUG</span>
+                                <span class="val"
+                                    >Tracing / instrumentation cuando aplica
+                                    (entender comportamiento real)</span
+                                >
+                            </li>
+                            <li>
+                                <span class="key mono">HYPOTHESES</span>
+                                <span class="val"
+                                    >Buscar invariantes rotas: inputs, parsing,
+                                    state, memory boundaries</span
+                                >
+                            </li>
+                            <li>
+                                <span class="key mono">LEARNING_LOOP</span>
+                                <span class="val"
+                                    >PoC mínimo → explicación clara → nota
+                                    reutilizable</span
+                                >
+                            </li>
+                        </ul>
+                    </div>
+                </section>
             </div>
+
+            <!-- Right Column: Stack & Goals -->
+            <div class="col-side">
+                <section class="panel stack-panel">
+                    <div class="panel-header mono">
+                        <span>04_TOOLSET</span>
+                    </div>
+                    <div class="panel-content">
+                        <div class="stack-group">
+                            <span class="stack-label mono text-muted"
+                                >WEB_TESTING</span
+                            >
+                            <p>Burp Suite · Postman · Insomnia</p>
+                        </div>
+
+                        <div class="stack-group">
+                            <span class="stack-label mono text-muted"
+                                >RECONNAISSANCE</span
+                            >
+                            <p>subfinder · bbot · httpx · nuclei</p>
+                        </div>
+
+                        <div class="stack-group">
+                            <span class="stack-label mono text-muted"
+                                >OSINT</span
+                            >
+                            <p>Google Dorks · Pivots</p>
+                        </div>
+
+                        <div class="stack-group">
+                            <span class="stack-label mono text-muted"
+                                >AUTOMATION</span
+                            >
+                            <p>Java · Python · Node.js · TypeScript</p>
+                        </div>
+
+                        <div class="stack-group">
+                            <span class="stack-label mono text-muted"
+                                >RE_TOOLING</span
+                            >
+                            <p>Ghidra · radare2 · objdump/readelf · strings</p>
+                        </div>
+
+                        <div class="stack-group">
+                            <span class="stack-label mono text-muted"
+                                >DEBUG_TRACE</span
+                            >
+                            <p>
+                                GDB (pwndbg/gef) · strace/ltrace · perf (cuando
+                                aplica)
+                            </p>
+                        </div>
+
+                        <div class="stack-group">
+                            <span class="stack-label mono text-muted"
+                                >BINEXP_LABS</span
+                            >
+                            <p>
+                                pwntools · AFL++ (experimentos) · QEMU (cuando
+                                aplica)
+                            </p>
+                        </div>
+
+                        <div class="stack-group">
+                            <span class="stack-label mono text-muted"
+                                >EMBEDDED_KINDLE</span
+                            >
+                            <p>
+                                binwalk · firmware extraction · filesystem
+                                mounting (labs)
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel goals-panel">
+                    <div class="panel-header mono">
+                        <span>05_CURRENT_OBJECTIVE</span>
+                    </div>
+                    <div class="panel-content">
+                        <p class="mono text-sm text-warn mb-2">
+                            &gt; REVERSING & EXPLOIT DEV
+                        </p>
+                        <p class="text-sm">
+                            Construyendo base sólida para investigar donde “solo
+                            web” no alcanza: binarios, mitigaciones y root
+                            causes.
+                        </p>
+
+                        <div class="mini-cards">
+                            <div class="mc">
+                                <span class="mc-title mono">LINUX_EXP</span>
+                                <span class="mc-text"
+                                    >Memory corruption & debugging</span
+                                >
+                            </div>
+                            <div class="mc">
+                                <span class="mc-title mono">EMBEDDED</span>
+                                <span class="mc-text"
+                                    >Firmware & IoT surfaces</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel blog-panel">
+                    <div class="panel-header mono">
+                        <span>06_LOG_CONTENT</span>
+                    </div>
+                    <div class="panel-content">
+                        <ul class="simple-list text-sm">
+                            <li>Writeups de bug bounty real</li>
+                            <li>CTFs y labs educativos</li>
+                            <li>Research y experimentos</li>
+                        </ul>
+                        <p class="disclosure mono text-xs mt-4 text-muted">
+                            * DISCLOSURE: RESPONSIBLE ONLY
+                        </p>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <a href={`/${lang}/contact`} class="btn btn-primary mono large">
+                &gt; INITIATE_CONTACT
+            </a>
         </div>
     </div>
 </BaseLayout>
-
-<style>
-    .section {
-        padding: 4rem 1rem;
-    }
-    h1 {
-        color: var(--neon-green);
-        margin-bottom: 2rem;
-        font-family: var(--font-mono);
-        text-shadow: 0 0 10px var(--glow-green);
-    }
-    h1::after {
-        content: "_";
-        animation: blink 1s step-end infinite;
-        margin-left: 5px;
-    }
-    @keyframes blink {
-        0%,
-        100% {
-            opacity: 1;
-        }
-        50% {
-            opacity: 0;
-        }
-    }
-
-    .content {
-        max-width: 700px;
-        font-size: 1.1rem;
-        line-height: 1.8;
-    }
-    h2 {
-        color: var(--text-bright);
-        margin-top: 2.5rem;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 0.5rem;
-    }
-    ul {
-        list-style: none;
-        padding-left: 0;
-        margin-top: 1.5rem;
-    }
-    li {
-        color: var(--text);
-        margin-bottom: 0.8rem;
-        padding-left: 1.5rem;
-        position: relative;
-        transition: transform 0.2s ease;
-    }
-    li:hover {
-        transform: translateX(5px);
-    }
-    li::before {
-        content: ">";
-        position: absolute;
-        left: 0;
-        color: var(--neon-cyan);
-        font-family: var(--font-mono);
-        font-weight: bold;
-    }
-    .cta {
-        margin-top: 3rem;
-    }
-    .btn {
-        display: inline-block;
-        padding: 0.8rem 1.5rem;
-        border-radius: var(--radius);
-        text-decoration: none;
-        font-weight: bold;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        font-size: 0.9rem;
-    }
-    .btn-primary {
-        background: rgba(46, 160, 67, 0.2);
-        color: var(--neon-green);
-        border: 1px solid var(--neon-green);
-        box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
-    }
-    .btn-primary:hover {
-        background: var(--neon-green);
-        color: #000;
-        box-shadow: 0 0 20px var(--glow-green);
-    }
-</style>

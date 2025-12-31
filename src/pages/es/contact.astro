@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { useTranslations } from "../../i18n/utils";
+import "../../styles/pages/contact.css";
 
 const lang = "es";
 const t = useTranslations(lang);
@@ -8,55 +9,96 @@ const t = useTranslations(lang);
 
 <BaseLayout
     title={`c0l1nr00t | ${t("nav.contact")}`}
-    description="Contact channels"
+    description="Classes, pentest and collaborations"
 >
     <div class="container section">
-        <h1 class="mono">{t("contact.title")}</h1>
+        <header class="hero">
+            <p class="kicker mono">&gt; ./contact --init</p>
+            <h1 class="mono">{t("contact.title")}</h1>
+            <p class="lead">
+                Selecciona un <strong>protocolo</strong> para iniciar la comunicación.
+                Sé directo y conciso.
+            </p>
+        </header>
 
-        <div class="grid">
-            <div class="channels">
-                <h2>Links</h2>
-                <ul class="links-list">
-                    <li>
-                        <a href="https://github.com" target="_blank">GitHub</a>
-                    </li>
-                    <li>
-                        <a href="https://twitter.com" target="_blank"
-                            >X / Twitter</a>
-                    </li>
-                    <li>
-                        <a href="https://linkedin.com" target="_blank"
-                            >LinkedIn</a>
-                    </li>
-                    <li>
-                        <a href="https://hackerone.com" target="_blank"
-                            >HackerOne</a>
-                    </li>
-                </ul>
+        <div class="command-center">
+            <div class="protocols">
+                <h2 class="mono text-muted text-sm">SELECT PROTOCOL</h2>
 
-                <h2>Support</h2>
-                <ul class="links-list">
-                    <li><a href="#" target="_blank">Ko-fi</a></li>
-                    <li><a href="#" target="_blank">BuyMeACoffee</a></li>
-                </ul>
+                <div class="protocol-list">
+                    <label class="protocol-option">
+                        <input
+                            type="radio"
+                            name="protocol"
+                            value="mentoria"
+                            checked
+                        />
+                        <span class="mono">01_MENTORSHIP</span>
+                    </label>
 
-                <div class="downloads">
-                    <a
-                        href="/files/CV.pdf"
-                        class="btn btn-outline mono"
-                        download>Descargar CV</a
-                    >
+                    <label class="protocol-option">
+                        <input type="radio" name="protocol" value="pentest" />
+                        <span class="mono">02_PENTEST</span>
+                    </label>
+
+                    <label class="protocol-option">
+                        <input type="radio" name="protocol" value="collab" />
+                        <span class="mono">03_COLLAB</span>
+                    </label>
+
+                    <label class="protocol-option">
+                        <input type="radio" name="protocol" value="social" />
+                        <span class="mono">04_SOCIAL</span>
+                    </label>
+                </div>
+
+                <div class="protocol-details">
+                    <div id="info-mentoria" class="info-panel active">
+                        <p class="mono text-accent">&gt; TARGET: KNOWLEDGE</p>
+                        <p>
+                            Clases 1:1 de Hacking Web, Bug Bounty o Reversing.
+                            Ruta personalizada, sin relleno.
+                        </p>
+                    </div>
+                    <div id="info-pentest" class="info-panel">
+                        <p class="mono text-warn">&gt; TARGET: SECURITY</p>
+                        <p>
+                            Auditoría de seguridad para tu empresa o producto.
+                            Reportes accionables, impacto real.
+                        </p>
+                    </div>
+                    <div id="info-collab" class="info-panel">
+                        <p class="mono text-cyan">&gt; TARGET: COMMUNITY</p>
+                        <p>
+                            Charlas, streams, research conjunto o proyectos open
+                            source.
+                        </p>
+                    </div>
+                    <div id="info-social" class="info-panel">
+                        <p class="mono text-purple">&gt; TARGET: NETWORK</p>
+                        <p>
+                            Solo platicar, networking o preguntas random. No
+                            seas tímido.
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-container">
-                <h2>Enviar Mensaje Encriptado</h2>
+            <div class="terminal-form">
+                <div class="terminal-header">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                    <span class="title mono">message_buffer.sh</span>
+                </div>
+
                 <form
                     name="contact"
                     method="POST"
                     data-netlify="true"
                     netlify-honeypot="bot-field"
                     action={`/${lang}/contact?success=true`}
+                    class="console-form"
                 >
                     <p class="hidden">
                         <label
@@ -65,112 +107,103 @@ const t = useTranslations(lang);
                             /></label
                         >
                     </p>
-                    <div class="form-group">
-                        <label for="name">{t("contact.form.name")}</label>
-                        <input type="text" id="name" name="name" required />
+
+                    <div class="console-line">
+                        <span class="prompt mono">$</span>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            placeholder="whoami (Nombre)"
+                            required
+                            autocomplete="off"
+                        />
                     </div>
-                    <div class="form-group">
-                        <label for="email">{t("contact.form.email")}</label>
-                        <input type="email" id="email" name="email" required />
+
+                    <div class="console-line">
+                        <span class="prompt mono">$</span>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="mail (Email)"
+                            required
+                            autocomplete="off"
+                        />
                     </div>
-                    <div class="form-group">
-                        <label for="message">{t("contact.form.message")}</label>
-                        <textarea id="message" name="message" rows="5" required
-                        ></textarea>
+
+                    <div class="console-line hidden-input">
+                        <input
+                            type="hidden"
+                            id="topic"
+                            name="topic"
+                            value="Mentoría / Clases"
+                        />
                     </div>
-                    <button type="submit" class="btn btn-primary mono"
-                        >{t("contact.form.send")}</button
-                    >
+
+                    <div class="console-block">
+                        <span class="prompt mono">$</span>
+                        <textarea
+                            id="message"
+                            name="message"
+                            rows="6"
+                            required
+                            placeholder="echo 'Tu mensaje aquí...'"></textarea>
+                    </div>
+
+                    <div class="console-actions">
+                        <button type="submit" class="btn-terminal mono">
+                            &gt; EXECUTE_SEND
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
+
+        <div class="social-links">
+            <p class="mono text-muted text-sm text-center">OR CONNECT VIA</p>
+            <div class="pill-grid centered">
+                <a
+                    class="pill"
+                    href="https://github.com"
+                    target="_blank"
+                    rel="noopener noreferrer">GitHub</a
+                >
+                <a
+                    class="pill"
+                    href="https://linkedin.com"
+                    target="_blank"
+                    rel="noopener noreferrer">LinkedIn</a
+                >
+                <a
+                    class="pill"
+                    href="https://twitter.com"
+                    target="_blank"
+                    rel="noopener noreferrer">X / Twitter</a
+                >
+            </div>
+        </div>
     </div>
+
+    <script>
+        // Simple logic to update form topic and info panel based on selection
+        const radios = document.querySelectorAll('input[name="protocol"]');
+        const topicInput = document.getElementById("topic") as HTMLInputElement;
+        const infoPanels = document.querySelectorAll(".info-panel");
+
+        radios.forEach((radio) => {
+            radio.addEventListener("change", (e) => {
+                const target = e.target as HTMLInputElement;
+                const val = target.value;
+
+                // Update hidden topic input
+                if (topicInput) topicInput.value = val;
+
+                // Update info panels
+                infoPanels.forEach((panel) => panel.classList.remove("active"));
+                const activePanel = document.getElementById(`info-${val}`);
+                if (activePanel) activePanel.classList.add("active");
+            });
+        });
+    </script>
 </BaseLayout>
-
-<style>
-    .section {
-        padding: 3rem 1rem;
-    }
-    .grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 3rem;
-    }
-    @media (max-width: 768px) {
-        .grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .links-list {
-        list-style: none;
-        padding: 0;
-    }
-    .links-list li {
-        margin-bottom: 0.5rem;
-    }
-    .links-list a {
-        color: var(--accent2);
-        font-size: 1.1rem;
-    }
-
-    .hidden {
-        display: none;
-    }
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.9rem;
-    }
-    input,
-    textarea {
-        width: 100%;
-        padding: 0.8rem;
-        background: var(--bg0);
-        border: 1px solid var(--border);
-        color: var(--text);
-        border-radius: var(--radius);
-        font-family: var(--font-sans);
-    }
-    input:focus,
-    textarea:focus {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 2px var(--accent-dim);
-    }
-
-    .btn {
-        display: inline-block;
-        padding: 0.8rem 1.5rem;
-        border-radius: var(--radius);
-        border: none;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .btn-primary {
-        background: var(--accent);
-        color: #fff;
-    }
-    .btn-primary:hover {
-        background: #26853b;
-    }
-    .btn-outline {
-        border: 1px solid var(--border);
-        color: var(--text);
-        text-decoration: none;
-    }
-    .btn-outline:hover {
-        border-color: var(--accent2);
-        color: var(--accent2);
-    }
-
-    .downloads {
-        margin-top: 2rem;
-    }
-</style>
