@@ -179,4 +179,16 @@ const t = useTranslations(lang);
         border-radius: var(--radius);
         border: 1px solid var(--border);
     }
+    @media (max-width: 768px) {
+        .title {
+            font-size: 1.8rem;
+        }
+        .meta-panel {
+            grid-template-columns: 1fr;
+        }
+        .markdown-body :global(pre) {
+            padding: 1rem;
+            font-size: 0.85rem;
+        }
+    }
 </style>

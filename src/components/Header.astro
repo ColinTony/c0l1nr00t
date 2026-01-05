@@ -8,35 +8,55 @@ const t = useTranslations(lang);
 <header>
     <nav class="container">
         <a href={`/${lang}`} class="logo">c0l1nr00t</a>
-        <div class="links">
-            <a href={`/${lang}/blog`}>{t("nav.blog")}</a>
-            <a href={`/${lang}/writeups`}>{t("nav.writeups")}</a>
-            <a href={`/${lang}/about`}>{t("nav.about")}</a>
-            <a href={`/${lang}/contact`}>{t("nav.contact")}</a>
-        </div>
-        <div class="actions">
-            <a href="/files/cv.pdf" download class="btn-cv mono"
-                >{t("cv.download")}</a
-            >
+
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+
+        <div class="nav-content" id="nav-content">
+            <div class="links">
+                <a href={`/${lang}/blog`}>{t("nav.blog")}</a>
+                <a href={`/${lang}/writeups`}>{t("nav.writeups")}</a>
+                <a href={`/${lang}/about`}>{t("nav.about")}</a>
+                <a href={`/${lang}/contact`}>{t("nav.contact")}</a>
+            </div>
+            <div class="actions">
+                <a href="/files/cv.pdf" download class="btn-cv mono"
+                    >{t("cv.download")}</a
+                >
+            </div>
         </div>
     </nav>
 </header>
 
+<script>
+    const menuToggle = document.getElementById("menu-toggle");
+    const navContent = document.getElementById("nav-content");
+
+    menuToggle?.addEventListener("click", () => {
+        menuToggle.classList.toggle("active");
+        navContent?.classList.toggle("active");
+    });
+</script>
+
 <style>
     header {
         border-bottom: 1px solid var(--border);
-        background: rgba(10, 14, 20, 0.85);
+        background: rgba(10, 14, 20, 0.95); /* More opaque for mobile menu */
         backdrop-filter: blur(12px);
         position: sticky;
         top: 0;
-        z-index: 100;
+        z-index: 1000;
         padding: 1rem 0;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
     nav {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
+        display: flex;
+        justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
     }
     .logo {
         font-family: var(--font-mono);
@@ -46,7 +66,7 @@ const t = useTranslations(lang);
         text-shadow: 0 0 10px var(--glow-green);
         display: flex;
         align-items: center;
-        width: fit-content;
+        z-index: 1001;
     }
     .logo::after {
         content: "_";
@@ -65,10 +85,20 @@ const t = useTranslations(lang);
         }
     }
 
+    .nav-content {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-grow: 1;
+        justify-content: space-between;
+        margin-left: 2rem;
+    }
+
     .links {
         display: flex;
         gap: 2rem;
         justify-content: center;
+        flex-grow: 1;
     }
     .links a {
         color: var(--text);
@@ -98,7 +128,7 @@ const t = useTranslations(lang);
 
     .actions {
         display: flex;
-        justify-content: flex-end;
+        align-items: center;
     }
 
     .btn-cv {
@@ -111,6 +141,7 @@ const t = useTranslations(lang);
         text-decoration: none;
         transition: all 0.3s ease;
         background: rgba(0, 255, 65, 0.05);
+        white-space: nowrap;
     }
     .btn-cv:hover {
         background: var(--accent);
@@ -118,20 +149,71 @@ const t = useTranslations(lang);
         box-shadow: 0 0 10px var(--glow-green);
     }
 
+    /* Hamburger Menu */
+    .menu-toggle {
+        display: none;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 30px;
+        height: 21px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        z-index: 1001;
+    }
+    .bar {
+        width: 100%;
+        height: 3px;
+        background-color: var(--text);
+        border-radius: 3px;
+        transition: all 0.3s ease;
+    }
+
     @media (max-width: 768px) {
-        nav {
+        .menu-toggle {
             display: flex;
-            flex-direction: column;
-            gap: 1rem;
         }
-        .links {
-            gap: 1rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .actions {
+
+        .nav-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
             width: 100%;
-            justify-content: center;
+            background: rgba(10, 14, 20, 0.98);
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 0;
+            gap: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            clip-path: polygon(
+                0 0,
+                100% 0,
+                100% 0,
+                0 0
+            ); /* Hidden by default */
+            transition: clip-path 0.4s ease-in-out;
+            margin-left: 0;
+        }
+
+        .nav-content.active {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+
+        .links {
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .menu-toggle.active .bar:nth-child(1) {
+            transform: translateY(9px) rotate(45deg);
+        }
+        .menu-toggle.active .bar:nth-child(2) {
+            opacity: 0;
+        }
+        .menu-toggle.active .bar:nth-child(3) {
+            transform: translateY(-9px) rotate(-45deg);
         }
     }
 </style>
