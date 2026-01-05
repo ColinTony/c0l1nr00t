@@ -3,7 +3,7 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://colintony.github.io', // Placeholder, update with real domain
+  site: 'https://c0l1nr00t.netlify.app', // Placeholder, update with real domain
   integrations: [sitemap()],
   markdown: {
     shikiConfig: {
