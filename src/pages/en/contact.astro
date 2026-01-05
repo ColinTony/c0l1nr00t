@@ -4,6 +4,7 @@ import { useTranslations } from "../../i18n/utils";
 
 const lang = "en";
 const t = useTranslations(lang);
+const success = Astro.url.searchParams.get("success") === "true";
 ---
 
 <BaseLayout
@@ -22,15 +23,18 @@ const t = useTranslations(lang);
                     </li>
                     <li>
                         <a href="https://twitter.com" target="_blank"
-                            >X / Twitter</a>
+                            >X / Twitter</a
+                        >
                     </li>
                     <li>
                         <a href="https://linkedin.com" target="_blank"
-                            >LinkedIn</a>
+                            >LinkedIn</a
+                        >
                     </li>
                     <li>
                         <a href="https://hackerone.com" target="_blank"
-                            >HackerOne</a>
+                            >HackerOne</a
+                        >
                     </li>
                 </ul>
 
@@ -50,127 +54,282 @@ const t = useTranslations(lang);
             </div>
 
             <div class="form-container">
-                <h2>Send Encrypted Message</h2>
-                <form
-                    name="contact"
-                    method="POST"
-                    data-netlify="true"
-                    netlify-honeypot="bot-field"
-                    action={`/${lang}/contact?success=true`}
-                >
-                    <p class="hidden">
-                        <label
-                            >Don’t fill this out if you’re human: <input
-                                name="bot-field"
-                            /></label
-                        >
-                    </p>
-                    <div class="form-group">
-                        <label for="name">{t("contact.form.name")}</label>
-                        <input type="text" id="name" name="name" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="email">{t("contact.form.email")}</label>
-                        <input type="email" id="email" name="email" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="message">{t("contact.form.message")}</label>
-                        <textarea id="message" name="message" rows="5" required
-                        ></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary mono"
-                        >{t("contact.form.send")}</button
+                <div class="form-container">
+                    <div
+                        id="success-message"
+                        class="success-message"
+                        style="display: none;"
                     >
-                </form>
+                        <span class="success-icon">✓</span>
+                        <h2 class="success-title mono">STATUS: 200 OK</h2>
+                        <p class="success-desc">
+                            Message encrypted and sent. Establishing
+                            communication link...
+                        </p>
+                        <a href={`/en/contact`} class="btn-return mono">
+                            &gt; RETURN_TO_ROOT
+                        </a>
+                    </div>
+
+                    <div id="form-container">
+                        <h2>Send Encrypted Message</h2>
+                        <form
+                            id="contact-form"
+                            action="https://formsubmit.co/8536b0703e1d3d2ab083844c5c53bef3"
+                            method="POST"
+                        >
+                            <input
+                                type="hidden"
+                                name="_subject"
+                                value="New Contact from c0l1nr00t (EN)"
+                            />
+                            <input
+                                type="hidden"
+                                name="_template"
+                                value="table"
+                            />
+                            <input
+                                type="hidden"
+                                name="_captcha"
+                                value="false"
+                            />
+                            <div class="form-group">
+                                <label for="name">
+                                    {t("contact.form.name")}
+                                </label>
+                                <input
+                                    type="text"
+                                    id="name"
+                                    name="name"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="email">
+                                    {t("contact.form.email")}
+                                </label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="message">
+                                    {t("contact.form.message")}
+                                </label>
+                                <textarea
+                                    id="message"
+                                    name="message"
+                                    rows="5"
+                                    required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary mono">
+                                {t("contact.form.send")}
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</BaseLayout>
 
-<style>
-    .section {
-        padding: 3rem 1rem;
-    }
-    .grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 3rem;
-    }
-    @media (max-width: 768px) {
-        .grid {
-            grid-template-columns: 1fr;
+    <script>
+        const form = document.getElementById("contact-form") as HTMLFormElement;
+        const successMessage = document.getElementById("success-message");
+        const formContainer = document.getElementById("form-container");
+
+        if (form) {
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+
+                // Disable button to prevent double submit
+                const btn = form.querySelector(
+                    'button[type="submit"]',
+                ) as HTMLButtonElement;
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerText = "SENDING...";
+                }
+
+                fetch(
+                    "https://formsubmit.co/ajax/8536b0703e1d3d2ab083844c5c53bef3",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Accept: "application/json",
+                        },
+                        body: JSON.stringify(Object.fromEntries(formData)),
+                    },
+                )
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (formContainer) formContainer.style.display = "none";
+                        if (successMessage)
+                            successMessage.style.display = "flex";
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                        alert("Error sending message. Please try again.");
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerText = "SEND";
+                        }
+                    });
+            });
         }
-    }
+    </script>
 
-    .links-list {
-        list-style: none;
-        padding: 0;
-    }
-    .links-list li {
-        margin-bottom: 0.5rem;
-    }
-    .links-list a {
-        color: var(--accent2);
-        font-size: 1.1rem;
-    }
+    <style>
+        .section {
+            padding: 3rem 1rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
-    .hidden {
-        display: none;
-    }
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.9rem;
-    }
-    input,
-    textarea {
-        width: 100%;
-        padding: 0.8rem;
-        background: var(--bg0);
-        border: 1px solid var(--border);
-        color: var(--text);
-        border-radius: var(--radius);
-        font-family: var(--font-sans);
-    }
-    input:focus,
-    textarea:focus {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 2px var(--accent-dim);
-    }
+        .links-list {
+            list-style: none;
+            padding: 0;
+        }
+        .links-list li {
+            margin-bottom: 0.5rem;
+        }
+        .links-list a {
+            color: var(--accent2);
+            font-size: 1.1rem;
+        }
 
-    .btn {
-        display: inline-block;
-        padding: 0.8rem 1.5rem;
-        border-radius: var(--radius);
-        border: none;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .btn-primary {
-        background: var(--accent);
-        color: #fff;
-    }
-    .btn-primary:hover {
-        background: #26853b;
-    }
-    .btn-outline {
-        border: 1px solid var(--border);
-        color: var(--text);
-        text-decoration: none;
-    }
-    .btn-outline:hover {
-        border-color: var(--accent2);
-        color: var(--accent2);
-    }
+        .hidden {
+            display: none;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--muted);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+        input,
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--bg0);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: var(--radius);
+            font-family: var(--font-sans);
+        }
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-dim);
+        }
 
-    .downloads {
-        margin-top: 2rem;
-    }
-</style>
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--radius);
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #26853b;
+        }
+        .btn-outline {
+            border: 1px solid var(--border);
+            color: var(--text);
+            text-decoration: none;
+        }
+        .btn-outline:hover {
+            border-color: var(--accent2);
+            color: var(--accent2);
+        }
+
+        .downloads {
+            margin-top: 2rem;
+        }
+
+        /* Success Message */
+        .success-message {
+            text-align: center;
+            padding: 2rem;
+            animation: fadeIn 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 300px;
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(46, 160, 67, 0.5);
+        }
+
+        .success-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .success-desc {
+            color: var(--muted);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-return {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.8rem 1.5rem;
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-return:hover {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(46, 160, 67, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</BaseLayout>
