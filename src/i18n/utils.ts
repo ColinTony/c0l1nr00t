@@ -3,7 +3,6 @@ import { ui } from './dict';
 export const defaultLang = 'es';
 export const languages = {
     es: 'ES',
-    en: 'EN',
 };
 
 export function getLangFromUrl(url: URL) {
