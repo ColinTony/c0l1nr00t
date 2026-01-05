@@ -9,6 +9,7 @@ status: "published"
 tags: ["rce", "java", "deserialization"]
 program: "Private Program"
 redacted: true
+visible: false
 ---
 
 ## Resumen

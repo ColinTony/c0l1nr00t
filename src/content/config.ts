@@ -12,6 +12,7 @@ const blog = defineCollection({
         cover: z.string().optional(),
         series: z.string().optional(),
         pinned: z.boolean().default(false),
+        visible: z.boolean().default(true),
     }),
 });
 
@@ -31,6 +32,7 @@ const writeups = defineCollection({
         program: z.string().optional(),
         repository: z.string().optional(),
         redacted: z.boolean().default(false),
+        visible: z.boolean().default(true),
     }),
 });
 

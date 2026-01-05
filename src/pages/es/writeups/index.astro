@@ -8,7 +8,11 @@ const lang = "es";
 const t = useTranslations(lang);
 
 const writeups = await getCollection("writeups", ({ id, data }) => {
-    return id.startsWith("es/") && data.status !== "draft";
+    return (
+        id.startsWith("es/") &&
+        data.status !== "draft" &&
+        data.visible !== false
+    );
 });
 
 const sortedWriteups = writeups.sort(

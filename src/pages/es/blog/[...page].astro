@@ -1,0 +1,213 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Card from "../../../components/Card.astro";
+import { getCollection } from "astro:content";
+import { useTranslations } from "../../../i18n/utils";
+
+export async function getStaticPaths({ paginate }) {
+    const posts = await getCollection("blog", ({ id, data }) => {
+        return id.startsWith("es/") && !data.draft && data.visible !== false;
+    });
+
+    const sortedPosts = posts.sort((a, b) => {
+        if (a.data.pinned && !b.data.pinned) return -1;
+        if (!a.data.pinned && b.data.pinned) return 1;
+        return b.data.date.valueOf() - a.data.date.valueOf();
+    });
+
+    return paginate(sortedPosts, { pageSize: 6 });
+}
+
+const { page } = Astro.props;
+const lang = "es";
+const t = useTranslations(lang);
+
+// Get all posts for sidebar archive
+const allPosts = await getCollection("blog", ({ id, data }) => {
+    return id.startsWith("es/") && !data.draft && data.visible !== false;
+});
+
+const years = [
+    ...new Set(allPosts.map((post) => post.data.date.getFullYear())),
+].sort((a, b) => b - a);
+---
+
+<BaseLayout title={`c0l1nr00t | ${t("nav.blog")}`} description="Blog posts">
+    <div class="container section">
+        <h1 class="mono">{t("nav.blog")}</h1>
+
+        <div class="blog-layout">
+            <div class="main-content">
+                <div class="grid">
+                    {
+                        page.data.map((post) => (
+                            <Card
+                                href={`/${lang}/blog/${post.slug.split("/")[1]}`}
+                                title={post.data.title}
+                                date={post.data.date}
+                                description={post.data.description}
+                            />
+                        ))
+                    }
+                </div>
+
+                <div class="pagination">
+                    {
+                        page.url.prev ? (
+                            <a href={page.url.prev} class="btn-pagination mono">
+                                &lt; PREV_PAGE
+                            </a>
+                        ) : (
+                            <span class="btn-pagination disabled mono">
+                                &lt; PREV_PAGE
+                            </span>
+                        )
+                    }
+
+                    <span class="page-info mono"
+                        >PAGE {page.currentPage} / {page.lastPage}</span
+                    >
+
+                    {
+                        page.url.next ? (
+                            <a href={page.url.next} class="btn-pagination mono">
+                                NEXT_PAGE &gt;
+                            </a>
+                        ) : (
+                            <span class="btn-pagination disabled mono">
+                                NEXT_PAGE &gt;
+                            </span>
+                        )
+                    }
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <div class="sidebar-widget">
+                    <h3 class="mono widget-title">&gt; ARCHIVE</h3>
+                    <ul class="archive-list">
+                        {
+                            years.map((year) => (
+                                <li>
+                                    <a
+                                        href={`/${lang}/blog/archive/${year}`}
+                                        class="mono archive-link"
+                                    >
+                                        [{year}]_LOGS
+                                    </a>
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+</BaseLayout>
+
+<style>
+    .section {
+        padding: 3rem 1rem;
+    }
+    h1 {
+        color: var(--accent);
+        margin-bottom: 2rem;
+    }
+
+    .blog-layout {
+        display: grid;
+        grid-template-columns: 1fr 250px;
+        gap: 3rem;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Sidebar */
+    .sidebar-widget {
+        background: rgba(10, 14, 20, 0.6);
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .widget-title {
+        font-size: 1.1rem;
+        color: var(--accent);
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.5rem;
+    }
+
+    .archive-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .archive-list li {
+        margin-bottom: 0.5rem;
+    }
+
+    .archive-link {
+        color: var(--text);
+        text-decoration: none;
+        transition: color 0.2s;
+        display: block;
+        padding: 0.2rem 0;
+    }
+
+    .archive-link:hover {
+        color: var(--accent);
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .btn-pagination {
+        color: var(--accent);
+        text-decoration: none;
+        border: 1px solid var(--accent);
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+    }
+
+    .btn-pagination:hover:not(.disabled) {
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 0 10px rgba(46, 160, 67, 0.3);
+    }
+
+    .btn-pagination.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        border-color: var(--border);
+        color: var(--muted);
+    }
+
+    .page-info {
+        color: var(--muted);
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+        .blog-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+            order: -1; /* Show sidebar on top on mobile */
+        }
+    }
+</style>

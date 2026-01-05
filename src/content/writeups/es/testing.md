@@ -8,6 +8,7 @@ difficulty: "medium"
 status: "published"
 tags: ["sqli", "lfi", "linux"]
 target: "10.10.10.123"
+visible: false
 ---
 
 ## Reconocimiento

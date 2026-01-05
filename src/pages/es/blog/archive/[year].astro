@@ -1,0 +1,188 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import Card from "../../../../components/Card.astro";
+import { getCollection } from "astro:content";
+import { useTranslations } from "../../../../i18n/utils";
+
+export async function getStaticPaths() {
+    const posts = await getCollection("blog", ({ id, data }) => {
+        return id.startsWith("es/") && !data.draft;
+    });
+
+    const years = [
+        ...new Set(posts.map((post) => post.data.date.getFullYear())),
+    ];
+
+    return years.map((year) => ({
+        params: { year: year.toString() },
+        props: { year },
+    }));
+}
+
+const { year } = Astro.props;
+const lang = "es";
+const t = useTranslations(lang);
+
+const posts = await getCollection("blog", ({ id, data }) => {
+    return (
+        id.startsWith("es/") && !data.draft && data.date.getFullYear() === year
+    );
+});
+
+const sortedPosts = posts.sort((a, b) => {
+    return b.data.date.valueOf() - a.data.date.valueOf();
+});
+
+// Get all years for sidebar
+const allPosts = await getCollection("blog", ({ id, data }) => {
+    return id.startsWith("es/") && !data.draft;
+});
+const allYears = [
+    ...new Set(allPosts.map((post) => post.data.date.getFullYear())),
+].sort((a, b) => b - a);
+---
+
+<BaseLayout
+    title={`c0l1nr00t | ${t("nav.blog")} - ${year}`}
+    description={`Blog posts from ${year}`}
+>
+    <div class="container section">
+        <h1 class="mono">{t("nav.blog")} / {year}</h1>
+
+        <div class="blog-layout">
+            <div class="main-content">
+                <div class="grid">
+                    {
+                        sortedPosts.map((post) => (
+                            <Card
+                                href={`/${lang}/blog/${post.slug.split("/")[1]}`}
+                                title={post.data.title}
+                                date={post.data.date}
+                                description={post.data.description}
+                            />
+                        ))
+                    }
+                </div>
+
+                <div class="back-link">
+                    <a href={`/${lang}/blog`} class="btn-return mono"
+                        >&lt; RETURN_TO_BLOG</a
+                    >
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <div class="sidebar-widget">
+                    <h3 class="mono widget-title">&gt; ARCHIVE</h3>
+                    <ul class="archive-list">
+                        {
+                            allYears.map((y) => (
+                                <li>
+                                    <a
+                                        href={`/${lang}/blog/archive/${y}`}
+                                        class={`mono archive-link ${y === year ? "active" : ""}`}
+                                    >
+                                        [{y}]_LOGS
+                                    </a>
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+</BaseLayout>
+
+<style>
+    .section {
+        padding: 3rem 1rem;
+    }
+    h1 {
+        color: var(--accent);
+        margin-bottom: 2rem;
+    }
+
+    .blog-layout {
+        display: grid;
+        grid-template-columns: 1fr 250px;
+        gap: 3rem;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Sidebar */
+    .sidebar-widget {
+        background: rgba(10, 14, 20, 0.6);
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .widget-title {
+        font-size: 1.1rem;
+        color: var(--accent);
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.5rem;
+    }
+
+    .archive-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .archive-list li {
+        margin-bottom: 0.5rem;
+    }
+
+    .archive-link {
+        color: var(--text);
+        text-decoration: none;
+        transition: color 0.2s;
+        display: block;
+        padding: 0.2rem 0;
+    }
+
+    .archive-link:hover,
+    .archive-link.active {
+        color: var(--accent);
+    }
+
+    .archive-link.active {
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(46, 160, 67, 0.3);
+    }
+
+    .back-link {
+        margin-top: 3rem;
+    }
+
+    .btn-return {
+        color: var(--accent);
+        text-decoration: none;
+        border: 1px solid var(--accent);
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+
+    .btn-return:hover {
+        background: var(--accent);
+        color: #fff;
+    }
+
+    @media (max-width: 900px) {
+        .blog-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+            order: -1;
+        }
+    }
+</style>

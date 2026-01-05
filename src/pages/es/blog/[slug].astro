@@ -5,7 +5,9 @@ import { useTranslations } from "../../../i18n/utils";
 
 export async function getStaticPaths() {
     const posts = await getCollection("blog");
-    const esPosts = posts.filter((post) => post.id.startsWith("es/"));
+    const esPosts = posts.filter(
+        (post) => post.id.startsWith("es/") && post.data.visible !== false,
+    );
     return esPosts.map((post) => ({
         params: { slug: post.slug.split("/")[1] },
         props: { post },
