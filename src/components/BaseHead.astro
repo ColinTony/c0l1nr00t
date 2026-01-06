@@ -1,16 +1,16 @@
 ---
-import '../styles/global.css';
+import "../styles/global.css";
 
 interface Props {
 	title: string;
 	description: string;
 	image?: string;
-    lang: string;
+	lang: string;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, image = '/og/default.png', lang } = Astro.props;
+const { title, description, image = "/og/default.png", lang } = Astro.props;
 ---
 
 <!-- Global Metadata -->
@@ -43,10 +43,25 @@ const { title, description, image = '/og/default.png', lang } = Astro.props;
 
 <!-- Analytics (Placeholder) -->
 <!-- Set PUBLIC_ANALYTICS_ID in .env to enable -->
-{import.meta.env.PUBLIC_ANALYTICS_ID && (
-    <script defer data-domain={Astro.url.hostname} src="https://plausible.io/js/script.js"></script>
-)}
-
+{
+	import.meta.env.PUBLIC_ANALYTICS_ID && (
+		<script
+			defer
+			data-domain={Astro.url.hostname}
+			src="https://plausible.io/js/script.js"
+		/>
+	)
+}
+<script
+	defer
+	src="https://static.cloudflareinsights.com/beacon.min.js"
+	data-cf-beacon=' {"token": "42e216b9090ru59384ygu891dce9eecde", "spa": false} '
+></script>
 <!-- Sitemap -->
 <link rel="sitemap" href="/sitemap-index.xml" />
-<link rel="alternate" type="application/rss+xml" title="RSS" href={`/${lang}/rss.xml`} />
+<link
+	rel="alternate"
+	type="application/rss+xml"
+	title="RSS"
+	href={`/${lang}/rss.xml`}
+/>
