@@ -1,78 +1,92 @@
-# c0l1nr00t Personal Site
+# c0l1nr00t — Security Researcher
 
-Sitio personal de c0l1nr00t con estética "underground hacker / low-level lab".
-Construido con Astro, TypeScript y Markdown.
+Sitio personal de **c0l1nr00t**, security researcher mexicano: investigación en
+dispositivos Amazon (Kindle, Fire TV, Echo Show, Ring), navegadores embebidos,
+parsers, fuzzing y memory corruption.
+
+Construido con Astro, TypeScript y Markdown. Estático, sin framework de UI.
 
 ## Requisitos
 
 - Node.js v18+
 - npm
 
-## Instalación
+## Desarrollo
 
 ```bash
 npm install
+npm run dev      # http://localhost:4321
+npm run build    # genera dist/
+npm run preview  # sirve dist/
 ```
 
-## Desarrollo
-
-Para iniciar el servidor de desarrollo:
-
-```bash
-npm run dev
-```
-
-El sitio estará disponible en `http://localhost:4321`.
-
-## Estructura del Proyecto
+## Estructura
 
 ```text
 src/
-  components/       # Componentes UI (Header, Card, etc.)
-  content/          # Contenido Markdown (Blog, Writeups)
-    blog/
-      es/           # Posts en Español
-      en/           # Posts en Inglés
-    writeups/
-      es/           # Writeups en Español
-      en/           # Writeups en Inglés
-  i18n/             # Diccionarios y utilidades de traducción
-  layouts/          # Layouts base
-  pages/            # Rutas del sitio (/es, /en)
-  styles/           # CSS Global
+  components/       # Header, Footer, Card, PostRow, BaseHead
+  content/
+    blog/es/        # Research log (Markdown)
+    writeups/es/    # Writeups técnicos (Markdown)
+  data/
+    research.ts     # Identidad, plataformas, hallazgos, timeline → home/research/about
+  i18n/             # Diccionario de textos
+  layouts/          # BaseLayout
+  pages/es/         # Rutas del sitio
+  styles/           # Sistema de diseño (global.css) + CSS por página
+  utils/            # reading-time, slug
 ```
 
-## i18n (Internacionalización)
+## Secciones
 
-El sitio utiliza un sistema de rutas manual para control total:
-- `/es/...` para contenido en Español.
-- `/en/...` para contenido en Inglés.
-- La raíz `/` redirige a `/es`.
+| Ruta | Qué es |
+| --- | --- |
+| `/es` | Hero, áreas de investigación activas, hallazgos destacados, últimos posts |
+| `/es/research` | Plataformas investigadas, hallazgos, Las Vegas 2026, metodología, hardware |
+| `/es/blog` | Research log: research notes, lab notes, deep dives |
+| `/es/blog/categoria/<slug>` | Entradas por categoría (solo las que tienen contenido) |
+| `/es/writeups` | Writeups técnicos completos (fuera del menú mientras esté vacío) |
+| `/es/about` | Perfil, evolución profesional, toolset y trabajo de pentesting |
+| `/es/contact` | Contacto por protocolo (FormSubmit) |
+| `/es/rss.xml` | Feed del blog |
 
-## Cómo publicar contenido
+La narrativa del sitio se edita en `src/data/research.ts`, no en las plantillas.
 
-1.  Crea un archivo `.md` en la carpeta correspondiente (`src/content/blog/es`, `src/content/writeups/en`, etc.).
-2.  Asegúrate de incluir el frontmatter requerido (ver `docs/content-guide.md`).
-3.  ¡Listo! Astro detectará el archivo y lo publicará.
+## Publicar contenido
+
+1. Crea un `.md` en `src/content/blog/es/`.
+2. Incluye el frontmatter requerido (ver `docs/content-guide.md`).
+3. Astro lo detecta y lo publica. Con `draft: true` o `visible: false` queda oculto.
+
+Regla de contenido: nada de CVEs, recompensas o impactos inventados, y los
+detalles de vulnerabilidades bajo divulgación coordinada se mantienen a alto
+nivel.
+
+## Idioma
+
+El sitio es en español. La marca, los titulares y la terminología técnica van en
+inglés. La infraestructura i18n existe (`src/i18n/`) pero solo está poblada la
+clave `es`.
+
+## Diseño
+
+Sistema de tokens en `src/styles/global.css`. Convenciones en
+`docs/style-guide.md`.
 
 ## Analytics
 
-El sitio está preparado para usar Plausible o Umami.
-Para activar analytics, define la variable de entorno `PUBLIC_ANALYTICS_ID` en tu archivo `.env` o en el panel de Netlify.
+Cloudflare Web Analytics está integrado en `src/components/BaseHead.astro`. Para
+activar Plausible, define `PUBLIC_ANALYTICS_ID` en `.env`.
 
-```env
-PUBLIC_ANALYTICS_ID=true
+## Despliegue
+
+Cloudflare, sirviendo `dist/` según `wrangler.jsonc`:
+
+```bash
+npm run build
+npx wrangler deploy
 ```
 
-(El script actual es un placeholder para Plausible, edita `src/components/BaseHead.astro` para cambiar el proveedor).
-
-## Checklist de Aceptación
-
-- [x] Agregar .md crea entrada.
-- [x] Drafts ocultos.
-- [x] TOC automático.
-- [x] Syntax Highlighting.
-- [x] Filtros en Writeups.
-- [x] i18n funcionando.
-- [x] Responsive.
-- [x] Netlify Forms.
+> Pendiente: `site` en `astro.config.mjs` sigue apuntando al placeholder
+> `https://c0l1nr00t.netlify.app`. Cámbialo al dominio real para que canonical,
+> sitemap, Open Graph y JSON-LD sean correctos.

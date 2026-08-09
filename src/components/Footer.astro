@@ -4,42 +4,80 @@ import { getLangFromUrl, useTranslations } from "../i18n/utils";
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const year = new Date().getFullYear();
+
+const socials = [
+    { href: "https://github.com/ColinTony", label: "GitHub" },
+    {
+        href: "https://www.linkedin.com/in/luisantoniocolin/",
+        label: "LinkedIn",
+    },
+    { href: "https://x.com/c0l1nr00t", label: "X" },
+];
 ---
 
-<footer>
-    <div class="container">
-        <p>&copy; {year} c0l1nr00t. {t("footer.rights")}</p>
-        <div class="socials">
-            <a
-                href="https://github.com/ColinTony"
-                target="_blank"
-                rel="noopener noreferrer">GitHub</a
-            >
-            <a
-                href="https://x.com/c0l1nr00t"
-                target="_blank"
-                rel="noopener noreferrer">X</a
-            >
-        </div>
+<footer class="site-footer">
+    <div class="container inner">
+        <p class="copy mono">
+            <span class="prompt" aria-hidden="true">$</span>
+            &copy; {year} c0l1nr00t · {t("footer.rights")}
+        </p>
+
+        <nav class="socials" aria-label="Redes">
+            {
+                socials.map((s) => (
+                    <a
+                        class="mono"
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {s.label}
+                    </a>
+                ))
+            }
+        </nav>
     </div>
 </footer>
 
 <style>
-    footer {
-        border-top: 1px solid var(--border);
-        padding: 2rem 0;
+    .site-footer {
         margin-top: auto;
-        color: var(--muted);
-        font-size: 0.9rem;
-        font-family: var(--font-mono);
+        padding-block: var(--sp-6);
+        border-top: 1px solid var(--border);
     }
-    .container {
+
+    .inner {
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
+        gap: var(--sp-4);
+        flex-wrap: wrap;
     }
+
+    .copy {
+        margin: 0;
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+    }
+
+    .prompt {
+        margin-right: var(--sp-2);
+        color: var(--accent);
+    }
+
     .socials {
         display: flex;
-        gap: 1rem;
+        gap: var(--sp-5);
+    }
+
+    .socials a {
+        color: var(--text-dim);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
+        text-transform: uppercase;
+    }
+
+    .socials a:hover {
+        color: var(--accent-strong);
     }
 </style>

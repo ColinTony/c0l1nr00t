@@ -1,52 +1,111 @@
 # Guía de Estilo
 
-## Colores
+Sistema de diseño en `src/styles/global.css`. Terminal oscura, sobria y legible:
+un solo acento, sin glows decorativos, tipografía y espaciado por escala.
 
-El sistema usa variables CSS definidas en `src/styles/global.css`.
+## Principios
 
-- **Fondo**: `--bg0` (Principal), `--bg1` (Paneles)
-- **Acento**: `--accent` (Verde - #2ea043)
-- **Secundario**: `--accent2` (Cian - #58a6ff)
-- **Texto**: `--text` (#c9d1d9), `--muted` (#8b949e)
-- **Estados**: `--warn` (Amarillo), `--danger` (Rojo)
+1. **Un acento manda.** El verde (`--accent`) marca lo interactivo y lo activo. El
+   resto de colores son semánticos (`--warn`, `--danger`, `--purple` para
+   dificultades) o de enlace (`--link`). No se usan como decoración.
+2. **La jerarquía es de tamaño y peso, no de brillo.** Nada de `text-shadow` para
+   destacar; se destaca con contraste de color de texto y escala tipográfica.
+3. **Sin valores mágicos.** Todo espaciado, tamaño, radio y duración sale de un
+   token. Si hace falta un valor nuevo, se añade al sistema.
+4. **La mono es señal.** `--font-mono` marca metadatos, rutas, etiquetas y estados
+   (lo "de máquina"); la sans es para leer.
 
-## Tipografía
+## Tokens
 
-- **Texto**: Sans-serif (Atkinson Hyperlegible, System UI).
-- **Código/UI**: Monospace (ui-monospace, SFMono-Regular, Consolas).
+| Grupo | Tokens |
+| --- | --- |
+| Superficies | `--bg`, `--bg-soft`, `--surface`, `--surface-2`, `--surface-3` |
+| Bordes | `--border`, `--border-strong` |
+| Texto | `--text-strong`, `--text`, `--text-dim`, `--text-faint` |
+| Acento | `--accent`, `--accent-strong`, `--accent-soft`, `--accent-line` |
+| Semánticos | `--link`, `--link-hover`, `--warn`, `--danger`, `--purple` |
+| Tipografía | `--fs-xs` … `--fs-3xl`, `--lh-tight/snug/body`, `--tracking-wide/wider` |
+| Espaciado | `--sp-1` … `--sp-9`, `--sp-section` |
+| Forma | `--radius-sm`, `--radius`, `--radius-lg`, `--radius-pill` |
+| Profundidad | `--shadow-sm`, `--shadow`, `--shadow-lg` |
+| Movimiento | `--dur`, `--ease` |
+| Medidas | `--measure` (68ch de lectura), `--container`, `--container-narrow`, `--header-h` |
 
-Usa la clase `.mono` para aplicar la fuente monoespaciada a cualquier elemento.
+Los nombres antiguos (`--bg0`, `--muted`, `--accent2`, `--neon-green`…) siguen
+existiendo como alias al final del bloque `:root`, solo por compatibilidad. En
+código nuevo usa los tokens de la tabla.
 
-## Componentes
-
-### Botones
-
-```html
-<a href="#" class="btn btn-primary mono">Acción Principal</a>
-<a href="#" class="btn btn-outline mono">Acción Secundaria</a>
-```
-
-### Cards
-
-Usa el componente `Card.astro` o la estructura HTML:
-
-```html
-<article class="card">
-  <a href="...">
-    <h3>Título</h3>
-    <p>Descripción</p>
-  </a>
-</article>
-```
-
-### Badges / Tags
+## Componentes globales
 
 ```html
-<span class="tag">#tagname</span>
-<span class="difficulty hard">HARD</span>
+<!-- Botones -->
+<a class="btn btn-primary">acción principal</a>
+<a class="btn btn-outline">acción secundaria</a>
+<button class="btn btn-ghost btn-sm">terciaria</button>
+
+<!-- Encabezado de página -->
+<header class="page-header">
+  <p class="eyebrow">&gt; ~/blog</p>
+  <h1>Blog</h1>
+  <p class="lead">Subtítulo de una línea.</p>
+</header>
+
+<!-- Título de sección (con línea de continuación) -->
+<h2 class="section-title">Últimos posts</h2>
+
+<!-- Panel -->
+<section class="panel">
+  <div class="panel-header"><span>01_BIO_DATA</span></div>
+  <div class="panel-content">…</div>
+</section>
+
+<!-- Metadatos -->
+<span class="chip">#tag</span>
+<span class="badge">Status: Active</span>
+<span class="difficulty hard">hard</span>
+
+<!-- Estado vacío -->
+<p class="empty-state"><strong>WRITEUPS: 0</strong>Nada publicado todavía.</p>
+
+<!-- Ventana de terminal -->
+<div class="terminal">
+  <div class="terminal-bar">
+    <span class="dot"></span><span class="dot"></span><span class="dot is-live"></span>
+    <span class="terminal-title">archivo.sh</span>
+  </div>
+  <div class="terminal-body">
+    <p><span class="prompt">➜</span> comando</p>
+    <p><span class="caret"></span></p>
+  </div>
+</div>
 ```
+
+Contenedores: `.container` (1140px), `.container-narrow` (820px), `.section`
+(padding vertical grande), `.section-sm`. Rejilla de tarjetas: `.grid-cards`.
+
+## Prosa
+
+Todo el Markdown renderizado va dentro de `<div class="prose">`. Los estilos de
+titulares, listas, código, citas, imágenes y tablas viven en `global.css` — no
+los redefinas por página. El ancho de lectura está fijado en `--measure` (68ch).
+
+## Componentes Astro
+
+- `Card.astro` — tarjeta para writeups y rejillas (título, fecha, plataforma,
+  dificultad, tags).
+- `PostRow.astro` — fila de listado editorial para el blog (fecha + tiempo de
+  lectura a un lado, título y descripción al otro).
+- `Header.astro` — marca el enlace activo con `aria-current="page"`.
+
+## Movimiento
+
+Transiciones de `--dur` (160 ms) sobre color, borde y desplazamientos de 2-3 px.
+Nada de escalados ni sombras animadas. La entrada de página usa `.fade-in`, y
+todo queda anulado bajo `prefers-reduced-motion: reduce`.
 
 ## Accesibilidad
 
-- Todos los elementos interactivos tienen `:focus-visible` con un outline claro.
-- Se respeta `prefers-reduced-motion` desactivando animaciones.
+- `:focus-visible` global con outline de acento a 2 px.
+- Enlace "Saltar al contenido" al inicio del `body`.
+- Etiquetas reales (o `.visually-hidden`) en todos los campos de formulario.
+- Texto normal ≥ 7:1 de contraste; `--text-faint` solo para metadatos cortos.

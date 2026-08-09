@@ -1,8 +1,11 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Card from "../../../components/Card.astro";
+import PostRow from "../../../components/PostRow.astro";
 import { getCollection } from "astro:content";
 import { useTranslations } from "../../../i18n/utils";
+import { readingTime } from "../../../utils/reading-time";
+import { slugify } from "../../../utils/slug";
+import { postTypes } from "../../../data/research";
 
 export async function getStaticPaths({ paginate }) {
     const posts = await getCollection("blog", ({ id, data }) => {
@@ -15,86 +18,176 @@ export async function getStaticPaths({ paginate }) {
         return b.data.date.valueOf() - a.data.date.valueOf();
     });
 
-    return paginate(sortedPosts, { pageSize: 6 });
+    return paginate(sortedPosts, { pageSize: 8 });
 }
 
 const { page } = Astro.props;
 const lang = "es";
 const t = useTranslations(lang);
 
-// Get all posts for sidebar archive
 const allPosts = await getCollection("blog", ({ id, data }) => {
     return id.startsWith("es/") && !data.draft && data.visible !== false;
 });
+
+// Solo se listan las categorías que tienen entradas: nada de secciones vacías.
+const categories = [
+    ...new Set(allPosts.map((post) => post.data.category).filter(Boolean)),
+]
+    .map((name) => ({
+        name,
+        slug: slugify(name as string),
+        count: allPosts.filter((post) => post.data.category === name).length,
+    }))
+    .sort((a, b) => b.count - a.count);
 
 const years = [
     ...new Set(allPosts.map((post) => post.data.date.getFullYear())),
 ].sort((a, b) => b - a);
 ---
 
-<BaseLayout title={`c0l1nr00t | ${t("nav.blog")}`} description="Blog posts">
+<BaseLayout
+    title={`c0l1nr00t | ${t("nav.blog")}`}
+    description="Research notes, lab notes y deep dives sobre dispositivos, browsers embebidos, fuzzing y memory corruption."
+>
     <div class="container section">
-        <h1 class="mono">{t("nav.blog")}</h1>
+        <header class="page-header">
+            <p class="eyebrow">&gt; ~/blog</p>
+            <h1>Research Log</h1>
+            <p class="lead">
+                Notas de investigación, experimentos de laboratorio y deep
+                dives. No todo termina en vulnerabilidad — esa parte también se
+                publica.
+            </p>
+        </header>
 
-        <div class="blog-layout">
-            <div class="main-content">
-                <div class="grid">
-                    {
-                        page.data.map((post) => (
-                            <Card
-                                href={`/${lang}/blog/${post.slug.split("/")[1]}`}
-                                title={post.data.title}
-                                date={post.data.date}
-                                description={post.data.description}
-                            />
-                        ))
-                    }
-                </div>
+        <div class="layout">
+            <div>
+                {
+                    page.data.length > 0 ? (
+                        <div class="rows">
+                            {page.data.map((post) => (
+                                <PostRow
+                                    href={`/${lang}/blog/${post.slug.split("/")[1]}`}
+                                    title={post.data.title}
+                                    date={post.data.date}
+                                    description={post.data.description}
+                                    category={post.data.category}
+                                    type={post.data.type}
+                                    tags={post.data.tags}
+                                    readingTime={readingTime(
+                                        post.body,
+                                        t("blog.read_time"),
+                                    )}
+                                    pinned={post.data.pinned}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <p class="empty-state">{t("blog.empty")}</p>
+                    )
+                }
 
-                <div class="pagination">
-                    {
-                        page.url.prev ? (
-                            <a href={page.url.prev} class="btn-pagination mono">
-                                &lt; PREV_PAGE
-                            </a>
-                        ) : (
-                            <span class="btn-pagination disabled mono">
-                                &lt; PREV_PAGE
+                {
+                    page.lastPage > 1 && (
+                        <nav class="pagination mono" aria-label="Paginación">
+                            {page.url.prev ? (
+                                <a href={page.url.prev} class="btn btn-outline btn-sm">
+                                    ← {t("blog.prev")}
+                                </a>
+                            ) : (
+                                <span class="btn btn-outline btn-sm" aria-disabled="true">
+                                    ← {t("blog.prev")}
+                                </span>
+                            )}
+
+                            <span class="page-info">
+                                {t("blog.page")} {page.currentPage} / {page.lastPage}
                             </span>
-                        )
-                    }
 
-                    <span class="page-info mono"
-                        >PAGE {page.currentPage} / {page.lastPage}</span
-                    >
-
-                    {
-                        page.url.next ? (
-                            <a href={page.url.next} class="btn-pagination mono">
-                                NEXT_PAGE &gt;
-                            </a>
-                        ) : (
-                            <span class="btn-pagination disabled mono">
-                                NEXT_PAGE &gt;
-                            </span>
-                        )
-                    }
-                </div>
+                            {page.url.next ? (
+                                <a href={page.url.next} class="btn btn-outline btn-sm">
+                                    {t("blog.next")} →
+                                </a>
+                            ) : (
+                                <span class="btn btn-outline btn-sm" aria-disabled="true">
+                                    {t("blog.next")} →
+                                </span>
+                            )}
+                        </nav>
+                    )
+                }
             </div>
 
             <aside class="sidebar">
-                <div class="sidebar-widget">
-                    <h3 class="mono widget-title">&gt; ARCHIVE</h3>
-                    <ul class="archive-list">
+                {
+                    categories.length > 0 && (
+                        <div class="panel">
+                            <div class="panel-header">
+                                <span>{t("blog.categories")}</span>
+                            </div>
+                            <ul class="side-list">
+                                {categories.map((category) => (
+                                    <li>
+                                        <a
+                                            href={`/${lang}/blog/categoria/${category.slug}`}
+                                            class="mono"
+                                        >
+                                            <span>{category.name}</span>
+                                            <span class="n">
+                                                {category.count}
+                                            </span>
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )
+                }
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>{t("blog.archive")}</span>
+                        <span class="count">{allPosts.length}</span>
+                    </div>
+                    <ul class="side-list">
                         {
                             years.map((year) => (
                                 <li>
                                     <a
                                         href={`/${lang}/blog/archive/${year}`}
-                                        class="mono archive-link"
+                                        class="mono"
                                     >
-                                        [{year}]_LOGS
+                                        <span>{year}</span>
+                                        <span class="n">
+                                            {
+                                                allPosts.filter(
+                                                    (p) =>
+                                                        p.data.date.getFullYear() ===
+                                                        year,
+                                                ).length
+                                            }
+                                        </span>
                                     </a>
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>{t("section.post_types")}</span>
+                    </div>
+                    <ul class="types">
+                        {
+                            postTypes.map((type) => (
+                                <li>
+                                    <span class="type-name mono">
+                                        {type.name}
+                                    </span>
+                                    <span class="type-detail">
+                                        {type.detail}
+                                    </span>
                                 </li>
                             ))
                         }
@@ -106,125 +199,118 @@ const years = [
 </BaseLayout>
 
 <style>
-    .section {
-        padding: 3rem 1rem;
-    }
-    h1 {
-        color: var(--accent);
-        margin-bottom: 2rem;
-    }
-
-    .blog-layout {
+    .layout {
         display: grid;
-        grid-template-columns: 1fr 250px;
-        gap: 3rem;
+        grid-template-columns: minmax(0, 1fr) 260px;
+        gap: clamp(2rem, 5vw, 4rem);
+        align-items: start;
     }
 
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
-    }
-
-    /* Sidebar */
-    .sidebar-widget {
-        background: rgba(10, 14, 20, 0.6);
-        border: 1px solid var(--border);
-        padding: 1.5rem;
-        border-radius: 8px;
-    }
-
-    .widget-title {
-        font-size: 1.1rem;
-        color: var(--accent);
-        margin-bottom: 1rem;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 0.5rem;
-    }
-
-    .archive-list {
-        list-style: none;
-        padding: 0;
-    }
-
-    .archive-list li {
-        margin-bottom: 0.5rem;
-    }
-
-    .archive-link {
-        color: var(--text);
-        text-decoration: none;
-        transition: color 0.2s;
-        display: block;
-        padding: 0.2rem 0;
-    }
-
-    .archive-link:hover {
-        color: var(--accent);
-    }
-
-    /* Pagination */
-    .pagination {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 3rem;
-        padding-top: 2rem;
+    .rows {
         border-top: 1px solid var(--border);
     }
 
-    .btn-pagination {
-        color: var(--accent);
-        text-decoration: none;
-        border: 1px solid var(--accent);
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-        transition: all 0.2s;
-        font-size: 0.9rem;
-    }
-
-    .btn-pagination:hover:not(.disabled) {
-        background: var(--accent);
-        color: #fff;
-        box-shadow: 0 0 10px rgba(46, 160, 67, 0.3);
-    }
-
-    .btn-pagination.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        border-color: var(--border);
-        color: var(--muted);
+    .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--sp-4);
+        margin-top: var(--sp-7);
     }
 
     .page-info {
-        color: var(--muted);
-        font-size: 0.9rem;
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
+    }
+
+    .sidebar {
+        position: sticky;
+        top: calc(var(--header-h) + var(--sp-5));
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-4);
+    }
+
+    .count {
+        color: var(--text-faint);
+    }
+
+    .side-list {
+        margin: 0;
+        padding: var(--sp-2);
+        list-style: none;
+    }
+
+    .side-list a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--sp-3);
+        padding: var(--sp-2) var(--sp-3);
+        border-radius: var(--radius-sm);
+        color: var(--text-dim);
+        font-size: var(--fs-sm);
+        transition:
+            background-color var(--dur) var(--ease),
+            color var(--dur) var(--ease);
+    }
+
+    .side-list a:hover {
+        background: var(--surface-2);
+        color: var(--accent-strong);
+    }
+
+    .side-list .n {
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+    }
+
+    .types {
+        margin: 0;
+        padding: var(--sp-4);
+        list-style: none;
+    }
+
+    .types li {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding-block: var(--sp-2);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .types li:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .type-name {
+        color: var(--text);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
+    }
+
+    .type-detail {
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        line-height: var(--lh-snug);
     }
 
     @media (max-width: 900px) {
-        .blog-layout {
+        .layout {
             grid-template-columns: 1fr;
         }
 
         .sidebar {
-            order: -1; /* Show sidebar on top on mobile */
+            position: static;
         }
     }
-    @media (max-width: 768px) {
-        .blog-layout {
-            grid-template-columns: 1fr;
-        }
-        .sidebar {
-            order: -1; /* Sidebar on top for mobile filters? Or bottom? Let's keep it top for visibility or bottom for content focus. Top is better for UX if it has categories. */
-            margin-bottom: 2rem;
-        }
+
+    @media (max-width: 520px) {
         .pagination {
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .pagination a {
-            width: 100%;
-            text-align: center;
+            flex-wrap: wrap;
+            justify-content: center;
         }
     }
 </style>

@@ -5,297 +5,288 @@ import "../../styles/pages/contact.css";
 
 const lang = "es";
 const t = useTranslations(lang);
-const success = Astro.url.searchParams.get("success") === "true";
+
+const FORM_ID = "8536b0703e1d3d2ab083844c5c53bef3";
+
+const protocols = [
+    {
+        value: "mentoria",
+        code: "01_MENTORSHIP",
+        target: "KNOWLEDGE",
+        tone: "accent",
+        desc: "Clases 1:1 de Hacking Web, Bug Bounty o Reversing. Ruta personalizada, sin relleno.",
+    },
+    {
+        value: "pentest",
+        code: "02_PENTEST",
+        target: "SECURITY",
+        tone: "warn",
+        desc: "Auditoría de seguridad para tu empresa o producto. Reportes accionables, impacto real.",
+    },
+    {
+        value: "collab",
+        code: "03_COLLAB",
+        target: "COMMUNITY",
+        tone: "link",
+        desc: "Charlas, streams, research conjunto o proyectos open source.",
+    },
+    {
+        value: "social",
+        code: "04_SOCIAL",
+        target: "NETWORK",
+        tone: "purple",
+        desc: "Solo platicar, networking o preguntas random. No seas tímido.",
+    },
+];
+
+const socials = [
+    { href: "https://github.com/ColinTony", label: "GitHub" },
+    { href: "https://www.linkedin.com/in/luisantoniocolin/", label: "LinkedIn" },
+    { href: "https://x.com/c0l1nr00t", label: "X / Twitter" },
+];
 ---
 
 <BaseLayout
     title={`c0l1nr00t | ${t("nav.contact")}`}
-    description="Classes, pentest and collaborations"
+    description="Clases 1:1, pentest y colaboraciones."
 >
-    <div class="container section">
-        <header class="hero">
-            <p class="kicker mono">&gt; ./contact --init</p>
-            <h1 class="mono">{t("contact.title")}</h1>
+    <div class="container container-narrow section">
+        <header class="page-header contact-header">
+            <p class="eyebrow">&gt; ./contact --init</p>
+            <h1>{t("contact.title")}</h1>
             <p class="lead">
-                Selecciona un <strong>protocolo</strong> para iniciar la comunicación.
-                Sé directo y conciso.
+                Selecciona un <strong>protocolo</strong> para iniciar la
+                comunicación. Sé directo y conciso.
             </p>
         </header>
 
-        <div class="command-center">
-            <div class="command-center">
-                <div
-                    id="success-message"
-                    class="success-message"
-                    style="display: none;"
-                >
-                    <span class="success-icon">✓</span>
-                    <h2 class="success-title mono">STATUS: 200 OK</h2>
-                    <p class="success-desc">
-                        Mensaje encriptado y enviado. Estableciendo enlace de
-                        comunicación...
-                    </p>
-                    <a href={`/${lang}/contact`} class="btn-return mono">
-                        &gt; RETURN_TO_ROOT
-                    </a>
-                </div>
+        <div class="panel console">
+            <div class="panel-header">
+                <span>message_buffer.sh</span>
+                <span class="dots" aria-hidden="true">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot is-live"></span>
+                </span>
+            </div>
 
-                <div id="form-container">
-                    <div class="protocols">
-                        <h2 class="mono text-muted text-sm">SELECT PROTOCOL</h2>
+            <div class="panel-content">
+                <div id="form-container" class="console-grid">
+                    <fieldset class="protocols">
+                        <legend class="mono">Select protocol</legend>
 
                         <div class="protocol-list">
-                            <label class="protocol-option">
-                                <input
-                                    type="radio"
-                                    name="protocol"
-                                    value="mentoria"
-                                    checked
-                                />
-                                <span class="mono">01_MENTORSHIP</span>
-                            </label>
-
-                            <label class="protocol-option">
-                                <input
-                                    type="radio"
-                                    name="protocol"
-                                    value="pentest"
-                                />
-                                <span class="mono">02_PENTEST</span>
-                            </label>
-
-                            <label class="protocol-option">
-                                <input
-                                    type="radio"
-                                    name="protocol"
-                                    value="collab"
-                                />
-                                <span class="mono">03_COLLAB</span>
-                            </label>
-
-                            <label class="protocol-option">
-                                <input
-                                    type="radio"
-                                    name="protocol"
-                                    value="social"
-                                />
-                                <span class="mono">04_SOCIAL</span>
-                            </label>
+                            {
+                                protocols.map((protocol, i) => (
+                                    <label class="protocol">
+                                        <input
+                                            type="radio"
+                                            name="protocol"
+                                            value={protocol.value}
+                                            checked={i === 0}
+                                        />
+                                        <span class="mono">{protocol.code}</span>
+                                    </label>
+                                ))
+                            }
                         </div>
 
                         <div class="protocol-details">
-                            <div id="info-mentoria" class="info-panel active">
-                                <p class="mono text-accent">
-                                    &gt; TARGET: KNOWLEDGE
-                                </p>
-                                <p>
-                                    Clases 1:1 de Hacking Web, Bug Bounty o
-                                    Reversing. Ruta personalizada, sin relleno.
-                                </p>
-                            </div>
-                            <div id="info-pentest" class="info-panel">
-                                <p class="mono text-warn">
-                                    &gt; TARGET: SECURITY
-                                </p>
-                                <p>
-                                    Auditoría de seguridad para tu empresa o
-                                    producto. Reportes accionables, impacto
-                                    real.
-                                </p>
-                            </div>
-                            <div id="info-collab" class="info-panel">
-                                <p class="mono text-cyan">
-                                    &gt; TARGET: COMMUNITY
-                                </p>
-                                <p>
-                                    Charlas, streams, research conjunto o
-                                    proyectos open source.
-                                </p>
-                            </div>
-                            <div id="info-social" class="info-panel">
-                                <p class="mono text-purple">
-                                    &gt; TARGET: NETWORK
-                                </p>
-                                <p>
-                                    Solo platicar, networking o preguntas
-                                    random. No seas tímido.
-                                </p>
-                            </div>
+                            {
+                                protocols.map((protocol, i) => (
+                                    <div
+                                        id={`info-${protocol.value}`}
+                                        class={`info ${i === 0 ? "active" : ""}`}
+                                    >
+                                        <p class={`info-target mono is-${protocol.tone}`}>
+                                            &gt; target: {protocol.target}
+                                        </p>
+                                        <p class="info-desc">{protocol.desc}</p>
+                                    </div>
+                                ))
+                            }
                         </div>
-                    </div>
+                    </fieldset>
 
-                    <div class="terminal-form">
-                        <div class="terminal-header">
-                            <span class="dot red"></span>
-                            <span class="dot yellow"></span>
-                            <span class="dot green"></span>
-                            <span class="title mono"> message_buffer.sh </span>
+                    <form
+                        id="contact-form"
+                        action={`https://formsubmit.co/${FORM_ID}`}
+                        method="POST"
+                        class="console-form"
+                    >
+                        <input
+                            type="hidden"
+                            name="_subject"
+                            value="Nuevo Contacto de c0l1nr00t (ES)"
+                        />
+                        <input type="hidden" name="_template" value="table" />
+                        <input type="hidden" name="_captcha" value="false" />
+                        <input
+                            type="hidden"
+                            id="topic"
+                            name="topic"
+                            value="mentoria"
+                        />
+
+                        <div class="console-line">
+                            <span class="prompt mono" aria-hidden="true">$</span>
+                            <label class="visually-hidden" for="name">
+                                {t("contact.form.name")}
+                            </label>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                placeholder="whoami — tu nombre"
+                                required
+                                autocomplete="name"
+                            />
                         </div>
 
-                        <form
-                            id="contact-form"
-                            action="https://formsubmit.co/8536b0703e1d3d2ab083844c5c53bef3"
-                            method="POST"
-                            class="console-form"
-                        >
+                        <div class="console-line">
+                            <span class="prompt mono" aria-hidden="true">$</span>
+                            <label class="visually-hidden" for="email">
+                                {t("contact.form.email")}
+                            </label>
                             <input
-                                type="hidden"
-                                name="_subject"
-                                value="Nuevo Contacto de c0l1nr00t (ES)"
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="mail — tu email"
+                                required
+                                autocomplete="email"
                             />
-                            <input
-                                type="hidden"
-                                name="_template"
-                                value="table"
-                            />
-                            <input
-                                type="hidden"
-                                name="_captcha"
-                                value="false"
-                            />
+                        </div>
 
-                            <div class="console-line">
-                                <span class="prompt mono">$</span>
-                                <input
-                                    type="text"
-                                    id="name"
-                                    name="name"
-                                    placeholder="whoami (Nombre)"
-                                    required
-                                    autocomplete="off"
-                                />
-                            </div>
+                        <div class="console-block">
+                            <span class="prompt mono" aria-hidden="true">$</span>
+                            <label class="visually-hidden" for="message">
+                                {t("contact.form.message")}
+                            </label>
+                            <textarea
+                                id="message"
+                                name="message"
+                                rows="7"
+                                required
+                                placeholder="echo 'tu mensaje aquí...'"></textarea>
+                        </div>
 
-                            <div class="console-line">
-                                <span class="prompt mono">$</span>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    placeholder="mail (Email)"
-                                    required
-                                    autocomplete="off"
-                                />
-                            </div>
+                        <p class="form-error mono" id="form-error" hidden>
+                            No se pudo enviar. Intenta de nuevo o escríbeme por
+                            redes.
+                        </p>
 
-                            <div class="console-line hidden-input">
-                                <input
-                                    type="hidden"
-                                    id="topic"
-                                    name="topic"
-                                    value="Mentoría / Clases"
-                                />
-                            </div>
+                        <div class="console-actions">
+                            <button type="submit" class="btn btn-primary">
+                                &gt; {t("contact.form.send")}
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
-                            <div class="console-block">
-                                <span class="prompt mono">$</span>
-                                <textarea
-                                    id="message"
-                                    name="message"
-                                    rows="6"
-                                    required
-                                    placeholder="echo 'Tu mensaje aquí...'"
-                                ></textarea>
-                            </div>
-
-                            <div class="console-actions">
-                                <button type="submit" class="btn-terminal mono">
-                                    &gt; EXECUTE_SEND
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                <div id="success-message" class="success" hidden>
+                    <span class="success-icon mono" aria-hidden="true">✓</span>
+                    <p class="success-title mono">status: 200 OK</p>
+                    <p class="success-desc">
+                        {t("contact.form.success")} Te respondo en cuanto lo lea.
+                    </p>
+                    <a href={`/${lang}`} class="btn btn-outline">
+                        &gt; return_to_root
+                    </a>
                 </div>
             </div>
         </div>
 
-        <div class="social-links">
-            <p class="mono text-muted text-sm text-center">OR CONNECT VIA</p>
-            <div class="pill-grid centered">
-                <a
-                    class="pill"
-                    href="https://github.com/ColinTony"
-                    target="_blank"
-                    rel="noopener noreferrer">GitHub</a
-                >
-                <a
-                    class="pill"
-                    href="https://www.linkedin.com/in/luisantoniocolin/"
-                    target="_blank"
-                    rel="noopener noreferrer">LinkedIn</a
-                >
-                <a
-                    class="pill"
-                    href="https://x.com/c0l1nr00t"
-                    target="_blank"
-                    rel="noopener noreferrer">X / Twitter</a
-                >
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Protocol selection logic
-        const radios = document.querySelectorAll('input[name="protocol"]');
-        const topicInput = document.getElementById("topic") as HTMLInputElement;
-        const infoPanels = document.querySelectorAll(".info-panel");
-
-        radios.forEach((radio) => {
-            radio.addEventListener("change", (e) => {
-                const target = e.target as HTMLInputElement;
-                const val = target.value;
-                if (topicInput) topicInput.value = val;
-                infoPanels.forEach((panel) => panel.classList.remove("active"));
-                const activePanel = document.getElementById(`info-${val}`);
-                if (activePanel) activePanel.classList.add("active");
-            });
-        });
-
-        // AJAX Form Submission
-        const form = document.getElementById("contact-form") as HTMLFormElement;
-        const successMessage = document.getElementById("success-message");
-        const formContainer = document.getElementById("form-container");
-
-        if (form) {
-            form.addEventListener("submit", (e) => {
-                e.preventDefault();
-                const formData = new FormData(form);
-
-                // Disable button to prevent double submit
-                const btn = form.querySelector(
-                    'button[type="submit"]',
-                ) as HTMLButtonElement;
-                if (btn) {
-                    btn.disabled = true;
-                    btn.innerText = "> EXECUTING...";
+        <section class="socials">
+            <p class="mono">{t("contact.social")}</p>
+            <div class="social-list">
+                {
+                    socials.map((social) => (
+                        <a
+                            class="chip"
+                            href={social.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {social.label}
+                        </a>
+                    ))
                 }
-
-                fetch(
-                    "https://formsubmit.co/ajax/8536b0703e1d3d2ab083844c5c53bef3",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Accept: "application/json",
-                        },
-                        body: JSON.stringify(Object.fromEntries(formData)),
-                    },
-                )
-                    .then((response) => response.json())
-                    .then((data) => {
-                        if (formContainer) formContainer.style.display = "none";
-                        if (successMessage)
-                            successMessage.style.display = "flex";
-                    })
-                    .catch((error) => {
-                        console.error("Error:", error);
-                        alert("Error sending message. Please try again.");
-                        if (btn) {
-                            btn.disabled = false;
-                            btn.innerText = "> EXECUTE_SEND";
-                        }
-                    });
-            });
-        }
-    </script>
+            </div>
+        </section>
+    </div>
 </BaseLayout>
+
+<script>
+    function setupContact() {
+        const form = document.getElementById(
+            "contact-form",
+        ) as HTMLFormElement | null;
+        if (!form) return;
+
+        const topic = document.getElementById("topic") as HTMLInputElement;
+        const infos = document.querySelectorAll(".info");
+        const errorBox = document.getElementById("form-error");
+        const success = document.getElementById("success-message");
+        const container = document.getElementById("form-container");
+        const action = form.action.replace(
+            "formsubmit.co/",
+            "formsubmit.co/ajax/",
+        );
+
+        document
+            .querySelectorAll<HTMLInputElement>('input[name="protocol"]')
+            .forEach((radio) => {
+                radio.addEventListener("change", () => {
+                    if (topic) topic.value = radio.value;
+                    infos.forEach((info) => info.classList.remove("active"));
+                    document
+                        .getElementById(`info-${radio.value}`)
+                        ?.classList.add("active");
+                });
+            });
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const btn = form.querySelector(
+                'button[type="submit"]',
+            ) as HTMLButtonElement | null;
+            const label = btn?.textContent ?? "";
+
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "> enviando...";
+            }
+            if (errorBox) errorBox.hidden = true;
+
+            try {
+                const res = await fetch(action, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify(
+                        Object.fromEntries(new FormData(form)),
+                    ),
+                });
+
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                if (container) container.hidden = true;
+                if (success) success.hidden = false;
+            } catch (error) {
+                console.error(error);
+                if (errorBox) errorBox.hidden = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = label;
+                }
+            }
+        });
+    }
+
+    setupContact();
+    document.addEventListener("astro:page-load", setupContact);
+</script>

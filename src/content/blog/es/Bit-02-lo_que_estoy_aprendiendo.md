@@ -2,6 +2,8 @@
 title: "Bitácora 0x02 — Lo que estoy aprendiendo"
 description: "Entiendo los conceptos. Sé cómo funcionan muchas cosas. Lo que me falta es verlas romperse con mis propias manos."
 date: 2026-01-06
+category: "Bitácora"
+type: "Lessons Learned"
 tags: ["bitácora", "aprendizaje", "hacking", "reversing", "exploitation"]
 draft: false
 ---

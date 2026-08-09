@@ -19,228 +19,214 @@ const sortedWriteups = writeups.sort(
     (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
 );
 
-const platforms = [...new Set(writeups.map((w) => w.data.platform))];
-const difficulties = [...new Set(writeups.map((w) => w.data.difficulty))];
-const categories = [...new Set(writeups.map((w) => w.data.category))];
+const platforms = [...new Set(writeups.map((w) => w.data.platform))].sort();
+const difficulties = ["easy", "medium", "hard", "insane", "n/a"].filter((d) =>
+    writeups.some((w) => w.data.difficulty === d),
+);
+const categories = [...new Set(writeups.map((w) => w.data.category))].sort();
+
+const filters = [
+    { id: "platform", label: t("meta.platform"), options: platforms },
+    { id: "difficulty", label: t("meta.difficulty"), options: difficulties },
+    { id: "category", label: t("meta.category"), options: categories },
+];
 ---
 
 <BaseLayout
     title={`c0l1nr00t | ${t("nav.writeups")}`}
-    description="Writeups & Research"
+    description="Writeups de máquinas, programas de bug bounty y research aplicado."
 >
     <div class="container section">
-        <h1 class="mono">{t("nav.writeups")}</h1>
+        <header class="page-header">
+            <p class="eyebrow">&gt; ~/writeups</p>
+            <h1>{t("nav.writeups")}</h1>
+            <p class="lead">
+                Writeups técnicos completos: cadenas reproducibles, evidencia y
+                lecciones. Solo lo que ejecuté y puedo explicar, y solo cuando
+                la divulgación coordinada lo permite.
+            </p>
+        </header>
 
-        <div class="filters-bar">
-            <div class="filter-group">
-                <label>{t("meta.platform")}:</label>
-                <select id="platform-filter" class="filter-select mono">
-                    <option value="all">All</option>
-                    {platforms.map((p) => <option value={p}>{p}</option>)}
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>{t("meta.difficulty")}:</label>
-                <select id="difficulty-filter" class="filter-select mono">
-                    <option value="all">All</option>
-                    {difficulties.map((d) => <option value={d}>{d}</option>)}
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>{t("meta.category")}:</label>
-                <select id="category-filter" class="filter-select mono">
-                    <option value="all">All</option>
-                    {categories.map((c) => <option value={c}>{c}</option>)}
-                </select>
-            </div>
-            <button id="reset-filters" class="btn-reset mono"
-                >{t("writeups.reset")}</button
-            >
-        </div>
+        {
+            sortedWriteups.length === 0 ? (
+                <div class="empty-wrap">
+                    <p class="empty-state">
+                        <strong>{t("writeups.count").toUpperCase()}: 0</strong>
+                        {t("writeups.empty")}
+                    </p>
+                    <a href={`/${lang}/research`} class="btn btn-primary">
+                        $ ver research
+                    </a>
+                </div>
+            ) : (
+                <>
+                    <form class="filters" id="writeup-filters">
+                        {filters.map((filter) => (
+                            <div class="field">
+                                <label for={`${filter.id}-filter`}>
+                                    {filter.label}
+                                </label>
+                                <select
+                                    id={`${filter.id}-filter`}
+                                    class="select"
+                                    data-filter={filter.id}
+                                >
+                                    <option value="all">
+                                        {t("writeups.all")}
+                                    </option>
+                                    {filter.options.map((option) => (
+                                        <option value={option}>{option}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        ))}
 
-        <div class="grid" id="writeups-grid">
-            {
-                sortedWriteups.map((post, i) => (
-                    <div
-                        class="writeup-item animate__animated animate__fadeInUp"
-                        style={`animation-delay: ${i * 0.05}s`}
-                        data-platform={post.data.platform}
-                        data-difficulty={post.data.difficulty}
-                        data-category={post.data.category}
-                    >
-                        <Card
-                            href={`/${lang}/writeups/${post.slug.split("/")[1]}`}
-                            title={post.data.title}
-                            date={post.data.date}
-                            difficulty={post.data.difficulty}
-                            platform={post.data.platform}
-                        />
+                        <div class="filters-actions">
+                            <span class="result-count mono" id="result-count">
+                                {sortedWriteups.length} {t("writeups.count")}
+                            </span>
+                            <button
+                                type="reset"
+                                class="btn btn-ghost btn-sm"
+                                id="reset-filters"
+                            >
+                                {t("writeups.reset")}
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="grid-cards" id="writeups-grid">
+                        {sortedWriteups.map((post) => (
+                            <div
+                                class="writeup-item"
+                                data-platform={post.data.platform}
+                                data-difficulty={post.data.difficulty}
+                                data-category={post.data.category}
+                            >
+                                <Card
+                                    href={`/${lang}/writeups/${post.slug.split("/")[1]}`}
+                                    title={post.data.title}
+                                    date={post.data.date}
+                                    description={post.data.description}
+                                    difficulty={post.data.difficulty}
+                                    platform={post.data.platform}
+                                    tags={post.data.tags}
+                                />
+                            </div>
+                        ))}
                     </div>
-                ))
-            }
-        </div>
-        <p id="no-results" class="hidden mono">
-            No writeups found matching filters.
-        </p>
+
+                    <p class="empty-state is-hidden" id="no-results">
+                        {t("writeups.no_results")}
+                    </p>
+                </>
+            )
+        }
     </div>
 </BaseLayout>
 
 <script>
-    const grid = document.getElementById("writeups-grid");
-    const items = document.querySelectorAll(".writeup-item");
-    const platformSelect = document.getElementById("platform-filter");
-    const difficultySelect = document.getElementById("difficulty-filter");
-    const categorySelect = document.getElementById("category-filter");
-    const resetButton = document.getElementById("reset-filters");
-    const noResults = document.getElementById("no-results");
+    function setupFilters() {
+        const form = document.getElementById(
+            "writeup-filters",
+        ) as HTMLFormElement | null;
+        if (!form) return;
 
-    function filter() {
-        const p = platformSelect.value;
-        const d = difficultySelect.value;
-        const c = categorySelect.value;
-        let visibleCount = 0;
+        const selects = Array.from(
+            form.querySelectorAll<HTMLSelectElement>("select[data-filter]"),
+        );
+        const items =
+            document.querySelectorAll<HTMLElement>(".writeup-item");
+        const noResults = document.getElementById("no-results");
+        const counter = document.getElementById("result-count");
+        const countLabel = counter?.textContent?.replace(/^\d+\s*/, "") ?? "";
 
-        items.forEach((item) => {
-            const itemP = item.dataset.platform;
-            const itemD = item.dataset.difficulty;
-            const itemC = item.dataset.category;
+        const apply = () => {
+            let visible = 0;
 
-            const matchP = p === "all" || p === itemP;
-            const matchD = d === "all" || d === itemD;
-            const matchC = c === "all" || c === itemC;
+            items.forEach((item) => {
+                const match = selects.every((select) => {
+                    const key = select.dataset.filter ?? "";
+                    return (
+                        select.value === "all" ||
+                        select.value === item.dataset[key]
+                    );
+                });
 
-            if (matchP && matchD && matchC) {
-                item.style.display = "block";
-                visibleCount++;
-            } else {
-                item.style.display = "none";
-            }
-        });
+                item.hidden = !match;
+                if (match) visible++;
+            });
 
-        if (visibleCount === 0) {
-            noResults.classList.remove("hidden");
-        } else {
-            noResults.classList.add("hidden");
-        }
+            noResults?.classList.toggle("is-hidden", visible > 0);
+            if (counter) counter.textContent = `${visible} ${countLabel}`;
+        };
+
+        selects.forEach((select) => select.addEventListener("change", apply));
+        form.addEventListener("reset", () => window.requestAnimationFrame(apply));
     }
 
-    platformSelect.addEventListener("change", filter);
-    difficultySelect.addEventListener("change", filter);
-    categorySelect.addEventListener("change", filter);
-
-    resetButton.addEventListener("click", () => {
-        platformSelect.value = "all";
-        difficultySelect.value = "all";
-        categorySelect.value = "all";
-        filter();
-    });
+    setupFilters();
+    document.addEventListener("astro:page-load", setupFilters);
 </script>
 
 <style>
-    .section {
-        padding: 4rem 1rem;
-    }
-    h1 {
-        color: var(--text-bright);
-        margin-bottom: 2rem;
-        text-shadow: 0 0 20px var(--glow-green);
-    }
-
-    .filters-bar {
+    .filters {
         display: flex;
-        gap: 1.5rem;
-        margin-bottom: 3rem;
         flex-wrap: wrap;
-        align-items: center;
-        background: rgba(22, 27, 34, 0.6);
-        backdrop-filter: blur(10px);
-        padding: 1.5rem;
-        border-radius: var(--radius);
+        align-items: flex-end;
+        gap: var(--sp-4);
+        margin-bottom: var(--sp-7);
+        padding: var(--sp-4) var(--sp-5);
+        background: var(--surface);
         border: 1px solid var(--border);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-    .filter-group {
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-    }
-    .filter-group label {
-        color: var(--neon-green);
-        font-size: 0.9rem;
-        font-family: var(--font-mono);
-        text-transform: uppercase;
-    }
-    .filter-select {
-        background: var(--bg0);
-        color: var(--text);
-        border: 1px solid var(--border);
-        padding: 0.5rem 1rem;
         border-radius: var(--radius);
-        font-family: var(--font-mono);
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-    .filter-select:focus {
-        border-color: var(--neon-cyan);
-        box-shadow: 0 0 10px var(--glow-cyan);
-        outline: none;
-    }
-    .filter-select:hover {
-        border-color: var(--accent2);
-    }
-    .btn-reset {
-        background: transparent;
-        border: 1px solid var(--danger);
-        color: var(--danger);
-        padding: 0.5rem 1rem;
-        border-radius: var(--radius);
-        cursor: pointer;
-        margin-left: auto;
-        transition: all 0.3s ease;
-        font-family: var(--font-mono);
-        text-transform: uppercase;
-        font-size: 0.8rem;
-    }
-    .btn-reset:hover {
-        background: var(--danger);
-        color: #fff;
-        box-shadow: 0 0 15px rgba(248, 81, 73, 0.4);
     }
 
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
+    .filters-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-4);
+        margin-left: auto;
     }
-    .writeup-item {
-        height: 100%;
+
+    .result-count {
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
     }
-    .hidden {
+
+    .empty-state {
+        margin: 0;
+    }
+
+    .empty-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--sp-5);
+    }
+
+    .empty-wrap .empty-state {
+        width: 100%;
+    }
+
+    .is-hidden {
         display: none;
     }
+
     #no-results {
-        text-align: center;
-        color: var(--muted);
-        margin-top: 3rem;
-        font-size: 1.2rem;
+        margin-top: var(--sp-6);
     }
-    @media (max-width: 768px) {
-        .filters-bar {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 1rem;
-        }
-        .filter-group {
+
+    @media (max-width: 700px) {
+        .filters {
             flex-direction: column;
             align-items: stretch;
         }
-        .btn-reset {
-            width: 100%;
-            text-align: center;
+
+        .filters-actions {
             margin-left: 0;
-        }
-        .grid {
-            grid-template-columns: 1fr;
+            justify-content: space-between;
         }
     }
 </style>

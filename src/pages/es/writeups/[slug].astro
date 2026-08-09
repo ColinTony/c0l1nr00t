@@ -6,7 +6,10 @@ import { useTranslations } from "../../../i18n/utils";
 export async function getStaticPaths() {
     const posts = await getCollection("writeups");
     const esPosts = posts.filter(
-        (post) => post.id.startsWith("es/") && post.data.visible !== false,
+        (post) =>
+            post.id.startsWith("es/") &&
+            post.data.status !== "draft" &&
+            post.data.visible !== false,
     );
     return esPosts.map((post) => ({
         params: { slug: post.slug.split("/")[1] },
@@ -18,177 +21,171 @@ const { post } = Astro.props;
 const { Content } = await post.render();
 const lang = "es";
 const t = useTranslations(lang);
+
+const isoDate = post.data.date.toISOString().split("T")[0];
+
+const meta = [
+    { label: t("meta.platform"), value: post.data.platform },
+    { label: t("meta.category"), value: post.data.category },
+    { label: t("meta.date"), value: isoDate },
+    post.data.target && { label: t("meta.target"), value: post.data.target },
+    post.data.program && { label: "Program", value: post.data.program },
+].filter(Boolean);
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description}>
-    <article class="container section">
-        <a href={`/${lang}/writeups`} class="back-link mono"
-            >&larr; {t("writeups.back")}</a
-        >
+<BaseLayout
+    title={`${post.data.title} | c0l1nr00t`}
+    description={post.data.description}
+    type="article"
+    publishedDate={post.data.date}
+    tags={post.data.tags}
+>
+    <div class="container section">
+        <a href={`/${lang}/writeups`} class="back-link">
+            <span aria-hidden="true">←</span>
+            {t("writeups.back")}
+        </a>
 
-        <header class="post-header">
-            <h1 class="title">{post.data.title}</h1>
+        <article class="article">
+            <header class="post-header">
+                <p class="post-meta mono">
+                    <span class="platform">{post.data.platform}</span>
+                    <span class="sep" aria-hidden="true">/</span>
+                    <span class={`difficulty ${post.data.difficulty}`}>
+                        {post.data.difficulty}
+                    </span>
+                    {
+                        post.data.status === "retired" && (
+                            <span class="chip">{t("badge.retired")}</span>
+                        )
+                    }
+                </p>
 
-            {
-                post.data.redacted && (
-                    <div class="banner-redacted mono">
-                        ⚠️ {t("msg.redacted")}
-                    </div>
-                )
-            }
+                <h1>{post.data.title}</h1>
+                <p class="lead">{post.data.description}</p>
 
-            <div class="meta-panel mono">
-                <div class="meta-item">
-                    <span class="label">{t("meta.platform")}</span>
-                    <span class="value">{post.data.platform}</span>
-                </div>
-                <div class="meta-item">
-                    <span class="label">{t("meta.category")}</span>
-                    <span class="value">{post.data.category}</span>
-                </div>
-                <div class="meta-item">
-                    <span class="label">{t("meta.difficulty")}</span>
-                    <span class={`value difficulty ${post.data.difficulty}`}
-                        >{post.data.difficulty}</span
-                    >
-                </div>
-                <div class="meta-item">
-                    <span class="label">{t("meta.date")}</span>
-                    <span class="value"
-                        >{post.data.date.toISOString().split("T")[0]}</span
-                    >
-                </div>
                 {
-                    post.data.target && (
-                        <div class="meta-item">
-                            <span class="label">Target</span>
-                            <span class="value">{post.data.target}</span>
-                        </div>
+                    post.data.redacted && (
+                        <p class="notice mono">
+                            <span aria-hidden="true">⚠</span>
+                            {t("msg.redacted")}
+                        </p>
                     )
                 }
-            </div>
-        </header>
 
-        <div class="markdown-body">
-            <Content />
-        </div>
-    </article>
+                <dl class="meta-grid mono">
+                    {
+                        meta.map((item) => (
+                            <div class="meta-item">
+                                <dt>{item.label}</dt>
+                                <dd>{item.value}</dd>
+                            </div>
+                        ))
+                    }
+                </dl>
+
+                {
+                    post.data.tags.length > 0 && (
+                        <p class="tags">
+                            {post.data.tags.map((tag) => (
+                                <span class="chip">#{tag}</span>
+                            ))}
+                        </p>
+                    )
+                }
+            </header>
+
+            <div class="prose">
+                <Content />
+            </div>
+        </article>
+    </div>
 </BaseLayout>
 
 <style>
-    .section {
-        padding: 3rem 1rem;
+    .article {
+        margin-top: var(--sp-6);
     }
-    .back-link {
-        display: inline-block;
-        margin-bottom: 2rem;
-        color: var(--muted);
-    }
+
     .post-header {
-        margin-bottom: 3rem;
+        max-width: var(--measure);
+        margin-bottom: var(--sp-8);
+        padding-bottom: var(--sp-6);
         border-bottom: 1px solid var(--border);
-        padding-bottom: 2rem;
-    }
-    .title {
-        color: var(--accent2);
-        font-size: 2.5rem;
-        margin-bottom: 1.5rem;
     }
 
-    .banner-redacted {
-        background: rgba(210, 153, 34, 0.15);
-        border: 1px solid var(--warn);
-        color: var(--warn);
-        padding: 1rem;
-        border-radius: var(--radius);
-        margin-bottom: 1.5rem;
-    }
-
-    .meta-panel {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        background: var(--bg1);
-        padding: 1.5rem;
-        border-radius: var(--radius);
-        border: 1px solid var(--border);
-    }
-    .meta-item {
+    .post-meta {
         display: flex;
-        flex-direction: column;
-        gap: 0.2rem;
-    }
-    .meta-item .label {
-        color: var(--muted);
-        font-size: 0.8rem;
-        text-transform: uppercase;
-    }
-    .meta-item .value {
-        color: var(--text);
-        font-weight: bold;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--sp-3);
+        margin-bottom: var(--sp-4);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
     }
 
-    .difficulty {
+    .platform {
+        color: var(--accent);
         text-transform: uppercase;
     }
-    .difficulty.easy {
-        color: var(--accent);
+
+    .sep {
+        color: var(--border-strong);
     }
-    .difficulty.medium {
+
+    .post-header h1 {
+        margin-bottom: var(--sp-4);
+        text-wrap: pretty;
+    }
+
+    .lead {
+        margin-bottom: var(--sp-5);
+        color: var(--text-dim);
+        font-size: var(--fs-lg);
+    }
+
+    .notice {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-3);
+        margin-bottom: var(--sp-5);
+        padding: var(--sp-3) var(--sp-4);
+        background: color-mix(in srgb, var(--warn) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent);
+        border-radius: var(--radius-sm);
         color: var(--warn);
-    }
-    .difficulty.hard {
-        color: var(--danger);
-    }
-    .difficulty.insane {
-        color: #a371f7;
+        font-size: var(--fs-sm);
     }
 
-    .markdown-body {
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    /* Reuse markdown styles from blog or global */
-    .markdown-body :global(h2) {
-        color: var(--accent);
-        margin-top: 2rem;
-    }
-    .markdown-body :global(p) {
-        margin-bottom: 1.5rem;
-        font-size: 1.1rem;
-    }
-    .markdown-body :global(pre) {
-        background: #1e1e1e !important;
-        padding: 1.5rem;
-        border-radius: var(--radius);
-        overflow-x: auto;
-        margin-bottom: 1.5rem;
+    .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+        gap: var(--sp-4);
+        margin: 0 0 var(--sp-5);
+        padding: var(--sp-4) var(--sp-5);
+        background: var(--surface);
         border: 1px solid var(--border);
-    }
-    .markdown-body :global(code) {
-        font-family: var(--font-mono);
-        color: var(--accent2);
-    }
-    .markdown-body :global(pre code) {
-        color: inherit;
-        background: transparent;
-        padding: 0;
-    }
-    .markdown-body :global(img) {
-        max-width: 100%;
         border-radius: var(--radius);
-        border: 1px solid var(--border);
     }
-    @media (max-width: 768px) {
-        .title {
-            font-size: 1.8rem;
-        }
-        .meta-panel {
-            grid-template-columns: 1fr;
-        }
-        .markdown-body :global(pre) {
-            padding: 1rem;
-            font-size: 0.85rem;
-        }
+
+    .meta-item dt {
+        margin-bottom: var(--sp-1);
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
+        text-transform: uppercase;
+    }
+
+    .meta-item dd {
+        margin: 0;
+        color: var(--text-strong);
+        font-size: var(--fs-sm);
+    }
+
+    .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--sp-2);
+        margin: 0;
     }
 </style>

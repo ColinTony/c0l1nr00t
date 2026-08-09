@@ -1,0 +1,181 @@
+---
+interface Props {
+    href: string;
+    title: string;
+    date: Date;
+    description?: string;
+    category?: string;
+    type?: string;
+    tags?: string[];
+    readingTime?: string;
+    pinned?: boolean;
+}
+
+const {
+    href,
+    title,
+    date,
+    description,
+    category,
+    type,
+    tags,
+    readingTime,
+    pinned,
+} = Astro.props;
+
+const isoDate = date.toISOString().split("T")[0];
+---
+
+<article class="row">
+    <a class="row-link" href={href}>
+        <div class="aside mono">
+            <time datetime={isoDate}>{isoDate}</time>
+            {readingTime && <span class="rt">{readingTime}</span>}
+        </div>
+
+        <div class="body">
+            {
+                (category || type) && (
+                    <p class="kicker mono">
+                        {category && <span class="cat">{category}</span>}
+                        {category && type && (
+                            <span class="sep" aria-hidden="true">
+                                ·
+                            </span>
+                        )}
+                        {type && <span class="type">{type}</span>}
+                    </p>
+                )
+            }
+
+            <h3 class="title">
+                {title}
+                {pinned && <span class="pin mono" title="Destacado">PIN</span>}
+            </h3>
+
+            {description && <p class="desc">{description}</p>}
+
+            {
+                tags && tags.length > 0 && (
+                    <p class="tags mono">
+                        {tags.slice(0, 4).map((tag) => (
+                            <span class="tag">#{tag}</span>
+                        ))}
+                    </p>
+                )
+            }
+        </div>
+    </a>
+</article>
+
+<style>
+    .row {
+        border-bottom: 1px solid var(--border);
+    }
+
+    .row-link {
+        display: grid;
+        grid-template-columns: 8.5rem 1fr;
+        gap: var(--sp-5);
+        padding: var(--sp-5) var(--sp-3);
+        margin-inline: calc(var(--sp-3) * -1);
+        border-radius: var(--radius);
+        color: inherit;
+        transition: background-color var(--dur) var(--ease);
+    }
+
+    .row-link:hover {
+        background: var(--surface);
+    }
+
+    .aside {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-1);
+        padding-top: 0.15rem;
+        font-size: var(--fs-xs);
+        color: var(--text-faint);
+        white-space: nowrap;
+    }
+
+    .rt {
+        color: var(--text-faint);
+        opacity: 0.75;
+    }
+
+    .kicker {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        margin-bottom: var(--sp-2);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
+        text-transform: uppercase;
+    }
+
+    .cat {
+        color: var(--accent);
+    }
+
+    .kicker .sep {
+        color: var(--border-strong);
+    }
+
+    .type {
+        color: var(--text-faint);
+    }
+
+    .title {
+        margin-bottom: var(--sp-2);
+        font-size: var(--fs-xl);
+        line-height: var(--lh-snug);
+        color: var(--text-strong);
+        transition: color var(--dur) var(--ease);
+    }
+
+    .row-link:hover .title {
+        color: var(--accent-strong);
+    }
+
+    .pin {
+        display: inline-block;
+        margin-left: var(--sp-3);
+        vertical-align: middle;
+        padding: 0.1rem 0.4rem;
+        border: 1px solid var(--accent-line);
+        border-radius: var(--radius-sm);
+        color: var(--accent);
+        font-size: 0.625rem;
+        letter-spacing: var(--tracking-wide);
+    }
+
+    .desc {
+        max-width: 62ch;
+        margin-bottom: var(--sp-3);
+        color: var(--text-dim);
+        font-size: var(--fs-base);
+        line-height: var(--lh-snug);
+    }
+
+    .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--sp-3);
+        margin: 0;
+        font-size: var(--fs-xs);
+        color: var(--text-faint);
+    }
+
+    @media (max-width: 640px) {
+        .row-link {
+            grid-template-columns: 1fr;
+            gap: var(--sp-2);
+        }
+
+        .aside {
+            flex-direction: row;
+            gap: var(--sp-3);
+            padding-top: 0;
+        }
+    }
+</style>

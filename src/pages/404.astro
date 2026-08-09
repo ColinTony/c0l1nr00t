@@ -1,56 +1,74 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { useTranslations } from "../i18n/utils";
 
 const lang = "es";
+const t = useTranslations(lang);
 ---
 
-<BaseLayout title="404" description="Not Found">
-    <div class="container section">
-        <h1 class="mono error-code">404</h1>
-        <p class="mono error-msg">FATAL ERROR: ROUTE_NOT_FOUND</p>
-        <p>The requested resource could not be located in the system memory.</p>
-
-        <div class="actions">
-            <a href="/es" class="btn btn-primary mono">INIT_SYSTEM (ES)</a>
-            <a href="/en" class="btn btn-outline mono">INIT_SYSTEM (EN)</a>
+<BaseLayout title="404 | c0l1nr00t" description={t("404.desc")}>
+    <div class="container section wrap">
+        <div class="terminal">
+            <div class="terminal-bar">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="terminal-title">error.log</span>
+            </div>
+            <div class="terminal-body">
+                <p class="line">
+                    <span class="prompt">➜</span> cat {Astro.url.pathname}
+                </p>
+                <p class="err">404: ROUTE_NOT_FOUND</p>
+                <p class="out">{t("404.desc")}</p>
+                <p class="line">
+                    <span class="prompt">➜</span>
+                    <span class="caret"></span>
+                </p>
+            </div>
         </div>
+
+        <a href={`/${lang}`} class="btn btn-primary">
+            <span aria-hidden="true">←</span>
+            {t("404.back")}
+        </a>
     </div>
 </BaseLayout>
 
 <style>
-    .section {
-        text-align: center;
-        padding: 5rem 1rem;
-    }
-    .error-code {
-        font-size: 6rem;
-        color: var(--danger);
-        margin: 0;
-        line-height: 1;
-    }
-    .error-msg {
-        font-size: 1.5rem;
-        color: var(--warn);
-        margin-bottom: 2rem;
-    }
-    .actions {
+    .wrap {
         display: flex;
-        gap: 1rem;
-        justify-content: center;
-        margin-top: 2rem;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--sp-7);
+        text-align: center;
     }
-    .btn {
-        padding: 0.8rem 1.5rem;
-        border-radius: var(--radius);
-        text-decoration: none;
-        font-weight: bold;
+
+    .terminal {
+        width: 100%;
+        max-width: 34rem;
+        text-align: left;
     }
-    .btn-primary {
-        background: var(--accent);
-        color: #fff;
+
+    .line {
+        margin: 0;
+        color: var(--text-strong);
     }
-    .btn-outline {
-        border: 1px solid var(--border);
-        color: var(--text);
+
+    .line .prompt {
+        margin-right: var(--sp-2);
+    }
+
+    .err {
+        margin: var(--sp-2) 0;
+        padding-left: 1.25rem;
+        color: var(--danger);
+        letter-spacing: var(--tracking-wide);
+    }
+
+    .out {
+        margin: 0 0 var(--sp-4);
+        padding-left: 1.25rem;
+        color: var(--text-dim);
     }
 </style>

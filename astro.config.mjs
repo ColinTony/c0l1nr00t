@@ -7,7 +7,7 @@ export default defineConfig({
   integrations: [sitemap()],
   markdown: {
     shikiConfig: {
-      theme: 'dracula', // "underground hacker" vibe
+      theme: 'github-dark-default', // armoniza con la paleta del sitio
       wrap: true,
     },
   },

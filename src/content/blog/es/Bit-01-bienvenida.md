@@ -2,6 +2,8 @@
 title: "Bitácora 0x01 — Empezar a hacer"
 description: "La primera entrada de mi blog: dejar de solo pensar, empezar a ejecutar y documentar el camino."
 date: 2026-01-05
+category: "Bitácora"
+type: "Lessons Learned"
 tags: ["bitácora", "aprendizaje", "hacking", "reflexión"]
 draft: false
 pinned: true

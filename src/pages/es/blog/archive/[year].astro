@@ -1,13 +1,16 @@
 ---
 import BaseLayout from "../../../../layouts/BaseLayout.astro";
-import Card from "../../../../components/Card.astro";
+import PostRow from "../../../../components/PostRow.astro";
 import { getCollection } from "astro:content";
 import { useTranslations } from "../../../../i18n/utils";
+import { readingTime } from "../../../../utils/reading-time";
 
 export async function getStaticPaths() {
-    const posts = await getCollection("blog", ({ id, data }) => {
-        return id.startsWith("es/") && !data.draft;
-    });
+    const posts = await getCollection(
+        "blog",
+        ({ id, data }) =>
+            id.startsWith("es/") && !data.draft && data.visible !== false,
+    );
 
     const years = [
         ...new Set(posts.map((post) => post.data.date.getFullYear())),
@@ -23,66 +26,90 @@ const { year } = Astro.props;
 const lang = "es";
 const t = useTranslations(lang);
 
-const posts = await getCollection("blog", ({ id, data }) => {
-    return (
-        id.startsWith("es/") && !data.draft && data.date.getFullYear() === year
-    );
-});
+const allPosts = await getCollection(
+    "blog",
+    ({ id, data }) =>
+        id.startsWith("es/") && !data.draft && data.visible !== false,
+);
 
-const sortedPosts = posts.sort((a, b) => {
-    return b.data.date.valueOf() - a.data.date.valueOf();
-});
+const sortedPosts = allPosts
+    .filter((post) => post.data.date.getFullYear() === year)
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
-// Get all years for sidebar
-const allPosts = await getCollection("blog", ({ id, data }) => {
-    return id.startsWith("es/") && !data.draft;
-});
 const allYears = [
     ...new Set(allPosts.map((post) => post.data.date.getFullYear())),
 ].sort((a, b) => b - a);
 ---
 
 <BaseLayout
-    title={`c0l1nr00t | ${t("nav.blog")} - ${year}`}
-    description={`Blog posts from ${year}`}
+    title={`c0l1nr00t | ${t("nav.blog")} · ${year}`}
+    description={`Entradas del blog publicadas en ${year}.`}
 >
     <div class="container section">
-        <h1 class="mono">{t("nav.blog")} / {year}</h1>
+        <header class="page-header">
+            <p class="eyebrow">&gt; ~/blog/archive/{year}</p>
+            <h1>{t("blog.archive")} · {year}</h1>
+            <p class="lead">
+                {sortedPosts.length}
+                {sortedPosts.length === 1 ? "entrada" : "entradas"} en {year}.
+            </p>
+        </header>
 
-        <div class="blog-layout">
-            <div class="main-content">
-                <div class="grid">
+        <div class="layout">
+            <div>
+                <div class="rows">
                     {
                         sortedPosts.map((post) => (
-                            <Card
+                            <PostRow
                                 href={`/${lang}/blog/${post.slug.split("/")[1]}`}
                                 title={post.data.title}
                                 date={post.data.date}
                                 description={post.data.description}
+                                category={post.data.category}
+                                type={post.data.type}
+                                tags={post.data.tags}
+                                readingTime={readingTime(
+                                    post.body,
+                                    t("blog.read_time"),
+                                )}
                             />
                         ))
                     }
                 </div>
 
-                <div class="back-link">
-                    <a href={`/${lang}/blog`} class="btn-return mono"
-                        >&lt; RETURN_TO_BLOG</a
-                    >
-                </div>
+                <a href={`/${lang}/blog`} class="back-link return">
+                    <span aria-hidden="true">←</span>
+                    {t("blog.return")}
+                </a>
             </div>
 
             <aside class="sidebar">
-                <div class="sidebar-widget">
-                    <h3 class="mono widget-title">&gt; ARCHIVE</h3>
-                    <ul class="archive-list">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>{t("blog.archive")}</span>
+                        <span class="count">{allPosts.length}</span>
+                    </div>
+                    <ul class="archive">
                         {
                             allYears.map((y) => (
                                 <li>
                                     <a
                                         href={`/${lang}/blog/archive/${y}`}
-                                        class={`mono archive-link ${y === year ? "active" : ""}`}
+                                        class="mono"
+                                        aria-current={
+                                            y === year ? "page" : undefined
+                                        }
                                     >
-                                        [{y}]_LOGS
+                                        <span>{y}</span>
+                                        <span class="n">
+                                            {
+                                                allPosts.filter(
+                                                    (p) =>
+                                                        p.data.date.getFullYear() ===
+                                                        y,
+                                                ).length
+                                            }
+                                        </span>
                                     </a>
                                 </li>
                             ))
@@ -95,94 +122,71 @@ const allYears = [
 </BaseLayout>
 
 <style>
-    .section {
-        padding: 3rem 1rem;
-    }
-    h1 {
-        color: var(--accent);
-        margin-bottom: 2rem;
-    }
-
-    .blog-layout {
+    .layout {
         display: grid;
-        grid-template-columns: 1fr 250px;
-        gap: 3rem;
+        grid-template-columns: minmax(0, 1fr) 240px;
+        gap: clamp(2rem, 5vw, 4rem);
+        align-items: start;
     }
 
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
+    .rows {
+        border-top: 1px solid var(--border);
     }
 
-    /* Sidebar */
-    .sidebar-widget {
-        background: rgba(10, 14, 20, 0.6);
-        border: 1px solid var(--border);
-        padding: 1.5rem;
-        border-radius: 8px;
+    .return {
+        margin-top: var(--sp-7);
     }
 
-    .widget-title {
-        font-size: 1.1rem;
-        color: var(--accent);
-        margin-bottom: 1rem;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 0.5rem;
+    .sidebar {
+        position: sticky;
+        top: calc(var(--header-h) + var(--sp-5));
     }
 
-    .archive-list {
+    .count {
+        color: var(--text-faint);
+    }
+
+    .archive {
+        margin: 0;
+        padding: var(--sp-2);
         list-style: none;
-        padding: 0;
     }
 
-    .archive-list li {
-        margin-bottom: 0.5rem;
+    .archive a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--sp-2) var(--sp-3);
+        border-radius: var(--radius-sm);
+        color: var(--text-dim);
+        font-size: var(--fs-sm);
+        transition:
+            background-color var(--dur) var(--ease),
+            color var(--dur) var(--ease);
     }
 
-    .archive-link {
-        color: var(--text);
-        text-decoration: none;
-        transition: color 0.2s;
-        display: block;
-        padding: 0.2rem 0;
+    .archive a:hover {
+        background: var(--surface-2);
+        color: var(--accent-strong);
     }
 
-    .archive-link:hover,
-    .archive-link.active {
-        color: var(--accent);
+    .archive a[aria-current="page"] {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
     }
 
-    .archive-link.active {
-        font-weight: bold;
-        text-shadow: 0 0 10px rgba(46, 160, 67, 0.3);
-    }
-
-    .back-link {
-        margin-top: 3rem;
-    }
-
-    .btn-return {
-        color: var(--accent);
-        text-decoration: none;
-        border: 1px solid var(--accent);
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-        transition: all 0.2s;
-    }
-
-    .btn-return:hover {
-        background: var(--accent);
-        color: #fff;
+    .archive .n {
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
     }
 
     @media (max-width: 900px) {
-        .blog-layout {
+        .layout {
             grid-template-columns: 1fr;
         }
 
         .sidebar {
-            order: -1;
+            position: static;
         }
     }
 </style>

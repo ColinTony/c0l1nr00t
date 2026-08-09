@@ -3,18 +3,20 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
-import "animate.css";
 import { ViewTransitions } from "astro:transitions";
 
 interface Props {
     title: string;
     description: string;
     image?: string;
+    type?: "website" | "article";
+    publishedDate?: Date;
+    tags?: string[];
 }
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const { title, description, image } = Astro.props;
+const { title, description, image, type, publishedDate, tags } = Astro.props;
 ---
 
 <!doctype html>
@@ -25,24 +27,31 @@ const { title, description, image } = Astro.props;
             description={description}
             image={image}
             lang={lang}
+            type={type}
+            publishedDate={publishedDate}
+            tags={tags}
         />
         <ViewTransitions />
     </head>
     <body>
+        <a class="skip-link mono" href="#main">Saltar al contenido</a>
+
         <Header />
-        <main class="animate__animated animate__fadeIn">
+
+        <main id="main" class="fade-in">
             <slot />
         </main>
+
         <Footer />
 
         <a
             href="/files/cv.pdf"
             download
-            class="floating-cv-btn mono"
+            class="cv-fab mono"
             title={t("cv.download")}
         >
-            <span class="icon">⬇</span>
-            <span class="text">{t("cv.download")}</span>
+            <span aria-hidden="true">↓</span>
+            <span>CV</span>
         </a>
     </body>
 </html>
@@ -50,50 +59,54 @@ const { title, description, image } = Astro.props;
 <style>
     main {
         flex: 1;
-        padding: 2rem 0;
-        --animate-duration: 0.5s; /* Faster, more minimalist */
     }
 
-    .floating-cv-btn {
+    .skip-link {
+        position: absolute;
+        top: var(--sp-2);
+        left: var(--sp-2);
+        z-index: 200;
+        padding: var(--sp-2) var(--sp-4);
+        background: var(--surface-2);
+        border: 1px solid var(--accent-line);
+        border-radius: var(--radius-sm);
+        color: var(--accent-strong);
+        font-size: var(--fs-sm);
+        transform: translateY(-200%);
+        transition: transform var(--dur) var(--ease);
+    }
+
+    .skip-link:focus-visible {
+        transform: none;
+    }
+
+    /* Acceso rápido al CV solo en móvil: en escritorio ya está en la cabecera */
+    .cv-fab {
         position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        background: rgba(10, 14, 20, 0.8);
-        border: 1px solid var(--accent);
-        color: var(--accent);
-        padding: 0.8rem 1.2rem;
-        border-radius: 4px;
-        text-decoration: none;
-        display: flex;
+        right: var(--sp-4);
+        bottom: var(--sp-4);
+        z-index: 90;
+        display: none;
         align-items: center;
-        gap: 0.5rem;
-        backdrop-filter: blur(5px);
-        transition: all 0.3s ease;
-        z-index: 1000;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        gap: var(--sp-2);
+        padding: 0.6rem 0.9rem;
+        background: color-mix(in srgb, var(--surface-2) 92%, transparent);
+        border: 1px solid var(--accent-line);
+        border-radius: var(--radius-pill);
+        color: var(--accent-strong);
+        font-size: var(--fs-sm);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        box-shadow: var(--shadow);
     }
 
-    .floating-cv-btn:hover {
-        background: var(--accent);
-        color: #000;
-        box-shadow: 0 0 20px var(--glow-green);
-        transform: translateY(-2px);
+    .cv-fab:active {
+        transform: translateY(1px);
     }
 
-    .floating-cv-btn .icon {
-        font-size: 1.2rem;
-    }
-
-    .floating-cv-btn .text {
-        font-weight: bold;
-        font-size: 0.9rem;
-    }
-
-    @media (max-width: 768px) {
-        .floating-cv-btn {
-            bottom: 1rem;
-            right: 1rem;
-            padding: 0.6rem 1rem;
+    @media (max-width: 820px) {
+        .cv-fab {
+            display: inline-flex;
         }
     }
 </style>

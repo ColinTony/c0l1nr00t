@@ -1,0 +1,561 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { useTranslations } from "../../i18n/utils";
+import {
+    identity,
+    platforms,
+    findings,
+    track,
+    lasVegas,
+    methodology,
+    hardware,
+} from "../../data/research";
+
+const lang = "es";
+const t = useTranslations(lang);
+---
+
+<BaseLayout
+    title={`${identity.handle} | Security Research`}
+    description="Investigación en dispositivos Amazon (Kindle, Fire TV, Echo Show, Ring), browsers embebidos, parsers, fuzzing y memory corruption."
+>
+    <div class="container section">
+        <header class="page-header">
+            <p class="eyebrow">&gt; ~/research</p>
+            <h1>{t("research.title")}</h1>
+            <p class="lead">{t("research.lead")}</p>
+        </header>
+
+        <p class="disclosure-banner mono">
+            <span aria-hidden="true">⚠</span>
+            {t("research.disclosure")}
+        </p>
+
+        <!-- Plataformas ------------------------------------------------- -->
+        <section class="block">
+            <h2 class="section-title">{t("section.platforms")}</h2>
+
+            <div class="platforms">
+                {
+                    platforms.map((platform) => (
+                        <article class="panel platform" id={platform.id}>
+                            <div class="panel-header">
+                                <span>{platform.name}</span>
+                                <span class="device">{platform.device}</span>
+                            </div>
+                            <div class="panel-content">
+                                <p class="platform-intro">{platform.intro}</p>
+
+                                <p class="label mono">
+                                    {t("research.surfaces")}
+                                </p>
+                                <ul class="surfaces">
+                                    {platform.surfaces.map((surface) => (
+                                        <li class="chip">{surface}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </article>
+                    ))
+                }
+            </div>
+        </section>
+
+        <!-- Hallazgos ---------------------------------------------------- -->
+        <section class="block">
+            <h2 class="section-title">{t("section.findings")}</h2>
+
+            <ol class="findings">
+                {
+                    findings.map((finding) => (
+                        <li class="finding">
+                            <div class="finding-head">
+                                <p class="finding-meta mono">
+                                    <span class="platform-tag">
+                                        {finding.platform}
+                                    </span>
+                                    {finding.codename && (
+                                        <>
+                                            <span class="sep" aria-hidden="true">
+                                                /
+                                            </span>
+                                            <span class="codename">
+                                                {finding.codename}
+                                            </span>
+                                        </>
+                                    )}
+                                </p>
+                                {finding.reward && (
+                                    <span class="badge">{finding.reward}</span>
+                                )}
+                            </div>
+
+                            <h3>{finding.title}</h3>
+                            <p class="finding-desc">{finding.summary}</p>
+                            <p class="finding-outcome mono">
+                                {finding.outcome}
+                            </p>
+                        </li>
+                    ))
+                }
+            </ol>
+
+            <p class="track mono">
+                {track.rewards} en recompensas {track.rewardsScope}, hasta {
+                    track.rewardsAsOf
+                }. La cifra es contexto, no el objetivo: lo que persigo es
+                investigar lo bastante hondo como para encontrar vulnerabilidades
+                que importen.
+            </p>
+        </section>
+
+        <!-- Las Vegas 2026 ----------------------------------------------- -->
+        <section class="block" id="las-vegas">
+            <h2 class="section-title">{lasVegas.event} {lasVegas.year}</h2>
+
+            <div class="event">
+                <div class="event-main">
+                    <p class="event-kicker mono">
+                        {lasVegas.date} · {lasVegas.place}
+                    </p>
+                    <p class="event-intro">{lasVegas.intro}</p>
+                    <p class="event-after">{lasVegas.after}</p>
+                </div>
+
+                <div class="event-side">
+                    <p class="label mono">Qué me llevé</p>
+                    <ul class="takeaways">
+                        {lasVegas.takeaways.map((item) => <li>{item}</li>)}
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Metodología --------------------------------------------------- -->
+        <section class="block">
+            <h2 class="section-title">{t("section.methodology")}</h2>
+
+            <ol class="loop mono">
+                {
+                    methodology.loop.map((step) => (
+                        <li>
+                            <span>{step}</span>
+                        </li>
+                    ))
+                }
+            </ol>
+
+            <p class="loop-note">
+                Casi toda mi investigación empieza por preguntas, no por
+                herramientas. Un scanner te dice qué responde; estas preguntas
+                te dicen dónde mirar.
+            </p>
+
+            <ul class="questions">
+                {
+                    methodology.questions.map((question) => (
+                        <li>
+                            <span class="q mono" aria-hidden="true">
+                                ?
+                            </span>
+                            {question}
+                        </li>
+                    ))
+                }
+            </ul>
+        </section>
+
+        <!-- Hardware ------------------------------------------------------ -->
+        <section class="block">
+            <h2 class="section-title">{t("section.hardware")}</h2>
+
+            <p class="hardware-note">
+                Si una entrada puede llegar al dispositivo por radio, HDMI,
+                navegador, voz, archivo, protocolo o periférico, es una
+                superficie de investigación. Parte del trabajo consiste en
+                construir mis propias herramientas para alcanzarla.
+            </p>
+
+            <dl class="hardware">
+                {
+                    hardware.map((item) => (
+                        <div class="hw">
+                            <dt class="mono">{item.name}</dt>
+                            <dd>{item.use}</dd>
+                        </div>
+                    ))
+                }
+            </dl>
+        </section>
+
+        <!-- Salidas -------------------------------------------------------- -->
+        <section class="block outro">
+            <div class="outro-card">
+                <h2>Research logs</h2>
+                <p>
+                    Notas de investigación, lab notes y deep dives conforme
+                    avanzan. No todo termina en vulnerabilidad, y esa parte
+                    también se publica.
+                </p>
+                <a href={`/${lang}/blog`} class="btn btn-primary">
+                    $ leer el blog
+                </a>
+            </div>
+
+            <div class="outro-card">
+                <h2>Writeups</h2>
+                <p>
+                    Writeups técnicos completos, publicados cuando la divulgación
+                    coordinada lo permite.
+                </p>
+                <a href={`/${lang}/writeups`} class="btn btn-outline">
+                    $ ver writeups
+                </a>
+            </div>
+        </section>
+    </div>
+</BaseLayout>
+
+<style>
+    .block {
+        margin-top: var(--sp-9);
+    }
+
+    .label {
+        margin-bottom: var(--sp-3);
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wider);
+        text-transform: uppercase;
+    }
+
+    .disclosure-banner {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--sp-3);
+        margin: 0;
+        padding: var(--sp-3) var(--sp-4);
+        background: color-mix(in srgb, var(--warn) 8%, transparent);
+        border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent);
+        border-radius: var(--radius-sm);
+        color: var(--warn);
+        font-size: var(--fs-sm);
+        line-height: var(--lh-snug);
+    }
+
+    /* --- Plataformas ---------------------------------------------------- */
+    .platforms {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+        gap: var(--sp-5);
+    }
+
+    .platform {
+        scroll-margin-top: calc(var(--header-h) + var(--sp-5));
+    }
+
+    .panel-header .device {
+        color: var(--text-faint);
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    .platform-intro {
+        margin-bottom: var(--sp-5);
+        color: var(--text-dim);
+        font-size: var(--fs-base);
+        line-height: var(--lh-snug);
+    }
+
+    .surfaces {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--sp-2);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    /* --- Hallazgos ------------------------------------------------------- */
+    .findings {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+        gap: var(--sp-4);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .finding {
+        display: flex;
+        flex-direction: column;
+        padding: var(--sp-5);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+    }
+
+    /* El hallazgo principal ocupa la fila completa */
+    .finding:first-child {
+        grid-column: 1 / -1;
+        border-color: var(--accent-line);
+    }
+
+    .finding-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--sp-4);
+        margin-bottom: var(--sp-3);
+    }
+
+    .finding-meta {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-3);
+        margin: 0;
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
+    }
+
+    .platform-tag {
+        color: var(--accent);
+        text-transform: uppercase;
+    }
+
+    .sep {
+        color: var(--border-strong);
+    }
+
+    .codename {
+        color: var(--text-faint);
+    }
+
+    .finding h3 {
+        margin-bottom: var(--sp-2);
+        font-size: var(--fs-lg);
+    }
+
+    .finding-desc {
+        max-width: 76ch;
+        margin: 0;
+        color: var(--text-dim);
+    }
+
+    .finding-outcome {
+        margin: var(--sp-4) 0 0;
+        padding-top: var(--sp-3);
+        border-top: 1px solid var(--border);
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
+    }
+
+    .finding-desc + .finding-outcome {
+        margin-top: auto;
+    }
+
+    .track {
+        max-width: 82ch;
+        margin: var(--sp-5) 0 0;
+        color: var(--text-dim);
+        font-size: var(--fs-sm);
+        line-height: var(--lh-snug);
+    }
+
+    /* --- Evento ---------------------------------------------------------- */
+    #las-vegas {
+        scroll-margin-top: calc(var(--header-h) + var(--sp-5));
+    }
+
+    .event {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 0.75fr);
+        gap: var(--sp-6);
+        padding: var(--sp-6);
+        background: linear-gradient(
+            135deg,
+            var(--accent-soft),
+            transparent 55%
+        );
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+    }
+
+    .event-kicker {
+        margin-bottom: var(--sp-3);
+        color: var(--accent);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wider);
+        text-transform: uppercase;
+    }
+
+    .event-intro {
+        font-size: var(--fs-lg);
+        color: var(--text);
+    }
+
+    .event-after {
+        margin: 0;
+        color: var(--text-dim);
+    }
+
+    .takeaways {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .takeaways li {
+        position: relative;
+        margin-bottom: var(--sp-3);
+        padding-left: var(--sp-5);
+        color: var(--text-dim);
+        font-size: var(--fs-base);
+        line-height: var(--lh-snug);
+    }
+
+    .takeaways li::before {
+        content: "▸";
+        position: absolute;
+        left: 0;
+        color: var(--accent);
+    }
+
+    /* --- Metodología ------------------------------------------------------ */
+    .loop {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--sp-2);
+        margin: 0 0 var(--sp-5);
+        padding: 0;
+        list-style: none;
+        counter-reset: step;
+    }
+
+    .loop li {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        color: var(--text-dim);
+        font-size: var(--fs-sm);
+    }
+
+    .loop li span {
+        padding: var(--sp-2) var(--sp-4);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+    }
+
+    .loop li:not(:last-child)::after {
+        content: "→";
+        color: var(--accent);
+    }
+
+    .loop li:last-child span {
+        border-color: var(--accent-line);
+        color: var(--accent-strong);
+    }
+
+    .loop-note {
+        max-width: 68ch;
+        color: var(--text-dim);
+    }
+
+    .questions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+        gap: var(--sp-3) var(--sp-6);
+        margin: var(--sp-5) 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .questions li {
+        display: flex;
+        gap: var(--sp-3);
+        padding-bottom: var(--sp-3);
+        border-bottom: 1px solid var(--border);
+        color: var(--text);
+        font-size: var(--fs-base);
+        line-height: var(--lh-snug);
+    }
+
+    .q {
+        color: var(--accent);
+        flex-shrink: 0;
+    }
+
+    /* --- Hardware ---------------------------------------------------------- */
+    .hardware-note {
+        max-width: 68ch;
+        color: var(--text-dim);
+    }
+
+    .hardware {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+        gap: var(--sp-3);
+        margin: var(--sp-5) 0 0;
+    }
+
+    .hw {
+        padding: var(--sp-4) var(--sp-5);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+    }
+
+    .hw dt {
+        margin-bottom: var(--sp-1);
+        color: var(--accent);
+        font-size: var(--fs-sm);
+    }
+
+    .hw dd {
+        margin: 0;
+        color: var(--text-dim);
+        font-size: var(--fs-base);
+        line-height: var(--lh-snug);
+    }
+
+    /* --- Salidas ------------------------------------------------------------ */
+    .outro {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+        gap: var(--sp-5);
+        padding-top: var(--sp-7);
+        border-top: 1px solid var(--border);
+    }
+
+    .outro-card {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--sp-3);
+        padding: var(--sp-5);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+    }
+
+    .outro-card h2 {
+        margin: 0;
+        font-size: var(--fs-lg);
+    }
+
+    .outro-card p {
+        flex: 1;
+        margin: 0;
+        color: var(--text-dim);
+        font-size: var(--fs-base);
+    }
+
+    @media (max-width: 860px) {
+        .event {
+            grid-template-columns: 1fr;
+            gap: var(--sp-5);
+        }
+    }
+</style>

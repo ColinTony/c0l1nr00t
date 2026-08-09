@@ -2,6 +2,8 @@
 title: "Bitácora 0x04 — La velocidad real del aprendizaje"
 description: "Tardar 3 horas en algo de 20 minutos no significa que soy lento. Significa que dejé de confiar ciegamente y empecé a verificar."
 date: 2026-01-19
+category: "Reverse Engineering"
+type: "Lab Notes"
 tags: ["bitácora", "assembly", "debugging", "learning", "mindset"]
 draft: false
 ---

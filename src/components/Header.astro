@@ -3,174 +3,214 @@ import { getLangFromUrl, useTranslations } from "../i18n/utils";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+
+const path = Astro.url.pathname.replace(/\/$/, "");
+// Writeups queda fuera del menú mientras no haya ninguno público:
+// se alcanza desde /research y vuelve aquí cuando se publique el primero.
+const links = [
+    { href: `/${lang}/research`, label: t("nav.research") },
+    { href: `/${lang}/blog`, label: t("nav.blog") },
+    { href: `/${lang}/about`, label: t("nav.about") },
+    { href: `/${lang}/contact`, label: t("nav.contact") },
+];
+
+const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
 ---
 
-<header>
-    <nav class="container">
-        <a href={`/${lang}`} class="logo">c0l1nr00t</a>
+<header class="site-header">
+    <nav class="container nav" aria-label="Principal">
+        <a href={`/${lang}`} class="logo mono" aria-label="c0l1nr00t — inicio">
+            c0l1nr00t<span class="caret" aria-hidden="true"></span>
+        </a>
 
-        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
-            <span class="bar"></span>
+        <button
+            id="menu-toggle"
+            class="menu-toggle"
+            aria-label="Abrir menú"
+            aria-expanded="false"
+            aria-controls="nav-content"
+        >
             <span class="bar"></span>
             <span class="bar"></span>
         </button>
 
         <div class="nav-content" id="nav-content">
-            <div class="links">
-                <a href={`/${lang}/blog`}>{t("nav.blog")}</a>
-                <a href={`/${lang}/writeups`}>{t("nav.writeups")}</a>
-                <a href={`/${lang}/about`}>{t("nav.about")}</a>
-                <a href={`/${lang}/contact`}>{t("nav.contact")}</a>
-            </div>
-            <div class="actions">
-                <a href="/files/cv.pdf" download class="btn-cv mono"
-                    >{t("cv.download")}</a
-                >
-            </div>
+            <ul class="links">
+                {
+                    links.map((link) => (
+                        <li>
+                            <a
+                                href={link.href}
+                                class="nav-link mono"
+                                aria-current={
+                                    isActive(link.href) ? "page" : undefined
+                                }
+                            >
+                                {link.label}
+                            </a>
+                        </li>
+                    ))
+                }
+            </ul>
+
+            <a href="/files/cv.pdf" download class="btn btn-outline btn-sm">
+                {t("cv.download")}
+            </a>
         </div>
     </nav>
 </header>
 
 <script>
-    const menuToggle = document.getElementById("menu-toggle");
-    const navContent = document.getElementById("nav-content");
+    function setupMenu() {
+        const toggle = document.getElementById("menu-toggle");
+        const nav = document.getElementById("nav-content");
+        if (!toggle || !nav) return;
 
-    menuToggle?.addEventListener("click", () => {
-        menuToggle.classList.toggle("active");
-        navContent?.classList.toggle("active");
-    });
+        const close = () => {
+            toggle.classList.remove("active");
+            nav.classList.remove("active");
+            toggle.setAttribute("aria-expanded", "false");
+        };
+
+        toggle.addEventListener("click", () => {
+            const open = toggle.classList.toggle("active");
+            nav.classList.toggle("active", open);
+            toggle.setAttribute("aria-expanded", String(open));
+        });
+
+        nav.querySelectorAll("a").forEach((a) =>
+            a.addEventListener("click", close),
+        );
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") close();
+        });
+    }
+
+    setupMenu();
+    document.addEventListener("astro:page-load", setupMenu);
 </script>
 
 <style>
-    header {
-        border-bottom: 1px solid var(--border);
-        background: rgba(10, 14, 20, 0.95); /* More opaque for mobile menu */
-        backdrop-filter: blur(12px);
+    .site-header {
         position: sticky;
         top: 0;
-        z-index: 1000;
-        padding: 1rem 0;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    }
-    nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-    .logo {
-        font-family: var(--font-mono);
-        font-weight: bold;
-        color: var(--neon-green);
-        font-size: 1.2rem;
-        text-shadow: 0 0 10px var(--glow-green);
-        display: flex;
-        align-items: center;
-        z-index: 1001;
-    }
-    .logo::after {
-        content: "_";
-        animation: blink 1s step-end infinite;
-        margin-left: 2px;
-        color: var(--neon-green);
+        z-index: 100;
+        background: color-mix(in srgb, var(--bg) 85%, transparent);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
     }
 
-    @keyframes blink {
-        0%,
-        100% {
-            opacity: 1;
-        }
-        50% {
-            opacity: 0;
-        }
+    .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--sp-6);
+        min-height: var(--header-h);
+    }
+
+    .logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        color: var(--text-strong);
+        font-size: var(--fs-md);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+    }
+
+    .logo:hover {
+        color: var(--accent-strong);
     }
 
     .nav-content {
         display: flex;
         align-items: center;
-        gap: 2rem;
-        flex-grow: 1;
-        justify-content: space-between;
-        margin-left: 2rem;
+        justify-content: flex-end;
+        gap: var(--sp-6);
+        flex: 1;
     }
 
     .links {
         display: flex;
-        gap: 2rem;
-        justify-content: center;
-        flex-grow: 1;
-    }
-    .links a {
-        color: var(--text);
-        font-size: 0.95rem;
-        font-family: var(--font-mono);
-        transition: all 0.3s ease;
-        position: relative;
-        padding: 0.2rem 0;
-    }
-    .links a::before {
-        content: ">";
-        position: absolute;
-        left: -15px;
-        opacity: 0;
-        transition: all 0.3s ease;
-        color: var(--neon-cyan);
-    }
-    .links a:hover {
-        color: var(--neon-cyan);
-        text-shadow: 0 0 8px var(--glow-cyan);
-        transform: translateY(-2px);
-    }
-    .links a:hover::before {
-        opacity: 1;
-        left: -12px;
-    }
-
-    .actions {
-        display: flex;
         align-items: center;
+        gap: var(--sp-6);
+        margin: 0;
+        padding: 0;
+        list-style: none;
     }
 
-    .btn-cv {
-        font-family: var(--font-mono);
-        font-size: 0.85rem;
-        color: var(--accent);
-        border: 1px solid var(--accent);
-        padding: 0.4rem 0.8rem;
-        border-radius: 4px;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        background: rgba(0, 255, 65, 0.05);
-        white-space: nowrap;
+    .nav-link {
+        position: relative;
+        display: inline-block;
+        padding-block: var(--sp-2);
+        color: var(--text-dim);
+        font-size: var(--fs-sm);
+        transition: color var(--dur) var(--ease);
     }
-    .btn-cv:hover {
+
+    .nav-link::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 1px;
         background: var(--accent);
-        color: #000;
-        box-shadow: 0 0 10px var(--glow-green);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform var(--dur) var(--ease);
     }
 
-    /* Hamburger Menu */
+    .nav-link:hover {
+        color: var(--text-strong);
+    }
+
+    .nav-link[aria-current="page"] {
+        color: var(--accent-strong);
+    }
+
+    .nav-link:hover::after,
+    .nav-link[aria-current="page"]::after {
+        transform: scaleX(1);
+    }
+
+    /* Botón hamburguesa */
     .menu-toggle {
         display: none;
         flex-direction: column;
-        justify-content: space-between;
-        width: 30px;
-        height: 21px;
-        background: transparent;
-        border: none;
-        cursor: pointer;
+        justify-content: center;
+        gap: 6px;
+        width: 40px;
+        height: 40px;
+        margin-right: -8px;
         padding: 0;
-        z-index: 1001;
-    }
-    .bar {
-        width: 100%;
-        height: 3px;
-        background-color: var(--text);
-        border-radius: 3px;
-        transition: all 0.3s ease;
+        background: none;
+        border: 0;
+        cursor: pointer;
     }
 
-    @media (max-width: 768px) {
+    .bar {
+        width: 20px;
+        height: 1.5px;
+        margin-inline: auto;
+        background: var(--text);
+        border-radius: 2px;
+        transition:
+            transform var(--dur) var(--ease),
+            opacity var(--dur) var(--ease);
+    }
+
+    .menu-toggle.active .bar:first-child {
+        transform: translateY(3.75px) rotate(45deg);
+    }
+
+    .menu-toggle.active .bar:last-child {
+        transform: translateY(-3.75px) rotate(-45deg);
+    }
+
+    @media (max-width: 820px) {
         .menu-toggle {
             display: flex;
         }
@@ -179,41 +219,48 @@ const t = useTranslations(lang);
             position: absolute;
             top: 100%;
             left: 0;
-            width: 100%;
-            background: rgba(10, 14, 20, 0.98);
+            right: 0;
             flex-direction: column;
-            align-items: center;
-            padding: 2rem 0;
-            gap: 1.5rem;
+            align-items: stretch;
+            gap: 0;
+            padding: 0 var(--sp-4);
+            background: var(--bg);
             border-bottom: 1px solid var(--border);
-            clip-path: polygon(
-                0 0,
-                100% 0,
-                100% 0,
-                0 0
-            ); /* Hidden by default */
-            transition: clip-path 0.4s ease-in-out;
-            margin-left: 0;
+            box-shadow: var(--shadow-lg);
+            max-height: 0;
+            overflow: hidden;
+            visibility: hidden;
+            transition:
+                max-height 240ms var(--ease),
+                padding 240ms var(--ease),
+                visibility 240ms;
         }
 
         .nav-content.active {
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+            visibility: visible;
+            max-height: 24rem;
+            padding-block: var(--sp-3) var(--sp-5);
         }
 
         .links {
             flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
+            align-items: stretch;
+            gap: 0;
         }
 
-        .menu-toggle.active .bar:nth-child(1) {
-            transform: translateY(9px) rotate(45deg);
+        .nav-link {
+            padding: var(--sp-3) var(--sp-1);
+            font-size: var(--fs-md);
+            border-bottom: 1px solid var(--border);
         }
-        .menu-toggle.active .bar:nth-child(2) {
-            opacity: 0;
+
+        .nav-link::after {
+            display: none;
         }
-        .menu-toggle.active .bar:nth-child(3) {
-            transform: translateY(-9px) rotate(-45deg);
+
+        .nav-content .btn {
+            margin-top: var(--sp-4);
+            justify-content: center;
         }
     }
 </style>

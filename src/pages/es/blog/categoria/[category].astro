@@ -1,0 +1,198 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import PostRow from "../../../../components/PostRow.astro";
+import { getCollection } from "astro:content";
+import { useTranslations } from "../../../../i18n/utils";
+import { readingTime } from "../../../../utils/reading-time";
+import { slugify } from "../../../../utils/slug";
+
+export async function getStaticPaths() {
+    const posts = await getCollection(
+        "blog",
+        ({ id, data }) =>
+            id.startsWith("es/") && !data.draft && data.visible !== false,
+    );
+
+    const categories = [
+        ...new Set(posts.map((post) => post.data.category).filter(Boolean)),
+    ];
+
+    return categories.map((category) => ({
+        params: { category: slugify(category as string) },
+        props: { category },
+    }));
+}
+
+const { category } = Astro.props;
+const lang = "es";
+const t = useTranslations(lang);
+
+const allPosts = await getCollection(
+    "blog",
+    ({ id, data }) =>
+        id.startsWith("es/") && !data.draft && data.visible !== false,
+);
+
+const posts = allPosts
+    .filter((post) => post.data.category === category)
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const categories = [
+    ...new Set(allPosts.map((post) => post.data.category).filter(Boolean)),
+]
+    .map((name) => ({
+        name,
+        slug: slugify(name as string),
+        count: allPosts.filter((post) => post.data.category === name).length,
+    }))
+    .sort((a, b) => b.count - a.count);
+---
+
+<BaseLayout
+    title={`c0l1nr00t | ${category}`}
+    description={`Entradas del research log en la categoría ${category}.`}
+>
+    <div class="container section">
+        <header class="page-header">
+            <p class="eyebrow">&gt; ~/blog/{slugify(category as string)}</p>
+            <h1>{category}</h1>
+            <p class="lead">
+                {posts.length}
+                {posts.length === 1 ? "entrada" : "entradas"} en esta categoría.
+            </p>
+        </header>
+
+        <div class="layout">
+            <div>
+                {
+                    posts.length > 0 ? (
+                        <div class="rows">
+                            {posts.map((post) => (
+                                <PostRow
+                                    href={`/${lang}/blog/${post.slug.split("/")[1]}`}
+                                    title={post.data.title}
+                                    date={post.data.date}
+                                    description={post.data.description}
+                                    type={post.data.type}
+                                    tags={post.data.tags}
+                                    readingTime={readingTime(
+                                        post.body,
+                                        t("blog.read_time"),
+                                    )}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <p class="empty-state">{t("blog.category_empty")}</p>
+                    )
+                }
+
+                <a href={`/${lang}/blog`} class="back-link return">
+                    <span aria-hidden="true">←</span>
+                    {t("blog.return")}
+                </a>
+            </div>
+
+            <aside class="sidebar">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>{t("blog.categories")}</span>
+                    </div>
+                    <ul class="side-list">
+                        <li>
+                            <a href={`/${lang}/blog`} class="mono">
+                                <span>{t("blog.all_categories")}</span>
+                                <span class="n">{allPosts.length}</span>
+                            </a>
+                        </li>
+                        {
+                            categories.map((item) => (
+                                <li>
+                                    <a
+                                        href={`/${lang}/blog/categoria/${item.slug}`}
+                                        class="mono"
+                                        aria-current={
+                                            item.name === category
+                                                ? "page"
+                                                : undefined
+                                        }
+                                    >
+                                        <span>{item.name}</span>
+                                        <span class="n">{item.count}</span>
+                                    </a>
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+</BaseLayout>
+
+<style>
+    .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 260px;
+        gap: clamp(2rem, 5vw, 4rem);
+        align-items: start;
+    }
+
+    .rows {
+        border-top: 1px solid var(--border);
+    }
+
+    .return {
+        margin-top: var(--sp-7);
+    }
+
+    .sidebar {
+        position: sticky;
+        top: calc(var(--header-h) + var(--sp-5));
+    }
+
+    .side-list {
+        margin: 0;
+        padding: var(--sp-2);
+        list-style: none;
+    }
+
+    .side-list a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--sp-3);
+        padding: var(--sp-2) var(--sp-3);
+        border-radius: var(--radius-sm);
+        color: var(--text-dim);
+        font-size: var(--fs-sm);
+        transition:
+            background-color var(--dur) var(--ease),
+            color var(--dur) var(--ease);
+    }
+
+    .side-list a:hover {
+        background: var(--surface-2);
+        color: var(--accent-strong);
+    }
+
+    .side-list a[aria-current="page"] {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+    }
+
+    .side-list .n {
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+    }
+
+    @media (max-width: 900px) {
+        .layout {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+            position: static;
+        }
+    }
+</style>

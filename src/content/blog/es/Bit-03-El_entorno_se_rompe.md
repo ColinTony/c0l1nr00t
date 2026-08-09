@@ -2,6 +2,8 @@
 title: "Bitácora 0x03 — El entorno también se rompe"
 description: "Cuando la herramienta deja de funcionar y el problema no es el exploit, sino el Kernel. De Docker a Vagrant."
 date: 2026-01-07
+category: "Reverse Engineering"
+type: "Lab Notes"
 tags: ["bitácora", "docker", "vagrant", "qemu", "reversing", "laboratorio"]
 draft: false
 ---

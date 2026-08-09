@@ -2,250 +2,186 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { useTranslations } from "../../i18n/utils";
 import "../../styles/pages/about.css";
+import {
+    identity,
+    timeline,
+    pentesting,
+    methodology,
+    track,
+} from "../../data/research";
 
 const lang = "es";
 const t = useTranslations(lang);
+
+const metrics = [
+    { value: "+4", label: "HackerOne reports" },
+    { value: "+35", label: "Private findings" },
+    { value: "Top 20", label: "Cyscope ranking" },
+];
+
+const toolset = [
+    { key: "DEVICE_RESEARCH", value: "Kindle · Fire TV · Echo Show · Ring" },
+    { key: "HARDWARE", value: "ESP32 · Raspberry Pi · capturadora HDMI · adaptadores BT/Wi-Fi" },
+    { key: "RE_TOOLING", value: "Ghidra · radare2 · objdump/readelf · binwalk" },
+    { key: "DEBUG_TRACE", value: "GDB (pwndbg/gef) · strace/ltrace · perf" },
+    { key: "FUZZING_LABS", value: "AFL++ · pwntools · sanitizers · QEMU" },
+    { key: "WEB_TESTING", value: "Burp Suite · Postman · Insomnia" },
+    { key: "RECONNAISSANCE", value: "subfinder · bbot · httpx · nuclei" },
+    { key: "AUTOMATION", value: "Python · Node.js · TypeScript · Java" },
+];
 ---
 
 <BaseLayout
-    title={`c0l1nr00t | ${t("nav.about")}`}
-    description="Bug Hunter & Pentester | Web Hacking"
+    title={`${identity.handle} | ${t("nav.about")}`}
+    description={`${identity.role} mexicano. De web security a device research: Kindle, Fire TV, Echo Show, Ring, browsers embebidos, fuzzing y memory corruption.`}
 >
     <div class="container section">
-        <div class="dossier-header">
-            <h1 class="mono">
-                <span class="prefix">USER_ID:</span> c0l1nr00t
-            </h1>
-            <div class="status-badge mono">STATUS: ACTIVE</div>
+        <header class="page-header about-header">
+            <div>
+                <p class="eyebrow">&gt; ~/about</p>
+                <h1>{identity.handle}</h1>
+                <p class="lead">
+                    {identity.role} · {identity.location}
+                </p>
+            </div>
+            <span class="badge">
+                <span class="pulse" aria-hidden="true"></span>
+                Status: Researching
+            </span>
+        </header>
+
+        <section class="panel intro-panel">
+            <div class="panel-header"><span>01_BIO</span></div>
+            <div class="panel-content">
+                <p class="intro-lead">{identity.short}</p>
+                <p>
+                    Mi origen técnico está en <strong>seguridad web</strong>,
+                    pentesting y bug bounty. En los últimos años la
+                    investigación se movió hacia superficies más complejas:
+                    dispositivos, navegadores embebidos, sistemas embebidos,
+                    APIs internas, parsers, protocolos e interfaces entre
+                    dispositivos. Kindle fue la puerta de entrada; después
+                    llegaron Fire TV, Echo Show y Ring.
+                </p>
+                <p class="intro-close">
+                    Lo que me mueve no son las herramientas: es entender por qué
+                    existe un comportamiento, quién controla la entrada y qué
+                    pasa cuando esa frontera de confianza se rompe. Una
+                    vulnerabilidad pequeña suele ser la primera pista de una
+                    arquitectura mucho más interesante.
+                </p>
+            </div>
+        </section>
+
+        <section class="metrics" aria-label="Trayectoria">
+            {
+                metrics.map((metric) => (
+                    <div class="metric">
+                        <span class="metric-value mono">{metric.value}</span>
+                        <span class="metric-label mono">{metric.label}</span>
+                    </div>
+                ))
+            }
+            <div class="metric">
+                <span class="metric-value mono">{track.rewards}</span>
+                <span class="metric-label mono">Amazon Devices rewards</span>
+            </div>
+        </section>
+
+        <!-- Evolución -------------------------------------------------- -->
+        <section class="block">
+            <h2 class="section-title">{t("section.timeline")}</h2>
+
+            <ol class="timeline">
+                {
+                    timeline.map((step) => (
+                        <li class={step.current ? "is-current" : ""}>
+                            <span class="dot" aria-hidden="true" />
+                            <div>
+                                <h3 class="mono">{step.stage}</h3>
+                                <p>{step.detail}</p>
+                            </div>
+                        </li>
+                    ))
+                }
+            </ol>
+
+            <p class="timeline-note">
+                No me presento como exploit developer: esa parte todavía la estoy
+                construyendo. Lo que sí puedo enseñar es la transición —
+                <strong>web hacker convirtiéndose en device researcher</strong>
+                — y el trabajo que la sostiene.
+            </p>
+
+            <a href={`/${lang}/research`} class="inline-cta mono">
+                Ver la investigación en detalle <span aria-hidden="true">→</span>
+            </a>
+        </section>
+
+        <!-- Metodología ------------------------------------------------- -->
+        <section class="block">
+            <h2 class="section-title">{t("section.methodology")}</h2>
+
+            <ol class="loop mono">
+                {
+                    methodology.loop.map((step) => (
+                        <li>
+                            <span>{step}</span>
+                        </li>
+                    ))
+                }
+            </ol>
+        </section>
+
+        <!-- Toolset + trabajo profesional ------------------------------- -->
+        <div class="about-grid">
+            <section class="panel">
+                <div class="panel-header"><span>02_TOOLSET</span></div>
+                <div class="panel-content">
+                    <dl class="data-list">
+                        {
+                            toolset.map((item) => (
+                                <div class="data-item">
+                                    <dt class="mono">{item.key}</dt>
+                                    <dd>{item.value}</dd>
+                                </div>
+                            ))
+                        }
+                    </dl>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <span>03_PROFESSIONAL_WORK</span>
+                    <span class="device">pentesting</span>
+                </div>
+                <div class="panel-content">
+                    <p class="pentest-intro">{pentesting.intro}</p>
+
+                    <p class="label mono">Hallazgos habituales</p>
+                    <ul class="chips">
+                        {
+                            pentesting.findings.map((item) => (
+                                <li class="chip">{item}</li>
+                            ))
+                        }
+                    </ul>
+
+                    <p class="label mono">Proceso</p>
+                    <ol class="process mono">
+                        {pentesting.process.map((step) => <li>{step}</li>)}
+                    </ol>
+                </div>
+            </section>
         </div>
 
-        <div class="dossier-grid">
-            <!-- Left Column: Bio & Stats -->
-            <div class="col-main">
-                <section class="panel bio-panel">
-                    <div class="panel-header mono">
-                        <span>01_BIO_DATA</span>
-                        <div class="decors">
-                            <span class="decor"></span><span class="decor"
-                            ></span>
-                        </div>
-                    </div>
-                    <div class="panel-content">
-                        <p class="tagline mono text-accent">
-                            &gt; Bug Hunter &amp; Pentester · Web Hacking ·
-                            Research aplicado
-                        </p>
-                        <p>
-                            Soy <strong>Bug Hunter & Pentester</strong> y este blog
-                            es mi bitácora: pruebas, writeups y notas técnicas. Me
-                            muevo entre <strong>hacking web</strong> (recon, cadenas
-                            e evidencia reproducible) y <strong
-                                >reversing</strong
-                            > (Linux/embedded) porque ahí es donde se construye criterio
-                            de verdad. Si algo está aquí, es porque lo ejecuté, lo
-                            entendí y puedo explicarlo con claridad.
-                        </p>
-                    </div>
-                </section>
-
-                <section class="panel stats-panel">
-                    <div class="panel-header mono">
-                        <span>02_METRICS</span>
-                    </div>
-                    <div class="highlights" aria-label="Highlights">
-                        <div class="hl">
-                            <div class="hl-num mono">+4</div>
-                            <div class="hl-label mono">
-                                HACKERONE<br />REPORTS
-                            </div>
-                        </div>
-                        <div class="hl">
-                            <div class="hl-num mono">+35</div>
-                            <div class="hl-label mono">
-                                PRIVATE<br />FINDINGS
-                            </div>
-                        </div>
-                        <div class="hl">
-                            <div class="hl-num mono">TOP 20</div>
-                            <div class="hl-label mono">
-                                CYSCOPE<br />RANKING
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="panel focus-panel">
-                    <div class="panel-header mono">
-                        <span>03_RE_PIPELINE</span>
-                    </div>
-                    <div class="panel-content">
-                        <ul class="data-list">
-                            <li>
-                                <span class="key mono">TARGETS</span>
-                                <span class="val"
-                                    >Linux binaries · Embedded firmware · Kindle
-                                    surfaces</span
-                                >
-                            </li>
-                            <li>
-                                <span class="key mono">ANALYSIS</span>
-                                <span class="val"
-                                    >Flow mapping → call paths → trust
-                                    boundaries → assumptions</span
-                                >
-                            </li>
-                            <li>
-                                <span class="key mono">DEBUG</span>
-                                <span class="val"
-                                    >Tracing / instrumentation cuando aplica
-                                    (entender comportamiento real)</span
-                                >
-                            </li>
-                            <li>
-                                <span class="key mono">HYPOTHESES</span>
-                                <span class="val"
-                                    >Buscar invariantes rotas: inputs, parsing,
-                                    state, memory boundaries</span
-                                >
-                            </li>
-                            <li>
-                                <span class="key mono">LEARNING_LOOP</span>
-                                <span class="val"
-                                    >PoC mínimo → explicación clara → nota
-                                    reutilizable</span
-                                >
-                            </li>
-                        </ul>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Right Column: Stack & Goals -->
-            <div class="col-side">
-                <section class="panel stack-panel">
-                    <div class="panel-header mono">
-                        <span>04_TOOLSET</span>
-                    </div>
-                    <div class="panel-content">
-                        <div class="stack-group">
-                            <span class="stack-label mono text-muted"
-                                >WEB_TESTING</span
-                            >
-                            <p>Burp Suite · Postman · Insomnia</p>
-                        </div>
-
-                        <div class="stack-group">
-                            <span class="stack-label mono text-muted"
-                                >RECONNAISSANCE</span
-                            >
-                            <p>subfinder · bbot · httpx · nuclei</p>
-                        </div>
-
-                        <div class="stack-group">
-                            <span class="stack-label mono text-muted"
-                                >OSINT</span
-                            >
-                            <p>Google Dorks · Pivots</p>
-                        </div>
-
-                        <div class="stack-group">
-                            <span class="stack-label mono text-muted"
-                                >AUTOMATION</span
-                            >
-                            <p>Java · Python · Node.js · TypeScript</p>
-                        </div>
-
-                        <div class="stack-group">
-                            <span class="stack-label mono text-muted"
-                                >RE_TOOLING</span
-                            >
-                            <p>Ghidra · radare2 · objdump/readelf · strings</p>
-                        </div>
-
-                        <div class="stack-group">
-                            <span class="stack-label mono text-muted"
-                                >DEBUG_TRACE</span
-                            >
-                            <p>
-                                GDB (pwndbg/gef) · strace/ltrace · perf (cuando
-                                aplica)
-                            </p>
-                        </div>
-
-                        <div class="stack-group">
-                            <span class="stack-label mono text-muted"
-                                >BINEXP_LABS</span
-                            >
-                            <p>
-                                pwntools · AFL++ (experimentos) · QEMU (cuando
-                                aplica)
-                            </p>
-                        </div>
-
-                        <div class="stack-group">
-                            <span class="stack-label mono text-muted"
-                                >EMBEDDED_KINDLE</span
-                            >
-                            <p>
-                                binwalk · firmware extraction · filesystem
-                                mounting (labs)
-                            </p>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="panel goals-panel">
-                    <div class="panel-header mono">
-                        <span>05_CURRENT_OBJECTIVE</span>
-                    </div>
-                    <div class="panel-content">
-                        <p class="mono text-sm text-warn mb-2">
-                            &gt; REVERSING & EXPLOIT DEV
-                        </p>
-                        <p class="text-sm">
-                            Construyendo base sólida para investigar donde “solo
-                            web” no alcanza: binarios, mitigaciones y root
-                            causes.
-                        </p>
-
-                        <div class="mini-cards">
-                            <div class="mc">
-                                <span class="mc-title mono">LINUX_EXP</span>
-                                <span class="mc-text"
-                                    >Memory corruption & debugging</span
-                                >
-                            </div>
-                            <div class="mc">
-                                <span class="mc-title mono">EMBEDDED</span>
-                                <span class="mc-text"
-                                    >Firmware & IoT surfaces</span
-                                >
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="panel blog-panel">
-                    <div class="panel-header mono">
-                        <span>06_LOG_CONTENT</span>
-                    </div>
-                    <div class="panel-content">
-                        <ul class="simple-list text-sm">
-                            <li>Writeups de bug bounty real</li>
-                            <li>CTFs y labs educativos</li>
-                            <li>Research y experimentos</li>
-                        </ul>
-                        <p class="disclosure mono text-xs mt-4 text-muted">
-                            * DISCLOSURE: RESPONSIBLE ONLY
-                        </p>
-                    </div>
-                </section>
-            </div>
-        </div>
-
-        <div class="cta-section">
-            <a href={`/${lang}/contact`} class="btn btn-primary mono large">
-                &gt; INITIATE_CONTACT
+        <div class="about-cta">
+            <p class="mono">
+                ¿Investigación, pentest o simplemente hablar de dispositivos?
+            </p>
+            <a href={`/${lang}/contact`} class="btn btn-primary btn-lg">
+                &gt; initiate_contact
             </a>
         </div>
     </div>

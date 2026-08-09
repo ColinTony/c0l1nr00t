@@ -1,14 +1,23 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import Card from "../../components/Card.astro";
+import PostRow from "../../components/PostRow.astro";
 import { getCollection } from "astro:content";
 import { useTranslations } from "../../i18n/utils";
+import { readingTime } from "../../utils/reading-time";
+import {
+    identity,
+    researchAreas,
+    statusLabels,
+    findings,
+    track,
+    lasVegas,
+} from "../../data/research";
 
 const lang = "es";
 const t = useTranslations(lang);
 
 const posts = await getCollection("blog", ({ id, data }) => {
-    return id.startsWith("es/") && !data.draft;
+    return id.startsWith("es/") && !data.draft && data.visible !== false;
 });
 
 const sortedPosts = posts
@@ -17,291 +26,543 @@ const sortedPosts = posts
         if (!a.data.pinned && b.data.pinned) return 1;
         return b.data.date.valueOf() - a.data.date.valueOf();
     })
-    .slice(0, 3);
+    .slice(0, 4);
 
-const writeups = await getCollection("writeups", ({ id, data }) => {
-    return id.startsWith("es/") && data.status === "published";
-});
-const sortedWriteups = writeups
-    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-    .slice(0, 3);
+const featured = findings[0];
+const rest = findings.slice(1);
 ---
 
-<BaseLayout title="c0l1nr00t | Lab" description={t("hero.lead")}>
-    <section class="hero container">
-        <p class="kicker mono">{t("hero.kicker")}</p>
-        <h1>{t("hero.headline")}</h1>
-        <p class="lead">{t("hero.lead")}</p>
-        <div class="ctas">
-            <a href={`/${lang}/writeups`} class="btn btn-primary mono"
-                >{t("cta.writeups")}</a
-            >
-            <a href={`/${lang}/about`} class="btn btn-outline mono"
-                >{t("cta.about")}</a
-            >
+<BaseLayout
+    title={`${identity.handle} | ${identity.role}`}
+    description={`${identity.role} mexicano. ${identity.lead}`}
+>
+    <section class="hero">
+        <div class="container hero-inner">
+            <div class="hero-copy">
+                <p class="eyebrow">
+                    &gt; {identity.handle} · {identity.role}
+                </p>
+                <h1>{identity.tagline}</h1>
+                <p class="lead">{identity.lead}</p>
+
+                <div class="ctas">
+                    <a href={`/${lang}/research`} class="btn btn-primary">
+                        {t("cta.research")}
+                    </a>
+                    <a href={`/${lang}/about`} class="btn btn-outline">
+                        {t("cta.about")}
+                    </a>
+                </div>
+            </div>
+
+            <div class="terminal hero-terminal" aria-hidden="true">
+                <div class="terminal-bar">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot is-live"></span>
+                    <span class="terminal-title">c0l1nr00t@lab:~</span>
+                </div>
+                <div class="terminal-body">
+                    <p class="line"><span class="prompt">➜</span> whoami</p>
+                    <p class="out">
+                        c0l1nr00t — security researcher<br />
+                        {identity.location} · independiente
+                    </p>
+
+                    <p class="line">
+                        <span class="prompt">➜</span> cat research/targets.txt
+                    </p>
+                    <p class="out">
+                        <span class="k">Kindle</span> Paperwhite Signature · 12th
+                        gen<br />
+                        <span class="k">Fire TV</span> Vega OS<br />
+                        <span class="k">Echo Show</span> 5 · 3rd gen<br />
+                        <span class="k">Ring</span> app · APIs · native
+                    </p>
+
+                    <p class="line">
+                        <span class="prompt">➜</span> cat research/focus.txt
+                    </p>
+                    <p class="out">
+                        browsers · parsers · fuzzing · <span class="ok"
+                            >memory corruption</span
+                        >
+                    </p>
+
+                    <p class="line">
+                        <span class="prompt">➜</span>
+                        <span class="caret"></span>
+                    </p>
+                </div>
+            </div>
         </div>
     </section>
 
     <section class="container section">
-        <h2 class="mono">{t("section.latest_posts")}</h2>
-        <div class="grid">
+        <h2 class="section-title">{t("section.currently_researching")}</h2>
+
+        <ul class="areas">
             {
-                sortedPosts.map((post, i) => (
-                    <div
-                        class="animate__animated animate__fadeInUp"
-                        style={`animation-delay: ${i * 0.1}s`}
-                    >
-                        <Card
-                            href={`/${lang}/blog/${post.slug.split("/")[1]}`}
-                            title={post.data.title}
-                            date={post.data.date}
-                            description={post.data.description}
-                        />
-                    </div>
+                researchAreas.map((area) => (
+                    <li class="area">
+                        <div class="area-head">
+                            <h3>{area.title}</h3>
+                            <span class={`status is-${area.status}`}>
+                                {statusLabels[area.status]}
+                            </span>
+                        </div>
+                        <p>{area.summary}</p>
+                    </li>
+                ))
+            }
+        </ul>
+    </section>
+
+    <section class="container section-sm">
+        <h2 class="section-title">{t("section.findings")}</h2>
+
+        <article class="featured">
+            <div class="featured-main">
+                <p class="featured-meta mono">
+                    <span class="platform">{featured.platform}</span>
+                    <span class="sep" aria-hidden="true">/</span>
+                    <span class="codename">{featured.codename}</span>
+                </p>
+                <h3>{featured.title}</h3>
+                <p class="featured-desc">{featured.summary}</p>
+            </div>
+            <dl class="featured-side mono">
+                <div>
+                    <dt>{t("research.outcome")}</dt>
+                    <dd>{featured.outcome}</dd>
+                </div>
+                <div>
+                    <dt>{t("research.reward")}</dt>
+                    <dd class="reward">{featured.reward}</dd>
+                </div>
+            </dl>
+        </article>
+
+        <ul class="findings">
+            {
+                rest.map((finding) => (
+                    <li class="finding">
+                        <p class="finding-meta mono">
+                            <span class="platform">{finding.platform}</span>
+                        </p>
+                        <h3>{finding.title}</h3>
+                        <p>{finding.summary}</p>
+                        <p class="finding-outcome mono">{finding.outcome}</p>
+                    </li>
+                ))
+            }
+        </ul>
+
+        <p class="disclosure mono">
+            {t("research.disclosure")} · {track.rewards}
+            {track.rewardsScope} ({track.rewardsAsOf}).
+        </p>
+    </section>
+
+    <section class="container section-sm">
+        <a href={`/${lang}/research#las-vegas`} class="event">
+            <div>
+                <p class="event-kicker mono">
+                    {lasVegas.date} · {lasVegas.place}
+                </p>
+                <h2 class="event-title">
+                    {lasVegas.event}
+                    {lasVegas.year}
+                </h2>
+                <p class="event-desc">{lasVegas.intro}</p>
+            </div>
+            <span class="event-go mono" aria-hidden="true">→</span>
+        </a>
+    </section>
+
+    <section class="container section-sm">
+        <h2 class="section-title">{t("section.latest_posts")}</h2>
+
+        <div class="rows">
+            {
+                sortedPosts.map((post) => (
+                    <PostRow
+                        href={`/${lang}/blog/${post.slug.split("/")[1]}`}
+                        title={post.data.title}
+                        date={post.data.date}
+                        description={post.data.description}
+                        category={post.data.category}
+                        tags={post.data.tags}
+                        readingTime={readingTime(post.body, t("blog.read_time"))}
+                        pinned={post.data.pinned}
+                    />
                 ))
             }
         </div>
-    </section>
 
-    <section class="container section">
-        <div class="terminal-window animate__animated animate__fadeInUp">
-            <div class="terminal-header">
-                <div class="buttons">
-                    <span class="dot red"></span>
-                    <span class="dot yellow"></span>
-                    <span class="dot green"></span>
-                </div>
-                <span class="title">c0l1nr00t@system:~</span>
-            </div>
-            <div class="terminal-body mono">
-                <p>
-                    <span class="prompt">➜</span>
-                    <span class="command">init_sequence.sh</span>
-                </p>
-                <p class="output">
-                    > Loading kernel modules... <span class="green">OK</span><br
-                    />
-                    > Mounting filesystems... <span class="green">OK</span><br
-                    />
-                    > Establishing secure connection... <span class="green"
-                        >CONNECTED</span
-                    ><br />
-                    > User identity verified: <span class="neon-cyan"
-                        >c0l1nr00t</span
-                    >
-                </p>
-                <p>
-                    <span class="prompt">➜</span>
-                    <span class="command">cat status.txt</span>
-                </p>
-                <p class="output">
-                    CURRENT_MISSION: <span class="neon-green"
-                        >EXPLORE_LEARN_BREAK</span
-                    ><br />
-                    STATUS: <span class="neon-green">ONLINE</span><br />
-                    LOCATION: <span class="neon-cyan">México</span>
-                </p>
-                <p>
-                    <span class="prompt">➜</span>
-                    <span class="cursor">_</span>
-                </p>
-            </div>
-        </div>
+        <a href={`/${lang}/blog`} class="view-all mono">
+            {t("section.view_all")} <span aria-hidden="true">→</span>
+        </a>
     </section>
 </BaseLayout>
 
 <style>
+    /* --- Hero ---------------------------------------------------------- */
     .hero {
-        padding: 6rem 1rem;
+        padding-block: clamp(3rem, 8vw, 5.5rem);
         border-bottom: 1px solid var(--border);
-        position: relative;
-        overflow: hidden;
-    }
-    .hero::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(
-            circle at 50% 50%,
-            rgba(0, 255, 65, 0.05) 0%,
-            transparent 70%
-        );
-        pointer-events: none;
-    }
-    .kicker {
-        color: var(--neon-green);
-        margin-bottom: 1rem;
-        font-family: var(--font-mono);
-        display: inline-block;
-        padding: 0.2rem 0.5rem;
-        background: rgba(0, 255, 65, 0.1);
-        border-radius: 4px;
-        border: 1px solid rgba(0, 255, 65, 0.2);
-    }
-    .lead {
-        font-size: 1.3rem;
-        color: var(--text);
-        max-width: 600px;
-        margin-top: 1rem;
-    }
-    .ctas {
-        margin-top: 2.5rem;
-        display: flex;
-        gap: 1rem;
-    }
-    .btn {
-        display: inline-block;
-        padding: 0.8rem 1.5rem;
-        border-radius: var(--radius);
-        text-decoration: none;
-        font-weight: bold;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        font-size: 0.9rem;
-    }
-    .btn-primary {
-        background: rgba(46, 160, 67, 0.2);
-        color: var(--neon-green);
-        border: 1px solid var(--neon-green);
-        box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
-    }
-    .btn-primary:hover {
-        background: var(--neon-green);
-        color: #000;
-        box-shadow: 0 0 20px var(--glow-green);
-    }
-    .btn-outline {
-        border: 1px solid var(--border-bright);
-        color: var(--text);
-        background: transparent;
-    }
-    .btn-outline:hover {
-        border-color: var(--neon-cyan);
-        color: var(--neon-cyan);
-        box-shadow: 0 0 15px var(--glow-cyan);
-    }
-    .section {
-        padding: 4rem 1rem;
-    }
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-top: 2rem;
     }
 
-    /* Terminal Styles */
-    .terminal-window {
-        background: #0d1117;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        overflow: hidden;
-        max-width: 800px;
-        margin: 0 auto;
-        font-family: "JetBrains Mono", monospace;
+    .hero-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+        align-items: center;
+        gap: clamp(2rem, 5vw, 4rem);
     }
-    .terminal-header {
-        background: #161b22;
-        padding: 0.5rem 1rem;
+
+    .hero-copy h1 {
+        max-width: 18ch;
+        margin-bottom: var(--sp-5);
+        font-size: clamp(1.75rem, 1.2rem + 2.4vw, 3rem);
+        text-wrap: pretty;
+    }
+
+    .lead {
+        max-width: 48ch;
+        margin-bottom: var(--sp-6);
+        color: var(--text-dim);
+        font-size: var(--fs-lg);
+    }
+
+    .ctas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--sp-3);
+    }
+
+    .hero-terminal {
+        font-size: var(--fs-sm);
+    }
+
+    .hero-terminal .terminal-body {
+        padding: var(--sp-4) var(--sp-5);
+        line-height: 1.75;
+    }
+
+    .line {
+        margin: 0;
+        color: var(--text-strong);
+    }
+
+    .line .prompt {
+        margin-right: var(--sp-2);
+    }
+
+    .out {
+        margin: 0 0 var(--sp-4);
+        padding-left: 1.25rem;
+        color: var(--text-dim);
+    }
+
+    .out .k {
+        display: inline-block;
+        min-width: 5.5rem;
+        color: var(--link);
+    }
+
+    .ok {
+        color: var(--accent);
+    }
+
+    /* --- Currently researching ----------------------------------------- */
+    .areas {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+        gap: 1px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+    }
+
+    .area {
+        padding: var(--sp-5);
+        background: var(--surface);
+    }
+
+    .area-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--sp-3);
+        margin-bottom: var(--sp-2);
+    }
+
+    .area h3 {
+        margin: 0;
+        font-size: var(--fs-md);
+        color: var(--text-strong);
+    }
+
+    .area p {
+        margin: 0;
+        color: var(--text-dim);
+        font-size: var(--fs-base);
+        line-height: var(--lh-snug);
+    }
+
+    .status {
+        flex-shrink: 0;
+        font-family: var(--font-mono);
+        font-size: var(--fs-xs);
+        color: var(--text-faint);
+        letter-spacing: var(--tracking-wide);
+    }
+
+    .status.is-active {
+        color: var(--accent);
+    }
+
+    /* --- Findings ------------------------------------------------------- */
+    .featured {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 14rem;
+        gap: var(--sp-5);
+        padding: var(--sp-6);
+        background: var(--surface);
+        border: 1px solid var(--accent-line);
+        border-radius: var(--radius);
+    }
+
+    .featured-meta {
         display: flex;
         align-items: center;
-        border-bottom: 1px solid var(--border);
-        position: relative;
+        gap: var(--sp-3);
+        margin-bottom: var(--sp-3);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
     }
-    .buttons {
+
+    .platform {
+        color: var(--accent);
+        text-transform: uppercase;
+    }
+
+    .sep {
+        color: var(--border-strong);
+    }
+
+    .codename {
+        color: var(--text-faint);
+    }
+
+    .featured h3 {
+        margin-bottom: var(--sp-3);
+        font-size: var(--fs-xl);
+    }
+
+    .featured-desc {
+        max-width: 60ch;
+        margin: 0;
+        color: var(--text-dim);
+    }
+
+    .featured-side {
         display: flex;
-        gap: 6px;
+        flex-direction: column;
+        gap: var(--sp-4);
+        margin: 0;
+        padding-left: var(--sp-5);
+        border-left: 1px solid var(--border);
     }
-    .dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
+
+    .featured-side dt {
+        margin-bottom: var(--sp-1);
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
+        text-transform: uppercase;
     }
-    .red {
-        background: #ff5f56;
+
+    .featured-side dd {
+        margin: 0;
+        color: var(--text);
+        font-size: var(--fs-sm);
     }
-    .yellow {
-        background: #ffbd2e;
+
+    .reward {
+        color: var(--accent-strong);
+        font-size: var(--fs-lg) !important;
     }
-    .green {
-        background: #27c93f;
+
+    .findings {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+        gap: var(--sp-5);
+        margin: var(--sp-5) 0 0;
+        padding: 0;
+        list-style: none;
     }
-    .title {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        color: var(--muted);
-        font-size: 0.8rem;
+
+    .finding {
+        display: flex;
+        flex-direction: column;
+        padding: var(--sp-5);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
     }
-    .terminal-body {
-        padding: 1.5rem;
-        color: #c9d1d9;
-        font-size: 0.95rem;
-        line-height: 1.6;
+
+    .finding-meta {
+        margin-bottom: var(--sp-2);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
     }
-    .prompt {
-        color: var(--neon-green);
-        margin-right: 0.5rem;
+
+    .finding h3 {
+        margin-bottom: var(--sp-2);
+        font-size: var(--fs-md);
     }
-    .command {
-        color: #fff;
+
+    .finding p {
+        margin: 0;
+        color: var(--text-dim);
+        font-size: var(--fs-base);
+        line-height: var(--lh-snug);
     }
-    .output {
-        color: var(--muted);
-        margin-bottom: 1rem;
-        padding-left: 1.5rem;
+
+    .finding-outcome {
+        margin-top: auto !important;
+        padding-top: var(--sp-3);
+        border-top: 1px solid var(--border);
+        color: var(--text-faint) !important;
+        font-size: var(--fs-xs) !important;
     }
-    .neon-green {
-        color: var(--neon-green);
+
+    .disclosure {
+        margin: var(--sp-5) 0 0;
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        line-height: var(--lh-snug);
     }
-    .neon-cyan {
-        color: var(--neon-cyan);
+
+    /* --- Evento --------------------------------------------------------- */
+    .event {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--sp-5);
+        padding: var(--sp-6);
+        background: linear-gradient(
+            120deg,
+            var(--accent-soft),
+            transparent 60%
+        );
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        color: inherit;
+        transition:
+            border-color var(--dur) var(--ease),
+            transform var(--dur) var(--ease);
     }
-    .cursor {
-        display: inline-block;
-        width: 8px;
-        height: 1.2em;
-        background: var(--neon-green);
-        animation: blink 1s step-end infinite;
-        vertical-align: middle;
+
+    .event:hover {
+        border-color: var(--accent-line);
+        transform: translateY(-2px);
     }
-    @keyframes blink {
-        0%,
-        100% {
-            opacity: 1;
-        }
-        50% {
-            opacity: 0;
-        }
+
+    .event-kicker {
+        margin-bottom: var(--sp-2);
+        color: var(--accent);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wider);
+        text-transform: uppercase;
     }
-    @media (max-width: 768px) {
-        .hero {
-            padding: 4rem 1rem;
-        }
-        .lead {
-            font-size: 1.1rem;
-        }
-        .ctas {
-            flex-direction: column;
-            width: 100%;
-        }
-        .btn {
-            width: 100%;
-            text-align: center;
-        }
-        .terminal-window {
-            font-size: 0.85rem;
-        }
-        .terminal-body {
-            padding: 1rem;
-        }
-        .grid {
+
+    .event-title {
+        margin-bottom: var(--sp-3);
+        font-size: var(--fs-xl);
+    }
+
+    .event-desc {
+        max-width: 68ch;
+        margin: 0;
+        color: var(--text-dim);
+        font-size: var(--fs-base);
+    }
+
+    .event-go {
+        flex-shrink: 0;
+        color: var(--accent);
+        font-size: var(--fs-xl);
+        transition: transform var(--dur) var(--ease);
+    }
+
+    .event:hover .event-go {
+        transform: translateX(4px);
+    }
+
+    /* --- Listados ------------------------------------------------------- */
+    .rows {
+        border-top: 1px solid var(--border);
+    }
+
+    .view-all {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--sp-2);
+        margin-top: var(--sp-6);
+        color: var(--text-dim);
+        font-size: var(--fs-sm);
+    }
+
+    .view-all:hover {
+        color: var(--accent-strong);
+    }
+
+    .view-all span {
+        transition: transform var(--dur) var(--ease);
+    }
+
+    .view-all:hover span {
+        transform: translateX(3px);
+    }
+
+    @media (max-width: 900px) {
+        .hero-inner {
             grid-template-columns: 1fr;
+        }
+
+        .hero-copy h1 {
+            max-width: none;
+        }
+
+        .featured {
+            grid-template-columns: 1fr;
+        }
+
+        .featured-side {
+            flex-direction: row;
+            gap: var(--sp-6);
+            padding: var(--sp-4) 0 0;
+            border-left: none;
+            border-top: 1px solid var(--border);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .event {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .ctas .btn {
+            flex: 1;
         }
     }
 </style>

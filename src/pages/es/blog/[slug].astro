@@ -2,195 +2,361 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { useTranslations } from "../../../i18n/utils";
+import { readingTime } from "../../../utils/reading-time";
+import { slugify } from "../../../utils/slug";
 
 export async function getStaticPaths() {
     const posts = await getCollection("blog");
-    const esPosts = posts.filter(
-        (post) => post.id.startsWith("es/") && post.data.visible !== false,
-    );
-    return esPosts.map((post) => ({
+
+    const esPosts = posts
+        .filter(
+            (post) =>
+                post.id.startsWith("es/") &&
+                !post.data.draft &&
+                post.data.visible !== false,
+        )
+        .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+    return esPosts.map((post, i) => ({
         params: { slug: post.slug.split("/")[1] },
-        props: { post },
+        props: {
+            post,
+            newer: esPosts[i - 1] ?? null,
+            older: esPosts[i + 1] ?? null,
+        },
     }));
 }
 
-const { post } = Astro.props;
+const { post, newer, older } = Astro.props;
 const { Content, headings } = await post.render();
 const lang = "es";
 const t = useTranslations(lang);
+
+const isoDate = post.data.date.toISOString().split("T")[0];
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const slugOf = (entry) => entry.slug.split("/")[1];
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description}>
-    <article class="container section">
-        <a href={`/${lang}/blog`} class="back-link mono"
-            >&larr; {t("blog.back")}</a
-        >
+<BaseLayout
+    title={`${post.data.title} | c0l1nr00t`}
+    description={post.data.description}
+    type="article"
+    publishedDate={post.data.date}
+    tags={post.data.tags}
+>
+    <div class="container section">
+        <a href={`/${lang}/blog`} class="back-link">
+            <span aria-hidden="true">←</span>
+            {t("blog.back")}
+        </a>
 
-        <header class="post-header">
-            <h1 class="title">{post.data.title}</h1>
-            <div class="meta mono">
-                <time datetime={post.data.date.toISOString()}>
-                    {post.data.date.toISOString().split("T")[0]}
-                </time>
-                {post.data.tags.map((tag) => <span class="tag">#{tag}</span>)}
-            </div>
-        </header>
+        <article class="article">
+            <header class="post-header">
+                <p class="post-meta mono">
+                    {
+                        post.data.category && (
+                            <>
+                                <a
+                                    class="cat"
+                                    href={`/${lang}/blog/categoria/${slugify(post.data.category)}`}
+                                >
+                                    {post.data.category}
+                                </a>
+                                <span class="sep" aria-hidden="true">
+                                    /
+                                </span>
+                            </>
+                        )
+                    }
+                    {
+                        post.data.type && (
+                            <>
+                                <span>{post.data.type}</span>
+                                <span class="sep" aria-hidden="true">
+                                    /
+                                </span>
+                            </>
+                        )
+                    }
+                    <time datetime={isoDate}>{isoDate}</time>
+                    <span class="sep" aria-hidden="true">/</span>
+                    <span>{readingTime(post.body, t("blog.read_time"))}</span>
+                </p>
 
-        <div class="content-wrapper">
-            {
-                headings.length > 0 && (
-                    <aside class="toc">
-                        <h3>TOC</h3>
-                        <ul>
-                            {headings.map((heading) => (
-                                <li class={`toc-level-${heading.depth}`}>
-                                    <a href={`#${heading.slug}`}>
-                                        {heading.text}
-                                    </a>
-                                </li>
+                <h1>{post.data.title}</h1>
+                <p class="lead">{post.data.description}</p>
+
+                {
+                    post.data.tags.length > 0 && (
+                        <p class="tags">
+                            {post.data.tags.map((tag) => (
+                                <span class="chip">#{tag}</span>
                             ))}
-                        </ul>
-                    </aside>
-                )
-            }
+                        </p>
+                    )
+                }
+            </header>
 
-            <div class="markdown-body">
-                <Content />
+            <div class="post-body">
+                <div class="prose">
+                    <Content />
+                </div>
+
+                {
+                    toc.length > 1 && (
+                        <aside class="toc" aria-label={t("blog.toc")}>
+                            <p class="toc-title mono">{t("blog.toc")}</p>
+                            <ul>
+                                {toc.map((heading) => (
+                                    <li class={`lvl-${heading.depth}`}>
+                                        <a href={`#${heading.slug}`}>
+                                            {heading.text}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </aside>
+                    )
+                }
             </div>
-        </div>
-    </article>
+        </article>
+
+        {
+            (newer || older) && (
+                <nav class="post-nav" aria-label="Más entradas">
+                    {older ? (
+                        <a href={`/${lang}/blog/${slugOf(older)}`} class="np">
+                            <span class="np-label mono">← Anterior</span>
+                            <span class="np-title">{older.data.title}</span>
+                        </a>
+                    ) : (
+                        <span />
+                    )}
+
+                    {newer && (
+                        <a
+                            href={`/${lang}/blog/${slugOf(newer)}`}
+                            class="np align-end"
+                        >
+                            <span class="np-label mono">Siguiente →</span>
+                            <span class="np-title">{newer.data.title}</span>
+                        </a>
+                    )}
+                </nav>
+            )
+        }
+    </div>
 </BaseLayout>
 
+<script>
+    function setupToc() {
+        const links = Array.from(
+            document.querySelectorAll<HTMLAnchorElement>(".toc a"),
+        );
+        if (!links.length) return;
+
+        const byId = new Map(
+            links.map((link) => [decodeURIComponent(link.hash.slice(1)), link]),
+        );
+
+        const headings = Array.from(byId.keys())
+            .map((id) => document.getElementById(id))
+            .filter((el): el is HTMLElement => Boolean(el));
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (!entry.isIntersecting) continue;
+                    links.forEach((l) => l.classList.remove("active"));
+                    byId.get(entry.target.id)?.classList.add("active");
+                }
+            },
+            { rootMargin: "-80px 0px -70% 0px", threshold: 0 },
+        );
+
+        headings.forEach((h) => observer.observe(h));
+    }
+
+    setupToc();
+    document.addEventListener("astro:page-load", setupToc);
+</script>
+
 <style>
-    .section {
-        padding: 3rem 1rem;
+    .article {
+        margin-top: var(--sp-6);
     }
-    .back-link {
-        display: inline-block;
-        margin-bottom: 2rem;
-        color: var(--muted);
-    }
+
     .post-header {
-        margin-bottom: 3rem;
+        max-width: var(--measure);
+        margin-bottom: var(--sp-8);
+        padding-bottom: var(--sp-6);
         border-bottom: 1px solid var(--border);
-        padding-bottom: 2rem;
     }
-    .title {
-        color: var(--accent2);
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-    }
-    .meta {
+
+    .post-meta {
         display: flex;
-        gap: 1rem;
-        color: var(--muted);
         flex-wrap: wrap;
+        align-items: center;
+        gap: var(--sp-3);
+        margin-bottom: var(--sp-4);
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
+        text-transform: uppercase;
     }
-    .tag {
+
+    .post-meta .cat {
         color: var(--accent);
     }
 
-    .content-wrapper {
+    .post-meta .cat:hover {
+        color: var(--accent-strong);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    .sep {
+        color: var(--border-strong);
+    }
+
+    .post-header h1 {
+        margin-bottom: var(--sp-4);
+        text-wrap: pretty;
+    }
+
+    .lead {
+        margin-bottom: var(--sp-5);
+        color: var(--text-dim);
+        font-size: var(--fs-lg);
+    }
+
+    .tags {
         display: flex;
-        gap: 3rem;
-        align-items: flex-start;
-    }
-    .toc {
-        width: 250px;
-        position: sticky;
-        top: 100px;
-        flex-shrink: 0;
-        font-size: 0.9rem;
-        border-right: 1px solid var(--border);
-        padding-right: 1rem;
-    }
-    .toc h3 {
-        margin-top: 0;
-        color: var(--muted);
-        font-size: 1rem;
-    }
-    .toc ul {
-        list-style: none;
-        padding: 0;
-    }
-    .toc li {
-        margin-bottom: 0.5rem;
-    }
-    .toc a {
-        color: var(--text);
-        text-decoration: none;
-    }
-    .toc a:hover {
-        color: var(--accent2);
-    }
-    .toc-level-3 {
-        padding-left: 1rem;
-    }
-
-    .markdown-body {
-        flex: 1;
-        min-width: 0;
-    }
-
-    /* Markdown styles */
-    .markdown-body :global(h2) {
-        color: var(--accent);
-        margin-top: 2rem;
-    }
-    .markdown-body :global(p) {
-        margin-bottom: 1.5rem;
-        font-size: 1.1rem;
-    }
-    .markdown-body :global(pre) {
-        background: #1e1e1e !important;
-        padding: 1.5rem;
-        border-radius: var(--radius);
-        overflow-x: auto;
-        margin-bottom: 1.5rem;
-        border: 1px solid var(--border);
-    }
-    .markdown-body :global(code) {
-        font-family: var(--font-mono);
-        color: var(--accent2);
-    }
-    .markdown-body :global(pre code) {
-        color: inherit;
-        background: transparent;
-        padding: 0;
-    }
-    .markdown-body :global(img) {
-        max-width: 100%;
-        border-radius: var(--radius);
-        border: 1px solid var(--border);
-    }
-    .markdown-body :global(blockquote) {
-        border-left: 4px solid var(--accent);
+        flex-wrap: wrap;
+        gap: var(--sp-2);
         margin: 0;
-        padding-left: 1rem;
-        color: var(--muted);
-        font-style: italic;
     }
 
-    @media (max-width: 900px) {
-        .content-wrapper {
-            flex-direction: column;
+    .post-body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 220px;
+        gap: clamp(2rem, 6vw, 5rem);
+        align-items: start;
+    }
+
+    /* Tabla de contenido */
+    .toc {
+        position: sticky;
+        top: calc(var(--header-h) + var(--sp-5));
+        padding-left: var(--sp-5);
+        border-left: 1px solid var(--border);
+    }
+
+    .toc-title {
+        margin-bottom: var(--sp-3);
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wider);
+        text-transform: uppercase;
+    }
+
+    .toc ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .toc li {
+        margin-bottom: var(--sp-2);
+    }
+
+    .toc .lvl-3 {
+        padding-left: var(--sp-4);
+    }
+
+    .toc a {
+        color: var(--text-dim);
+        font-size: var(--fs-sm);
+        line-height: var(--lh-snug);
+        transition: color var(--dur) var(--ease);
+    }
+
+    .toc a:hover,
+    .toc a.active {
+        color: var(--accent-strong);
+    }
+
+    /* Navegación entre entradas */
+    .post-nav {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--sp-4);
+        margin-top: var(--sp-9);
+        padding-top: var(--sp-6);
+        border-top: 1px solid var(--border);
+    }
+
+    .np {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-2);
+        padding: var(--sp-4);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: inherit;
+        transition:
+            border-color var(--dur) var(--ease),
+            background-color var(--dur) var(--ease);
+    }
+
+    .np:hover {
+        border-color: var(--border-strong);
+        background: var(--surface-2);
+    }
+
+    .np.align-end {
+        text-align: right;
+    }
+
+    .np-label {
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
+    }
+
+    .np-title {
+        color: var(--text);
+        font-size: var(--fs-base);
+        line-height: var(--lh-snug);
+    }
+
+    .np:hover .np-title {
+        color: var(--accent-strong);
+    }
+
+    @media (max-width: 980px) {
+        .post-body {
+            grid-template-columns: 1fr;
         }
+
         .toc {
-            width: 100%;
             position: static;
-            border-right: none;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1rem;
-            margin-bottom: 2rem;
+            order: -1;
+            padding: var(--sp-4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface);
         }
     }
-    @media (max-width: 768px) {
-        .title {
-            font-size: 1.8rem;
+
+    @media (max-width: 640px) {
+        .post-nav {
+            grid-template-columns: 1fr;
         }
-        .markdown-body :global(pre) {
-            padding: 1rem;
-            font-size: 0.85rem;
+
+        .np.align-end {
+            text-align: left;
         }
     }
 </style>

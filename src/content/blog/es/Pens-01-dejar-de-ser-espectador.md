@@ -2,6 +2,8 @@
 title: "Pensamientos - 001 - El día que me cansé de ser espectador de mí mismo"
 description: "Un recordatorio incómodo de que la motivación llega después de hacer, no antes."
 date: 2026-01-12
+category: "Bitácora"
+type: "Lessons Learned"
 tags: ["motivación", "disciplina", "hacking mental", "productividad", "pensamientos"]
 draft: false
 ---
