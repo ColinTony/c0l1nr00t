@@ -6,6 +6,11 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "dev:api": "astro build && npx wrangler dev",
+    "db:create": "npx wrangler d1 create colintony-reactions",
+    "db:migrate:local": "npx wrangler d1 migrations apply colintony-reactions --local",
+    "db:migrate": "npx wrangler d1 migrations apply colintony-reactions --remote",
+    "deploy": "astro build && npx wrangler deploy",
     "astro": "astro"
   },
   "dependencies": {

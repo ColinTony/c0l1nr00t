@@ -1,0 +1,270 @@
+---
+/**
+ * Reacciones de una entrada. Sin comentarios: cuatro botones y su cuenta.
+ *
+ * Las cuentas viven en Cloudflare D1 y las sirve `worker/index.js`. El bloque
+ * nace oculto y solo aparece cuando la API responde: si no hay base configurada
+ * (o estás en `astro dev` sin el worker delante), la entrada se lee igual y
+ * aquí no queda nada roto a la vista.
+ */
+interface Props {
+    /** Ruta publicada de la entrada, p. ej. /es/blog/bit-05-... */
+    entry: string;
+}
+
+const { entry } = Astro.props;
+
+const reactions = [
+    { kind: "up", emoji: "👍", label: "Me sirvió" },
+    { kind: "fire", emoji: "🔥", label: "Me encendió" },
+    { kind: "mind", emoji: "🤯", label: "Me voló la cabeza" },
+    { kind: "heart", emoji: "❤️", label: "Me llegó" },
+];
+---
+
+<!-- Sin data-reveal a propósito: este bloque ya aparece solo cuando llegan las
+     cuentas, y encadenar los dos mecanismos lo dejaría ocupando sitio invisible
+     si el observador no vuelve a dispararse. La entrada la hace su animación. -->
+<section
+    class="reactions"
+    data-reactions
+    data-entry={entry}
+    aria-labelledby="reactions-title"
+    hidden
+>
+    <p class="r-title mono" id="reactions-title">¿Te sirvió esta entrada?</p>
+
+    <div class="r-row">
+        {
+            reactions.map((reaction) => (
+                <button
+                    type="button"
+                    class="r-btn"
+                    data-kind={reaction.kind}
+                    aria-pressed="false"
+                    title={reaction.label}
+                >
+                    <span class="r-emoji" aria-hidden="true">
+                        {reaction.emoji}
+                    </span>
+                    <span class="r-count mono" data-count>
+                        0
+                    </span>
+                    <span class="visually-hidden">{reaction.label}</span>
+                </button>
+            ))
+        }
+    </div>
+
+    <p class="r-note mono">Una reacción por persona · sin comentarios</p>
+</section>
+
+<script>
+    const API = import.meta.env.PUBLIC_REACTIONS_API || "/api/reactions";
+    const KINDS = ["up", "fire", "mind", "heart"];
+
+    type State = { counts: Record<string, number>; you: string | null };
+
+    function paint(root: HTMLElement, state: State) {
+        root.querySelectorAll<HTMLButtonElement>("[data-kind]").forEach((btn) => {
+            const kind = btn.dataset.kind ?? "";
+            const count = btn.querySelector("[data-count]");
+            if (count) count.textContent = String(state.counts[kind] ?? 0);
+
+            const mine = state.you === kind;
+            btn.classList.toggle("is-mine", mine);
+            btn.setAttribute("aria-pressed", String(mine));
+        });
+    }
+
+    /** Mismo criterio que el worker, para no esperar a la red al pulsar. */
+    function toggle(state: State, kind: string): State {
+        const counts = { ...state.counts };
+
+        if (state.you === kind) {
+            counts[kind] = Math.max(0, (counts[kind] ?? 0) - 1);
+            return { counts, you: null };
+        }
+
+        if (state.you) {
+            counts[state.you] = Math.max(0, (counts[state.you] ?? 0) - 1);
+        }
+        counts[kind] = (counts[kind] ?? 0) + 1;
+
+        return { counts, you: kind };
+    }
+
+    function normalize(data: any): State {
+        const counts: Record<string, number> = {};
+        for (const kind of KINDS) counts[kind] = Number(data?.counts?.[kind]) || 0;
+        return { counts, you: KINDS.includes(data?.you) ? data.you : null };
+    }
+
+    async function setupReactions() {
+        const root = document.querySelector<HTMLElement>("[data-reactions]");
+        if (!root || root.dataset.ready) return;
+
+        // La marca va antes del `await`: esta función corre dos veces (carga
+        // directa y astro:page-load) y si no, se enganchan dos listeners y
+        // cada clic manda dos votos que se anulan entre sí.
+        root.dataset.ready = "1";
+
+        const entry = root.dataset.entry ?? "";
+        if (!entry) return;
+
+        let state: State;
+        try {
+            const res = await fetch(
+                `${API}?entry=${encodeURIComponent(entry)}`,
+                { headers: { accept: "application/json" } },
+            );
+            if (!res.ok) return;
+            state = normalize(await res.json());
+        } catch {
+            return; // Sin API no se muestra nada: el bloque se queda oculto.
+        }
+
+        paint(root, state);
+        root.hidden = false;
+
+        let busy = false;
+
+        root.addEventListener("click", async (event) => {
+            const btn = (event.target as HTMLElement)?.closest<HTMLButtonElement>(
+                "[data-kind]",
+            );
+            if (!btn || busy) return;
+
+            const kind = btn.dataset.kind ?? "";
+            busy = true;
+            root.dataset.busy = "1";
+
+            const previous = state;
+            state = toggle(state, kind);
+            paint(root, state);
+            btn.classList.remove("is-pop");
+            void btn.offsetWidth; // reinicia la animación si se pulsa seguido
+            btn.classList.add("is-pop");
+
+            try {
+                const res = await fetch(API, {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ entry, kind }),
+                });
+                if (!res.ok) throw new Error(String(res.status));
+                state = normalize(await res.json());
+            } catch {
+                state = previous; // La red falló: se deshace lo pintado.
+            }
+
+            paint(root, state);
+            busy = false;
+            delete root.dataset.busy;
+        });
+    }
+
+    setupReactions();
+    document.addEventListener("astro:page-load", setupReactions);
+</script>
+
+<style>
+    .reactions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--sp-4);
+        margin-top: var(--sp-9);
+        padding: var(--sp-6) var(--sp-5);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        text-align: center;
+        /* Arranca al dejar de estar oculto, es decir, al llegar las cuentas */
+        animation: fade-in 320ms var(--ease) both;
+    }
+
+    .r-title {
+        margin: 0;
+        color: var(--text-dim);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wider);
+        text-transform: uppercase;
+    }
+
+    .r-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--sp-3);
+    }
+
+    .r-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--sp-3);
+        padding: 0.5rem 0.9rem;
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        cursor: pointer;
+        transition:
+            border-color var(--dur) var(--ease),
+            background-color var(--dur) var(--ease),
+            transform var(--dur) var(--ease);
+    }
+
+    .r-btn:hover {
+        border-color: var(--border-strong);
+        background: var(--surface-2);
+        transform: translateY(-1px);
+    }
+
+    .r-btn:active {
+        transform: translateY(0);
+    }
+
+    .r-btn.is-mine {
+        border-color: var(--accent-line);
+        background: var(--accent-soft);
+    }
+
+    .r-emoji {
+        font-size: 1.15rem;
+        line-height: 1;
+    }
+
+    .r-count {
+        min-width: 1.25ch;
+        color: var(--text-dim);
+        font-size: var(--fs-sm);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .r-btn.is-mine .r-count {
+        color: var(--accent-strong);
+    }
+
+    /* Rebote corto al reaccionar */
+    .r-btn.is-pop .r-emoji {
+        animation: pop 320ms var(--ease);
+    }
+
+    @keyframes pop {
+        40% {
+            transform: scale(1.28) rotate(-6deg);
+        }
+    }
+
+    .r-note {
+        margin: 0;
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+    }
+
+    /* Mientras el voto viaja, el bloque no acepta más clics */
+    .reactions[data-busy] .r-row {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+</style>

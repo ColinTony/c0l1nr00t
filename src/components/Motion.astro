@@ -1,0 +1,233 @@
+---
+/**
+ * Capa de movimiento del sitio. Se carga una sola vez desde BaseLayout.
+ *
+ * Contratos que usan las páginas:
+ *   data-reveal              aparece al entrar en pantalla (--reveal-delay escalona)
+ *   data-spotlight           foco de puntero: escribe --px / --py
+ *   data-scramble            el texto se descifra al entrar en pantalla
+ *   data-count               el número cuenta hacia arriba al entrar en pantalla
+ *   .read-progress           barra de progreso de lectura
+ *
+ * ViewTransitions no recarga la página: los listeners de documento se enlazan
+ * al evaluar el módulo (una vez) y el escaneo del DOM se repite en
+ * `astro:page-load`. Con prefers-reduced-motion no se anima nada.
+ */
+---
+
+<script>
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+    /* --- Aparición al hacer scroll ------------------------------------- */
+
+    let revealObserver: IntersectionObserver | null = null;
+
+    function setupReveal() {
+        const items = Array.from(
+            document.querySelectorAll<HTMLElement>(
+                "[data-reveal]:not(.is-revealed)",
+            ),
+        );
+        if (!items.length) return;
+
+        if (reduced.matches || !("IntersectionObserver" in window)) {
+            items.forEach((el) => el.classList.add("is-revealed"));
+            return;
+        }
+
+        revealObserver ??= new IntersectionObserver(
+            (entries, observer) => {
+                for (const entry of entries) {
+                    if (!entry.isIntersecting) continue;
+                    entry.target.classList.add("is-revealed");
+                    observer.unobserve(entry.target);
+                }
+            },
+            { rootMargin: "0px 0px -6% 0px", threshold: 0.06 },
+        );
+
+        items.forEach((el) => revealObserver?.observe(el));
+    }
+
+    /* --- Texto descifrándose -------------------------------------------- */
+
+    const GLYPHS = "!<>-_\\/[]{}=+*^?#01xabcdef";
+
+    // El avance se calcula desde el reloj, no contando fotogramas: si el
+    // navegador ralentiza los temporizadores (pestaña en segundo plano), el
+    // texto salta al final en vez de quedarse cifrado a medias.
+    const STEP = 28;
+
+    function scramble(el: HTMLElement) {
+        const text = el.textContent ?? "";
+        const chars = Array.from(text);
+        // Cada carácter se resuelve un poco después que el anterior:
+        // el texto se descifra de izquierda a derecha.
+        const ends = chars.map(
+            (_, i) => Math.round(i * 0.38) + 5 + Math.round(Math.random() * 8),
+        );
+        const last = ends.length ? Math.max(...ends) : 0;
+        const start = Date.now();
+
+        const tick = () => {
+            const frame = Math.round((Date.now() - start) / STEP);
+
+            if (frame >= last) {
+                el.textContent = text;
+                return;
+            }
+
+            let out = "";
+            for (let i = 0; i < chars.length; i++) {
+                const ch = chars[i];
+                out +=
+                    frame >= ends[i] || ch === " " || ch === "\n"
+                        ? ch
+                        : GLYPHS[(Math.random() * GLYPHS.length) | 0];
+            }
+            el.textContent = out;
+            window.setTimeout(tick, STEP);
+        };
+
+        tick();
+    }
+
+    /* --- Contadores ------------------------------------------------------ */
+
+    function countUp(el: HTMLElement) {
+        const text = el.textContent ?? "";
+        const match = text.match(/^(.*?)(\d[\d.,]*)(.*)$/s);
+        if (!match) return;
+
+        const [, prefix, raw, suffix] = match;
+        const target = Number(raw.replace(/[.,]/g, ""));
+        if (!Number.isFinite(target)) return;
+
+        const grouped = /[.,]/.test(raw);
+        const start = Date.now();
+        const duration = 900;
+
+        const step = () => {
+            const p = Math.min(1, (Date.now() - start) / duration);
+            if (p >= 1) {
+                el.textContent = text;
+                return;
+            }
+
+            const value = Math.round(target * (1 - Math.pow(1 - p, 3)));
+            el.textContent =
+                prefix +
+                (grouped ? value.toLocaleString("es-MX") : String(value)) +
+                suffix;
+            window.setTimeout(step, STEP);
+        };
+
+        step();
+    }
+
+    /** Dispara una animación una sola vez, cuando el elemento entra en pantalla. */
+    function onceInView(
+        selector: string,
+        flag: string,
+        run: (el: HTMLElement) => void,
+    ) {
+        const items = Array.from(
+            document.querySelectorAll<HTMLElement>(`${selector}:not([${flag}])`),
+        );
+        if (!items.length) return;
+
+        if (reduced.matches || !("IntersectionObserver" in window)) {
+            items.forEach((el) => el.setAttribute(flag, ""));
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (!entry.isIntersecting) continue;
+                    observer.unobserve(entry.target);
+                    run(entry.target as HTMLElement);
+                }
+            },
+            { threshold: 0.5 },
+        );
+
+        // La marca se pone al observar, no al disparar: boot() se ejecuta dos
+        // veces (carga directa y astro:page-load) y no debe duplicar animaciones.
+        items.forEach((el) => {
+            el.setAttribute(flag, "");
+            observer.observe(el);
+        });
+    }
+
+    /* --- Puntero: foco en tarjetas y paralaje de la rejilla -------------- */
+
+    let lastMove: PointerEvent | null = null;
+    let moveQueued = false;
+
+    function onPointerMove(event: PointerEvent) {
+        lastMove = event;
+        if (moveQueued) return;
+        moveQueued = true;
+
+        requestAnimationFrame(() => {
+            moveQueued = false;
+            const e = lastMove;
+            lastMove = null;
+            if (!e) return;
+
+            const gx = (0.5 - e.clientX / window.innerWidth) * 12;
+            const gy = (0.5 - e.clientY / window.innerHeight) * 12;
+            const root = document.documentElement;
+            root.style.setProperty("--gx", `${gx.toFixed(1)}px`);
+            root.style.setProperty("--gy", `${gy.toFixed(1)}px`);
+
+            const target = (e.target as Element | null)?.closest?.(
+                "[data-spotlight]",
+            ) as HTMLElement | null;
+            if (!target) return;
+
+            const rect = target.getBoundingClientRect();
+            target.style.setProperty("--px", `${e.clientX - rect.left}px`);
+            target.style.setProperty("--py", `${e.clientY - rect.top}px`);
+        });
+    }
+
+    /* --- Progreso de lectura --------------------------------------------- */
+
+    let progressBar: HTMLElement | null = null;
+
+    function updateProgress() {
+        if (!progressBar) return;
+        const max =
+            document.documentElement.scrollHeight - window.innerHeight;
+        const value = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+        progressBar.style.setProperty("--p", value.toFixed(4));
+    }
+
+    /* --- Arranque --------------------------------------------------------- */
+
+    function boot() {
+        progressBar = document.querySelector<HTMLElement>(".read-progress");
+        updateProgress();
+        setupReveal();
+        onceInView("[data-scramble]", "data-scrambled", scramble);
+        onceInView("[data-count]", "data-counted", countUp);
+    }
+
+    if (finePointer.matches && !reduced.matches) {
+        document.addEventListener("pointermove", onPointerMove, {
+            passive: true,
+        });
+    }
+
+    window.addEventListener(
+        "scroll",
+        () => requestAnimationFrame(updateProgress),
+        { passive: true },
+    );
+
+    boot();
+    document.addEventListener("astro:page-load", boot);
+</script>

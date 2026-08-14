@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Reactions from "../../../components/Reactions.astro";
 import { useTranslations } from "../../../i18n/utils";
 import { readingTime } from "../../../utils/reading-time";
 import { slugify } from "../../../utils/slug";
@@ -35,6 +36,7 @@ const t = useTranslations(lang);
 const isoDate = post.data.date.toISOString().split("T")[0];
 const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 const slugOf = (entry) => entry.slug.split("/")[1];
+const entryPath = `/${lang}/blog/${slugOf(post)}`;
 ---
 
 <BaseLayout
@@ -120,6 +122,8 @@ const slugOf = (entry) => entry.slug.split("/")[1];
                 }
             </div>
         </article>
+
+        <Reactions entry={entryPath} />
 
         {
             (newer || older) && (

@@ -50,7 +50,7 @@ const toolset = [
             </span>
         </header>
 
-        <section class="panel intro-panel">
+        <section class="panel intro-panel" data-spotlight>
             <div class="panel-header"><span>01_BIO</span></div>
             <div class="panel-content">
                 <p class="intro-lead">{identity.short}</p>
@@ -75,15 +75,27 @@ const toolset = [
 
         <section class="metrics" aria-label="Trayectoria">
             {
-                metrics.map((metric) => (
-                    <div class="metric">
-                        <span class="metric-value mono">{metric.value}</span>
+                metrics.map((metric, i) => (
+                    <div
+                        class="metric"
+                        data-spotlight
+                        data-reveal
+                        style={`--reveal-delay:${i * 70}ms`}
+                    >
+                        <span class="metric-value mono" data-count>
+                            {metric.value}
+                        </span>
                         <span class="metric-label mono">{metric.label}</span>
                     </div>
                 ))
             }
-            <div class="metric">
-                <span class="metric-value mono">{track.rewards}</span>
+            <div
+                class="metric"
+                data-spotlight
+                data-reveal
+                style={`--reveal-delay:${metrics.length * 70}ms`}
+            >
+                <span class="metric-value mono" data-count>{track.rewards}</span>
                 <span class="metric-label mono">Amazon Devices rewards</span>
             </div>
         </section>
@@ -94,8 +106,12 @@ const toolset = [
 
             <ol class="timeline">
                 {
-                    timeline.map((step) => (
-                        <li class={step.current ? "is-current" : ""}>
+                    timeline.map((step, i) => (
+                        <li
+                            class={step.current ? "is-current" : ""}
+                            data-reveal
+                            style={`--reveal-delay:${i * 60}ms`}
+                        >
                             <span class="dot" aria-hidden="true" />
                             <div>
                                 <h3 class="mono">{step.stage}</h3>
@@ -124,8 +140,8 @@ const toolset = [
 
             <ol class="loop mono">
                 {
-                    methodology.loop.map((step) => (
-                        <li>
+                    methodology.loop.map((step, i) => (
+                        <li style={`--i:${i}`}>
                             <span>{step}</span>
                         </li>
                     ))
@@ -135,7 +151,7 @@ const toolset = [
 
         <!-- Toolset + trabajo profesional ------------------------------- -->
         <div class="about-grid">
-            <section class="panel">
+            <section class="panel" data-spotlight>
                 <div class="panel-header"><span>02_TOOLSET</span></div>
                 <div class="panel-content">
                     <dl class="data-list">
@@ -151,7 +167,7 @@ const toolset = [
                 </div>
             </section>
 
-            <section class="panel">
+            <section class="panel" data-spotlight>
                 <div class="panel-header">
                     <span>03_PROFESSIONAL_WORK</span>
                     <span class="device">pentesting</span>

@@ -121,7 +121,7 @@ const years = [
             <aside class="sidebar">
                 {
                     categories.length > 0 && (
-                        <div class="panel">
+                        <div class="panel" data-spotlight>
                             <div class="panel-header">
                                 <span>{t("blog.categories")}</span>
                             </div>
@@ -144,7 +144,7 @@ const years = [
                     )
                 }
 
-                <div class="panel">
+                <div class="panel" data-spotlight>
                     <div class="panel-header">
                         <span>{t("blog.archive")}</span>
                         <span class="count">{allPosts.length}</span>
@@ -174,7 +174,7 @@ const years = [
                     </ul>
                 </div>
 
-                <div class="panel">
+                <div class="panel" data-spotlight>
                     <div class="panel-header">
                         <span>{t("section.post_types")}</span>
                     </div>

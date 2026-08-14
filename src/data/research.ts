@@ -77,7 +77,8 @@ export const platforms = [
     {
         id: "kindle",
         name: "Kindle",
-        device: "Kindle Paperwhite Signature Edition · 12th Gen",
+        // El nombre de la plataforma ya encabeza el panel: aquí solo el modelo
+        device: "Paperwhite Signature Edition · 12th Gen",
         intro: "La plataforma que más he investigado. Donde el web security clásico se cruza con un dispositivo real.",
         surfaces: [
             "Experimental Browser",
@@ -216,23 +217,6 @@ export const hardware = [
     { name: "Capturadora HDMI", use: "Fire TV, HDMI y HDMI-CEC" },
     { name: "Kindle · Fire TV · Echo Show 5 · Ring", use: "Dispositivos bajo investigación" },
 ];
-
-/** Amazon & HackerOne Las Vegas In-Person Challenge 2026. */
-export const lasVegas = {
-    event: "Amazon & HackerOne Las Vegas In-Person Challenge",
-    year: "2026",
-    date: "Agosto de 2026",
-    place: "Las Vegas",
-    intro: "Una invitación que funcionó como punto de inflexión: pasar de investigar dispositivos por mi cuenta a trabajar alrededor del ecosistema Amazon Devices junto a investigadores internacionales especializados en vulnerability research.",
-    takeaways: [
-        "Observar metodologías avanzadas de vulnerability research de cerca",
-        "Comparar workflows con investigadores internacionales",
-        "Ver cómo otros usan automatización e IA en su proceso",
-        "Identificar las áreas técnicas donde quiero profundizar",
-        "Confirmar que quiero especializarme en device security",
-    ],
-    after: "Volví con una dirección mucho más clara: dispositivos, browsers y vulnerability research de bajo nivel.",
-};
 
 /** Evolución profesional, de web a device research. */
 export const timeline = [

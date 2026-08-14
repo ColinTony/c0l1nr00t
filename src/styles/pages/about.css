@@ -218,6 +218,23 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-pill);
+    animation: loop-pulse 6s var(--ease) infinite;
+    animation-delay: calc(var(--i) * 380ms);
+}
+
+/* Cada paso del ciclo se enciende por turnos */
+@keyframes loop-pulse {
+    0%,
+    12%,
+    100% {
+        border-color: var(--border);
+        color: var(--text-dim);
+    }
+
+    4% {
+        border-color: var(--accent-line);
+        color: var(--accent-strong);
+    }
 }
 
 .loop li:not(:last-child)::after {

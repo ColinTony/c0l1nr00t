@@ -48,7 +48,7 @@ Las entradas de blog llevan además `category` (tema, de `BLOG_CATEGORIES`) y `t
 
 ### Narrativa: identidad e investigación
 
-La identidad del sitio (**c0l1nr00t — Security Researcher**) no está escrita en las plantillas: vive en **`src/data/research.ts`**, que es la fuente única para la home, `/es/research` y `/es/about` — áreas de investigación, plataformas (Kindle, Fire TV, Echo Show, Ring), hallazgos publicables, evento de Las Vegas 2026, metodología, hardware, timeline y trabajo de pentesting. Para actualizar el mensaje del sitio se edita ese archivo, no el HTML.
+La identidad del sitio (**c0l1nr00t — Security Researcher**) no está escrita en las plantillas: vive en **`src/data/research.ts`**, que es la fuente única para la home, `/es/research` y `/es/about` — áreas de investigación, plataformas (Kindle, Fire TV, Echo Show, Ring), hallazgos publicables, metodología, hardware, timeline y trabajo de pentesting. Para actualizar el mensaje del sitio se edita ese archivo, no el HTML.
 
 Reglas al tocar ese contenido:
 
@@ -84,6 +84,28 @@ Regla práctica: el Markdown renderizado va siempre dentro de `<div class="prose
 `BaseLayout.astro` envuelve todo: skip-link + `BaseHead` + `Header` + `<slot/>` + `Footer` + acceso flotante al CV (solo ≤820px), con `ViewTransitions`.
 
 Como `ViewTransitions` está activo, **todo script de página debe re-ejecutarse en `astro:page-load`**, no solo al cargar el documento. El patrón usado en el repo es declarar una función `setupX()` y llamarla dos veces (directamente y en el evento).
+
+### Interacción y movimiento
+
+`BaseLayout` marca `<html class="js">` con un script inline **y vuelve a ponerlo en `astro:after-swap`**: ViewTransitions reescribe los atributos de `<html>` en cada navegación. Toda regla que oculte algo para animarlo después cuelga de `.js`, así que sin JavaScript el sitio se ve completo. Si añades un efecto que oculta contenido, respeta esa condición.
+
+`src/components/Motion.astro` (cargado una vez desde `BaseLayout`) implementa cuatro contratos por atributo, más la barra de lectura:
+
+| Atributo | Efecto |
+| --- | --- |
+| `data-reveal` | Aparece al entrar en pantalla; `--reveal-delay` escalona una lista |
+| `data-spotlight` | Foco de puntero sobre la tarjeta: escribe `--px` / `--py` |
+| `data-scramble` | El texto se descifra al entrar en pantalla |
+| `data-count` | El número cuenta hacia arriba (respeta prefijo y sufijo del texto) |
+| `.read-progress` | Barra de progreso; `BaseLayout` la pinta solo con `type="article"` |
+
+Los listeners de documento se enlazan al evaluar el módulo (una vez) y el escaneo del DOM se repite en `astro:page-load`; las animaciones avanzan con `Date.now()` y `setTimeout`, no con `requestAnimationFrame`, para que una pestaña en segundo plano no deje el texto cifrado a medias. Con `prefers-reduced-motion` no se anima nada.
+
+`CommandPalette.astro` es la navegación por teclado (`Ctrl/⌘ + K` o `/`). Pinta sus elementos en el HTML y el filtro solo los oculta. Cualquier elemento con `data-palette-open` la abre.
+
+`Terminal.astro` (solo en la home) trae el arranque ya escrito en el HTML y, con JavaScript, lo teclea y añade un prompt real. Los datos de los comandos salen de `src/data/research.ts` serializados a un `<script type="application/json">`, para no duplicar contenido. Al añadir un comando, acuérdate de `help`.
+
+**Ojo con los estilos scoped**: los nodos que crea el JavaScript no llevan el atributo `data-astro-cid-*`, así que en `Terminal.astro` las líneas de salida se estilan como `.term-log :global(.out)`. Cualquier estilo para markup generado en cliente necesita ese `:global()`.
 
 ## Servicios externos
 

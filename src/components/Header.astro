@@ -53,15 +53,43 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
                 }
             </ul>
 
-            <a href="/files/cv.pdf" download class="btn btn-outline btn-sm">
-                {t("cv.download")}
-            </a>
+            <div class="actions">
+                <button
+                    type="button"
+                    class="palette-trigger mono"
+                    data-palette-open
+                    aria-label="Abrir la paleta de comandos"
+                >
+                    <span class="pt-text">buscar</span>
+                    <span class="pt-keys" aria-hidden="true">
+                        <span class="kbd">Ctrl</span><span class="kbd">K</span>
+                    </span>
+                </button>
+
+                <a href="/files/cv.pdf" download class="btn btn-outline btn-sm">
+                    {t("cv.download")}
+                </a>
+            </div>
         </div>
     </nav>
 </header>
 
 <script>
+    // La cabecera se asienta al hacer scroll: borde más marcado y algo de sombra
+    let header: HTMLElement | null = null;
+
+    function paintHeader() {
+        header?.classList.toggle("is-scrolled", window.scrollY > 8);
+    }
+
+    window.addEventListener("scroll", () => requestAnimationFrame(paintHeader), {
+        passive: true,
+    });
+
     function setupMenu() {
+        header = document.querySelector<HTMLElement>(".site-header");
+        paintHeader();
+
         const toggle = document.getElementById("menu-toggle");
         const nav = document.getElementById("nav-content");
         if (!toggle || !nav) return;
@@ -99,7 +127,22 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
         background: color-mix(in srgb, var(--bg) 85%, transparent);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid transparent;
+        transition:
+            border-color var(--dur) var(--ease),
+            box-shadow var(--dur) var(--ease),
+            background-color var(--dur) var(--ease);
+    }
+
+    .site-header.is-scrolled {
+        background: color-mix(in srgb, var(--bg) 92%, transparent);
+        border-bottom-color: var(--border);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+    }
+
+    /* Sin JS la cabecera mantiene su separación de siempre */
+    :global(html:not(.js)) .site-header {
+        border-bottom-color: var(--border);
     }
 
     .nav {
@@ -174,6 +217,39 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     .nav-link:hover::after,
     .nav-link[aria-current="page"]::after {
         transform: scaleX(1);
+    }
+
+    .actions {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-3);
+    }
+
+    /* Disparador de la paleta: se ve como un campo, se comporta como un atajo */
+    .palette-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--sp-3);
+        padding: 0.35rem 0.5rem 0.35rem 0.75rem;
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        cursor: pointer;
+        transition:
+            border-color var(--dur) var(--ease),
+            color var(--dur) var(--ease);
+    }
+
+    .palette-trigger:hover {
+        border-color: var(--border-strong);
+        color: var(--text-dim);
+    }
+
+    .pt-keys {
+        display: inline-flex;
+        gap: 3px;
     }
 
     /* Botón hamburguesa */
@@ -258,8 +334,19 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
             display: none;
         }
 
-        .nav-content .btn {
+        .actions {
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--sp-2);
             margin-top: var(--sp-4);
+        }
+
+        .palette-trigger {
+            justify-content: space-between;
+            padding-block: 0.5rem;
+        }
+
+        .nav-content .btn {
             justify-content: center;
         }
     }

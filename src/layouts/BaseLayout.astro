@@ -2,6 +2,8 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import Motion from "../components/Motion.astro";
+import CommandPalette from "../components/CommandPalette.astro";
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
 import { ViewTransitions } from "astro:transitions";
 
@@ -32,9 +34,22 @@ const { title, description, image, type, publishedDate, tags } = Astro.props;
             tags={tags}
         />
         <ViewTransitions />
+
+        {/* Marca que hay JS antes de pintar: sin esto nada se oculta para
+            animarse. ViewTransitions reescribe los atributos de <html> en cada
+            navegación, así que hay que volver a ponerla tras el swap. */}
+        <script is:inline>
+            (() => {
+                const mark = () => document.documentElement.classList.add("js");
+                mark();
+                document.addEventListener("astro:after-swap", mark);
+            })();
+        </script>
     </head>
     <body>
         <a class="skip-link mono" href="#main">Saltar al contenido</a>
+
+        {type === "article" && <div class="read-progress" aria-hidden="true" />}
 
         <Header />
 
@@ -43,6 +58,9 @@ const { title, description, image, type, publishedDate, tags } = Astro.props;
         </main>
 
         <Footer />
+
+        <CommandPalette />
+        <Motion />
 
         <a
             href="/files/cv.pdf"

@@ -96,12 +96,35 @@ los redefinas por página. El ancho de lectura está fijado en `--measure` (68ch
 - `PostRow.astro` — fila de listado editorial para el blog (fecha + tiempo de
   lectura a un lado, título y descripción al otro).
 - `Header.astro` — marca el enlace activo con `aria-current="page"`.
+- `Terminal.astro` — terminal interactiva de la home (arranque tecleado + prompt).
+- `CommandPalette.astro` — navegación por teclado, `Ctrl/⌘ + K` o `/`.
+- `Motion.astro` — capa de movimiento común, cargada desde `BaseLayout`.
 
 ## Movimiento
 
 Transiciones de `--dur` (160 ms) sobre color, borde y desplazamientos de 2-3 px.
 Nada de escalados ni sombras animadas. La entrada de página usa `.fade-in`, y
 todo queda anulado bajo `prefers-reduced-motion: reduce`.
+
+Los efectos que dependen de JavaScript se piden por atributo y los resuelve
+`Motion.astro`:
+
+| Atributo | Efecto |
+| --- | --- |
+| `data-reveal` | Aparece al entrar en pantalla (`--reveal-delay` escalona) |
+| `data-spotlight` | Foco de puntero sobre la tarjeta |
+| `data-scramble` | El texto se descifra al entrar en pantalla |
+| `data-count` | El número cuenta hacia arriba |
+
+Dos reglas al usarlos:
+
+1. Todo lo que oculte contenido para animarlo cuelga de `.js` (la pone
+   `BaseLayout`), para que sin JavaScript el sitio se vea entero.
+2. `data-spotlight` necesita que el elemento tenga fondo y borde propios: el
+   foco se pinta en un `::after` que hereda su `border-radius`.
+
+Un ciclo (`.loop`) enciende sus pasos por turnos con `--i` como índice y
+`loop-pulse` como animación; se repite en la home, en research y en about.
 
 ## Accesibilidad
 

@@ -15,7 +15,7 @@ const { href, title, date, description, tags, difficulty, platform } =
 const isoDate = date?.toISOString().split("T")[0];
 ---
 
-<article class="card">
+<article class="card" data-spotlight data-reveal>
     <a class="card-link" href={href}>
         <header class="card-head">
             {platform && <span class="platform mono">{platform}</span>}

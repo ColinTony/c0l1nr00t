@@ -6,13 +6,19 @@ import {
     platforms,
     findings,
     track,
-    lasVegas,
     methodology,
     hardware,
 } from "../../data/research";
 
 const lang = "es";
 const t = useTranslations(lang);
+
+const sections = [
+    { id: "platforms", label: t("section.platforms") },
+    { id: "findings", label: t("section.findings") },
+    { id: "methodology", label: t("section.methodology") },
+    { id: "hardware", label: t("section.hardware") },
+];
 ---
 
 <BaseLayout
@@ -31,202 +37,352 @@ const t = useTranslations(lang);
             {t("research.disclosure")}
         </p>
 
-        <!-- Plataformas ------------------------------------------------- -->
-        <section class="block">
-            <h2 class="section-title">{t("section.platforms")}</h2>
-
-            <div class="platforms">
-                {
-                    platforms.map((platform) => (
-                        <article class="panel platform" id={platform.id}>
-                            <div class="panel-header">
-                                <span>{platform.name}</span>
-                                <span class="device">{platform.device}</span>
-                            </div>
-                            <div class="panel-content">
-                                <p class="platform-intro">{platform.intro}</p>
-
-                                <p class="label mono">
-                                    {t("research.surfaces")}
-                                </p>
-                                <ul class="surfaces">
-                                    {platform.surfaces.map((surface) => (
-                                        <li class="chip">{surface}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </article>
-                    ))
-                }
-            </div>
-        </section>
-
-        <!-- Hallazgos ---------------------------------------------------- -->
-        <section class="block">
-            <h2 class="section-title">{t("section.findings")}</h2>
-
-            <ol class="findings">
-                {
-                    findings.map((finding) => (
-                        <li class="finding">
-                            <div class="finding-head">
-                                <p class="finding-meta mono">
-                                    <span class="platform-tag">
-                                        {finding.platform}
+        <div class="layout">
+            <nav class="rail" aria-label="Secciones de esta página">
+                <ol class="rail-list mono">
+                    {
+                        sections.map((section, i) => (
+                            <li>
+                                <a href={`#${section.id}`} data-rail={section.id}>
+                                    <span class="n">
+                                        {String(i + 1).padStart(2, "0")}
                                     </span>
-                                    {finding.codename && (
-                                        <>
-                                            <span class="sep" aria-hidden="true">
-                                                /
+                                    <span>{section.label}</span>
+                                </a>
+                            </li>
+                        ))
+                    }
+                </ol>
+            </nav>
+
+            <div class="blocks">
+                <!-- Plataformas ------------------------------------------ -->
+                <section class="block" id="platforms">
+                    <h2 class="section-title">{t("section.platforms")}</h2>
+
+                    <div class="platforms">
+                        {
+                            platforms.map((platform, i) => (
+                                <article
+                                    class="panel platform"
+                                    id={platform.id}
+                                    data-spotlight
+                                    data-reveal
+                                    style={`--reveal-delay:${i * 60}ms`}
+                                >
+                                    <div class="panel-header">
+                                        <span>{platform.name}</span>
+                                        <span class="device">
+                                            {platform.device}
+                                        </span>
+                                    </div>
+                                    <div class="panel-content">
+                                        <p class="platform-intro">
+                                            {platform.intro}
+                                        </p>
+
+                                        <p class="label mono">
+                                            {t("research.surfaces")}
+                                            <span class="count">
+                                                {platform.surfaces.length}
                                             </span>
-                                            <span class="codename">
-                                                {finding.codename}
+                                        </p>
+                                        <ul class="surfaces">
+                                            {platform.surfaces.map(
+                                                (surface, s) => (
+                                                    <li
+                                                        class="chip"
+                                                        style={`--i:${s}`}
+                                                    >
+                                                        {surface}
+                                                    </li>
+                                                ),
+                                            )}
+                                        </ul>
+                                    </div>
+                                </article>
+                            ))
+                        }
+                    </div>
+                </section>
+
+                <!-- Hallazgos -------------------------------------------- -->
+                <section class="block" id="findings">
+                    <h2 class="section-title">{t("section.findings")}</h2>
+
+                    <ol class="findings">
+                        {
+                            findings.map((finding, i) => (
+                                <li
+                                    class="finding"
+                                    data-spotlight
+                                    data-reveal
+                                    style={`--reveal-delay:${i * 60}ms`}
+                                >
+                                    <div class="finding-head">
+                                        <p class="finding-meta mono">
+                                            <span class="platform-tag">
+                                                {finding.platform}
                                             </span>
-                                        </>
-                                    )}
-                                </p>
-                                {finding.reward && (
-                                    <span class="badge">{finding.reward}</span>
-                                )}
-                            </div>
+                                            {finding.codename && (
+                                                <>
+                                                    <span
+                                                        class="sep"
+                                                        aria-hidden="true"
+                                                    >
+                                                        /
+                                                    </span>
+                                                    <span class="codename">
+                                                        {finding.codename}
+                                                    </span>
+                                                </>
+                                            )}
+                                        </p>
+                                        {finding.reward && (
+                                            <span class="badge">
+                                                {finding.reward}
+                                            </span>
+                                        )}
+                                    </div>
 
-                            <h3>{finding.title}</h3>
-                            <p class="finding-desc">{finding.summary}</p>
-                            <p class="finding-outcome mono">
-                                {finding.outcome}
-                            </p>
-                        </li>
-                    ))
-                }
-            </ol>
+                                    <h3>{finding.title}</h3>
+                                    <p class="finding-desc">{finding.summary}</p>
+                                    <p class="finding-outcome mono">
+                                        {finding.outcome}
+                                    </p>
+                                </li>
+                            ))
+                        }
+                    </ol>
 
-            <p class="track mono">
-                {track.rewards} en recompensas {track.rewardsScope}, hasta {
-                    track.rewardsAsOf
-                }. La cifra es contexto, no el objetivo: lo que persigo es
-                investigar lo bastante hondo como para encontrar vulnerabilidades
-                que importen.
-            </p>
-        </section>
-
-        <!-- Las Vegas 2026 ----------------------------------------------- -->
-        <section class="block" id="las-vegas">
-            <h2 class="section-title">{lasVegas.event} {lasVegas.year}</h2>
-
-            <div class="event">
-                <div class="event-main">
-                    <p class="event-kicker mono">
-                        {lasVegas.date} · {lasVegas.place}
+                    <p class="track mono">
+                        <span data-count>{track.rewards}</span> en recompensas {
+                            track.rewardsScope
+                        }, hasta {track.rewardsAsOf}. La cifra es contexto, no el
+                        objetivo: lo que persigo es investigar lo bastante hondo
+                        como para encontrar vulnerabilidades que importen.
                     </p>
-                    <p class="event-intro">{lasVegas.intro}</p>
-                    <p class="event-after">{lasVegas.after}</p>
-                </div>
+                </section>
 
-                <div class="event-side">
-                    <p class="label mono">Qué me llevé</p>
-                    <ul class="takeaways">
-                        {lasVegas.takeaways.map((item) => <li>{item}</li>)}
+                <!-- Metodología ------------------------------------------- -->
+                <section class="block" id="methodology">
+                    <h2 class="section-title">{t("section.methodology")}</h2>
+
+                    <ol class="loop mono">
+                        {
+                            methodology.loop.map((step, i) => (
+                                <li style={`--i:${i}`}>
+                                    <span>{step}</span>
+                                </li>
+                            ))
+                        }
+                    </ol>
+
+                    <p class="loop-note">
+                        Casi toda mi investigación empieza por preguntas, no por
+                        herramientas. Un scanner te dice qué responde; estas
+                        preguntas te dicen dónde mirar.
+                    </p>
+
+                    <ul class="questions">
+                        {
+                            methodology.questions.map((question, i) => (
+                                <li data-reveal style={`--reveal-delay:${i * 40}ms`}>
+                                    <span class="q mono" aria-hidden="true">
+                                        ?
+                                    </span>
+                                    {question}
+                                </li>
+                            ))
+                        }
                     </ul>
-                </div>
+                </section>
+
+                <!-- Hardware ---------------------------------------------- -->
+                <section class="block" id="hardware">
+                    <h2 class="section-title">{t("section.hardware")}</h2>
+
+                    <p class="hardware-note">
+                        Si una entrada puede llegar al dispositivo por radio,
+                        HDMI, navegador, voz, archivo, protocolo o periférico,
+                        es una superficie de investigación. Parte del trabajo
+                        consiste en construir mis propias herramientas para
+                        alcanzarla.
+                    </p>
+
+                    <dl class="hardware">
+                        {
+                            hardware.map((item, i) => (
+                                <div
+                                    class="hw"
+                                    data-spotlight
+                                    data-reveal
+                                    style={`--reveal-delay:${i * 50}ms`}
+                                >
+                                    <dt class="mono">{item.name}</dt>
+                                    <dd>{item.use}</dd>
+                                </div>
+                            ))
+                        }
+                    </dl>
+                </section>
+
+                <!-- Salidas ------------------------------------------------ -->
+                <section class="block outro">
+                    <div class="outro-card" data-spotlight data-reveal>
+                        <h2>Research logs</h2>
+                        <p>
+                            Notas de investigación, lab notes y deep dives
+                            conforme avanzan. No todo termina en vulnerabilidad,
+                            y esa parte también se publica.
+                        </p>
+                        <a href={`/${lang}/blog`} class="btn btn-primary">
+                            $ leer el blog
+                        </a>
+                    </div>
+
+                    <div
+                        class="outro-card"
+                        data-spotlight
+                        data-reveal
+                        style="--reveal-delay:80ms"
+                    >
+                        <h2>Writeups</h2>
+                        <p>
+                            Writeups técnicos completos, publicados cuando la
+                            divulgación coordinada lo permite.
+                        </p>
+                        <a href={`/${lang}/writeups`} class="btn btn-outline">
+                            $ ver writeups
+                        </a>
+                    </div>
+                </section>
             </div>
-        </section>
-
-        <!-- Metodología --------------------------------------------------- -->
-        <section class="block">
-            <h2 class="section-title">{t("section.methodology")}</h2>
-
-            <ol class="loop mono">
-                {
-                    methodology.loop.map((step) => (
-                        <li>
-                            <span>{step}</span>
-                        </li>
-                    ))
-                }
-            </ol>
-
-            <p class="loop-note">
-                Casi toda mi investigación empieza por preguntas, no por
-                herramientas. Un scanner te dice qué responde; estas preguntas
-                te dicen dónde mirar.
-            </p>
-
-            <ul class="questions">
-                {
-                    methodology.questions.map((question) => (
-                        <li>
-                            <span class="q mono" aria-hidden="true">
-                                ?
-                            </span>
-                            {question}
-                        </li>
-                    ))
-                }
-            </ul>
-        </section>
-
-        <!-- Hardware ------------------------------------------------------ -->
-        <section class="block">
-            <h2 class="section-title">{t("section.hardware")}</h2>
-
-            <p class="hardware-note">
-                Si una entrada puede llegar al dispositivo por radio, HDMI,
-                navegador, voz, archivo, protocolo o periférico, es una
-                superficie de investigación. Parte del trabajo consiste en
-                construir mis propias herramientas para alcanzarla.
-            </p>
-
-            <dl class="hardware">
-                {
-                    hardware.map((item) => (
-                        <div class="hw">
-                            <dt class="mono">{item.name}</dt>
-                            <dd>{item.use}</dd>
-                        </div>
-                    ))
-                }
-            </dl>
-        </section>
-
-        <!-- Salidas -------------------------------------------------------- -->
-        <section class="block outro">
-            <div class="outro-card">
-                <h2>Research logs</h2>
-                <p>
-                    Notas de investigación, lab notes y deep dives conforme
-                    avanzan. No todo termina en vulnerabilidad, y esa parte
-                    también se publica.
-                </p>
-                <a href={`/${lang}/blog`} class="btn btn-primary">
-                    $ leer el blog
-                </a>
-            </div>
-
-            <div class="outro-card">
-                <h2>Writeups</h2>
-                <p>
-                    Writeups técnicos completos, publicados cuando la divulgación
-                    coordinada lo permite.
-                </p>
-                <a href={`/${lang}/writeups`} class="btn btn-outline">
-                    $ ver writeups
-                </a>
-            </div>
-        </section>
+        </div>
     </div>
 </BaseLayout>
 
+<script>
+    // El índice lateral marca la sección que se está leyendo
+    function setupRail() {
+        const links = Array.from(
+            document.querySelectorAll<HTMLAnchorElement>("[data-rail]"),
+        );
+        if (!links.length || !("IntersectionObserver" in window)) return;
+
+        const byId = new Map(links.map((link) => [link.dataset.rail, link]));
+        const sections = links
+            .map((link) => document.getElementById(link.dataset.rail ?? ""))
+            .filter((el): el is HTMLElement => Boolean(el));
+
+        // Arriba del todo todavía no hay ninguna sección en la franja activa
+        links[0].classList.add("is-active");
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (!entry.isIntersecting) continue;
+                    links.forEach((link) => link.classList.remove("is-active"));
+                    byId.get(entry.target.id)?.classList.add("is-active");
+                }
+            },
+            { rootMargin: "-20% 0px -60% 0px", threshold: 0 },
+        );
+
+        sections.forEach((section) => observer.observe(section));
+    }
+
+    setupRail();
+    document.addEventListener("astro:page-load", setupRail);
+</script>
+
 <style>
+    .layout {
+        display: grid;
+        grid-template-columns: 190px minmax(0, 1fr);
+        gap: clamp(2rem, 5vw, 4rem);
+        align-items: start;
+        margin-top: var(--sp-8);
+    }
+
+    /* Sin esto el índice horizontal (enlaces sin partir) ensancha la columna */
+    .rail,
+    .blocks {
+        min-width: 0;
+    }
+
+    /* --- Índice lateral --------------------------------------------------- */
+    .rail {
+        position: sticky;
+        top: calc(var(--header-h) + var(--sp-6));
+    }
+
+    .rail-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        border-left: 1px solid var(--border);
+    }
+
+    .rail-list a {
+        display: flex;
+        align-items: baseline;
+        gap: var(--sp-3);
+        margin-left: -1px;
+        padding: var(--sp-2) var(--sp-4);
+        border-left: 1px solid transparent;
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wide);
+        text-transform: uppercase;
+        transition:
+            color var(--dur) var(--ease),
+            border-color var(--dur) var(--ease);
+    }
+
+    .rail-list a:hover {
+        color: var(--text-dim);
+    }
+
+    .rail-list a.is-active {
+        border-left-color: var(--accent);
+        color: var(--accent-strong);
+    }
+
+    .rail-list .n {
+        color: var(--border-strong);
+    }
+
+    .rail-list a.is-active .n {
+        color: var(--accent);
+    }
+
     .block {
         margin-top: var(--sp-9);
+        scroll-margin-top: calc(var(--header-h) + var(--sp-6));
+    }
+
+    .block:first-child {
+        margin-top: 0;
     }
 
     .label {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
         margin-bottom: var(--sp-3);
         color: var(--text-faint);
         font-size: var(--fs-xs);
         letter-spacing: var(--tracking-wider);
         text-transform: uppercase;
+    }
+
+    .label .count {
+        padding: 0 0.35rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-dim);
+        letter-spacing: 0;
     }
 
     .disclosure-banner {
@@ -252,6 +408,11 @@ const t = useTranslations(lang);
 
     .platform {
         scroll-margin-top: calc(var(--header-h) + var(--sp-5));
+        transition: border-color var(--dur) var(--ease);
+    }
+
+    .platform:hover {
+        border-color: var(--border-strong);
     }
 
     .panel-header .device {
@@ -276,6 +437,21 @@ const t = useTranslations(lang);
         list-style: none;
     }
 
+    .surfaces .chip {
+        transition:
+            border-color var(--dur) var(--ease),
+            color var(--dur) var(--ease);
+    }
+
+    .platform:hover .chip {
+        border-color: var(--border-strong);
+    }
+
+    .surfaces .chip:hover {
+        border-color: var(--accent-line);
+        color: var(--accent-strong);
+    }
+
     /* --- Hallazgos ------------------------------------------------------- */
     .findings {
         display: grid;
@@ -293,6 +469,14 @@ const t = useTranslations(lang);
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--radius);
+        transition:
+            border-color var(--dur) var(--ease),
+            transform var(--dur) var(--ease);
+    }
+
+    .finding:hover {
+        transform: translateY(-2px);
+        border-color: var(--border-strong);
     }
 
     /* El hallazgo principal ocupa la fila completa */
@@ -363,63 +547,8 @@ const t = useTranslations(lang);
         line-height: var(--lh-snug);
     }
 
-    /* --- Evento ---------------------------------------------------------- */
-    #las-vegas {
-        scroll-margin-top: calc(var(--header-h) + var(--sp-5));
-    }
-
-    .event {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 0.75fr);
-        gap: var(--sp-6);
-        padding: var(--sp-6);
-        background: linear-gradient(
-            135deg,
-            var(--accent-soft),
-            transparent 55%
-        );
-        border: 1px solid var(--border-strong);
-        border-radius: var(--radius);
-    }
-
-    .event-kicker {
-        margin-bottom: var(--sp-3);
-        color: var(--accent);
-        font-size: var(--fs-xs);
-        letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
-    }
-
-    .event-intro {
-        font-size: var(--fs-lg);
-        color: var(--text);
-    }
-
-    .event-after {
-        margin: 0;
-        color: var(--text-dim);
-    }
-
-    .takeaways {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-
-    .takeaways li {
-        position: relative;
-        margin-bottom: var(--sp-3);
-        padding-left: var(--sp-5);
-        color: var(--text-dim);
-        font-size: var(--fs-base);
-        line-height: var(--lh-snug);
-    }
-
-    .takeaways li::before {
-        content: "▸";
-        position: absolute;
-        left: 0;
-        color: var(--accent);
+    .track [data-count] {
+        color: var(--accent-strong);
     }
 
     /* --- Metodología ------------------------------------------------------ */
@@ -430,7 +559,6 @@ const t = useTranslations(lang);
         margin: 0 0 var(--sp-5);
         padding: 0;
         list-style: none;
-        counter-reset: step;
     }
 
     .loop li {
@@ -446,6 +574,8 @@ const t = useTranslations(lang);
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--radius-pill);
+        animation: loop-pulse 6s var(--ease) infinite;
+        animation-delay: calc(var(--i) * 380ms);
     }
 
     .loop li:not(:last-child)::after {
@@ -453,9 +583,17 @@ const t = useTranslations(lang);
         color: var(--accent);
     }
 
-    .loop li:last-child span {
-        border-color: var(--accent-line);
-        color: var(--accent-strong);
+    @keyframes loop-pulse {
+        0%,
+        12%,
+        100% {
+            border-color: var(--border);
+            color: var(--text-dim);
+        }
+        4% {
+            border-color: var(--accent-line);
+            color: var(--accent-strong);
+        }
     }
 
     .loop-note {
@@ -505,6 +643,11 @@ const t = useTranslations(lang);
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--radius);
+        transition: border-color var(--dur) var(--ease);
+    }
+
+    .hw:hover {
+        border-color: var(--border-strong);
     }
 
     .hw dt {
@@ -538,6 +681,11 @@ const t = useTranslations(lang);
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--radius);
+        transition: border-color var(--dur) var(--ease);
+    }
+
+    .outro-card:hover {
+        border-color: var(--border-strong);
     }
 
     .outro-card h2 {
@@ -552,10 +700,57 @@ const t = useTranslations(lang);
         font-size: var(--fs-base);
     }
 
-    @media (max-width: 860px) {
-        .event {
-            grid-template-columns: 1fr;
+    /* --- Responsive --------------------------------------------------------- */
+    @media (max-width: 1000px) {
+        .layout {
+            grid-template-columns: minmax(0, 1fr);
             gap: var(--sp-5);
+        }
+
+        /* El índice pasa a ser una tira horizontal pegada bajo la cabecera */
+        .rail {
+            top: var(--header-h);
+            z-index: 20;
+            margin-inline: calc(var(--sp-4) * -1);
+            padding-inline: var(--sp-4);
+            background: color-mix(in srgb, var(--bg) 92%, transparent);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .rail-list {
+            display: flex;
+            gap: var(--sp-1);
+            overflow-x: auto;
+            border-left: none;
+            scrollbar-width: none;
+        }
+
+        .rail-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .rail-list a {
+            margin-left: 0;
+            padding: var(--sp-3) var(--sp-3);
+            border-left: none;
+            border-bottom: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .rail-list a.is-active {
+            border-left-color: transparent;
+            border-bottom-color: var(--accent);
+        }
+
+        .rail-list .n {
+            display: none;
+        }
+
+        .block {
+            margin-top: var(--sp-8);
+            scroll-margin-top: calc(var(--header-h) * 2 + var(--sp-4));
         }
     }
 </style>

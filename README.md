@@ -24,7 +24,8 @@ npm run preview  # sirve dist/
 
 ```text
 src/
-  components/       # Header, Footer, Card, PostRow, BaseHead
+  components/       # Header, Footer, Card, PostRow, BaseHead,
+                    # Terminal, CommandPalette, Motion
   content/
     blog/es/        # Research log (Markdown)
     writeups/es/    # Writeups técnicos (Markdown)
@@ -41,8 +42,8 @@ src/
 
 | Ruta | Qué es |
 | --- | --- |
-| `/es` | Hero, áreas de investigación activas, hallazgos destacados, últimos posts |
-| `/es/research` | Plataformas investigadas, hallazgos, Las Vegas 2026, metodología, hardware |
+| `/es` | Hero con terminal interactiva, áreas de investigación activas, hallazgos destacados, últimos posts |
+| `/es/research` | Plataformas investigadas, hallazgos, metodología, hardware |
 | `/es/blog` | Research log: research notes, lab notes, deep dives |
 | `/es/blog/categoria/<slug>` | Entradas por categoría (solo las que tienen contenido) |
 | `/es/writeups` | Writeups técnicos completos (fuera del menú mientras esté vacío) |
@@ -72,6 +73,15 @@ clave `es`.
 
 Sistema de tokens en `src/styles/global.css`. Convenciones en
 `docs/style-guide.md`.
+
+## Interacción
+
+- `Ctrl/⌘ + K` (o `/`) abre la paleta de comandos para navegar el sitio.
+- La terminal de la home acepta comandos: `help`, `targets`, `focus`,
+  `findings`, `hardware`, `posts`, `open <sección>`, `clear`.
+- Todo el movimiento (aparición al hacer scroll, foco de puntero, texto que se
+  descifra, contadores) vive en `src/components/Motion.astro` y se apaga con
+  `prefers-reduced-motion`. Sin JavaScript el contenido se ve completo.
 
 ## Analytics
 

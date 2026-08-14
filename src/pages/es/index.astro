@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PostRow from "../../components/PostRow.astro";
+import Terminal from "../../components/Terminal.astro";
 import { getCollection } from "astro:content";
 import { useTranslations } from "../../i18n/utils";
 import { readingTime } from "../../utils/reading-time";
@@ -10,7 +11,7 @@ import {
     statusLabels,
     findings,
     track,
-    lasVegas,
+    methodology,
 } from "../../data/research";
 
 const lang = "es";
@@ -42,7 +43,7 @@ const rest = findings.slice(1);
                 <p class="eyebrow">
                     &gt; {identity.handle} · {identity.role}
                 </p>
-                <h1>{identity.tagline}</h1>
+                <h1 data-scramble>{identity.tagline}</h1>
                 <p class="lead">{identity.lead}</p>
 
                 <div class="ctas">
@@ -53,48 +54,17 @@ const rest = findings.slice(1);
                         {t("cta.about")}
                     </a>
                 </div>
+
+                <p class="hint mono">
+                    <button type="button" class="hint-btn" data-palette-open>
+                        <span class="kbd">Ctrl</span><span class="kbd">K</span>
+                    </button>
+                    para saltar a cualquier sección · o escribe
+                    <code>help</code> en la terminal
+                </p>
             </div>
 
-            <div class="terminal hero-terminal" aria-hidden="true">
-                <div class="terminal-bar">
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span class="dot is-live"></span>
-                    <span class="terminal-title">c0l1nr00t@lab:~</span>
-                </div>
-                <div class="terminal-body">
-                    <p class="line"><span class="prompt">➜</span> whoami</p>
-                    <p class="out">
-                        c0l1nr00t — security researcher<br />
-                        {identity.location} · independiente
-                    </p>
-
-                    <p class="line">
-                        <span class="prompt">➜</span> cat research/targets.txt
-                    </p>
-                    <p class="out">
-                        <span class="k">Kindle</span> Paperwhite Signature · 12th
-                        gen<br />
-                        <span class="k">Fire TV</span> Vega OS<br />
-                        <span class="k">Echo Show</span> 5 · 3rd gen<br />
-                        <span class="k">Ring</span> app · APIs · native
-                    </p>
-
-                    <p class="line">
-                        <span class="prompt">➜</span> cat research/focus.txt
-                    </p>
-                    <p class="out">
-                        browsers · parsers · fuzzing · <span class="ok"
-                            >memory corruption</span
-                        >
-                    </p>
-
-                    <p class="line">
-                        <span class="prompt">➜</span>
-                        <span class="caret"></span>
-                    </p>
-                </div>
-            </div>
+            <Terminal />
         </div>
     </section>
 
@@ -103,8 +73,13 @@ const rest = findings.slice(1);
 
         <ul class="areas">
             {
-                researchAreas.map((area) => (
-                    <li class="area">
+                researchAreas.map((area, i) => (
+                    <li
+                        class="area"
+                        data-spotlight
+                        data-reveal
+                        style={`--reveal-delay:${i * 45}ms`}
+                    >
                         <div class="area-head">
                             <h3>{area.title}</h3>
                             <span class={`status is-${area.status}`}>
@@ -121,7 +96,7 @@ const rest = findings.slice(1);
     <section class="container section-sm">
         <h2 class="section-title">{t("section.findings")}</h2>
 
-        <article class="featured">
+        <article class="featured" data-spotlight data-reveal>
             <div class="featured-main">
                 <p class="featured-meta mono">
                     <span class="platform">{featured.platform}</span>
@@ -138,15 +113,20 @@ const rest = findings.slice(1);
                 </div>
                 <div>
                     <dt>{t("research.reward")}</dt>
-                    <dd class="reward">{featured.reward}</dd>
+                    <dd class="reward" data-count>{featured.reward}</dd>
                 </div>
             </dl>
         </article>
 
         <ul class="findings">
             {
-                rest.map((finding) => (
-                    <li class="finding">
+                rest.map((finding, i) => (
+                    <li
+                        class="finding"
+                        data-spotlight
+                        data-reveal
+                        style={`--reveal-delay:${i * 70}ms`}
+                    >
                         <p class="finding-meta mono">
                             <span class="platform">{finding.platform}</span>
                         </p>
@@ -165,18 +145,28 @@ const rest = findings.slice(1);
     </section>
 
     <section class="container section-sm">
-        <a href={`/${lang}/research#las-vegas`} class="event">
-            <div>
-                <p class="event-kicker mono">
-                    {lasVegas.date} · {lasVegas.place}
-                </p>
-                <h2 class="event-title">
-                    {lasVegas.event}
-                    {lasVegas.year}
+        <a href={`/${lang}/research#methodology`} class="loop-band" data-reveal>
+            <div class="loop-band-copy">
+                <p class="loop-kicker mono">How I work</p>
+                <h2 class="loop-title">
+                    Casi toda mi investigación empieza por preguntas, no por
+                    herramientas.
                 </h2>
-                <p class="event-desc">{lasVegas.intro}</p>
+                <p class="loop-desc">
+                    Un scanner te dice qué responde; las preguntas te dicen
+                    dónde mirar.
+                </p>
             </div>
-            <span class="event-go mono" aria-hidden="true">→</span>
+
+            <ol class="loop mono" aria-hidden="true">
+                {
+                    methodology.loop.map((step, i) => (
+                        <li style={`--i:${i}`}>
+                            <span>{step}</span>
+                        </li>
+                    ))
+                }
+            </ol>
         </a>
     </section>
 
@@ -192,6 +182,7 @@ const rest = findings.slice(1);
                         date={post.data.date}
                         description={post.data.description}
                         category={post.data.category}
+                        type={post.data.type}
                         tags={post.data.tags}
                         readingTime={readingTime(post.body, t("blog.read_time"))}
                         pinned={post.data.pinned}
@@ -240,38 +231,28 @@ const rest = findings.slice(1);
         gap: var(--sp-3);
     }
 
-    .hero-terminal {
-        font-size: var(--fs-sm);
+    .hint {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem;
+        margin: var(--sp-5) 0 0;
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
     }
 
-    .hero-terminal .terminal-body {
-        padding: var(--sp-4) var(--sp-5);
-        line-height: 1.75;
+    .hint-btn {
+        display: inline-flex;
+        gap: 3px;
+        padding: 0;
+        background: none;
+        border: 0;
+        cursor: pointer;
     }
 
-    .line {
-        margin: 0;
-        color: var(--text-strong);
-    }
-
-    .line .prompt {
-        margin-right: var(--sp-2);
-    }
-
-    .out {
-        margin: 0 0 var(--sp-4);
-        padding-left: 1.25rem;
+    .hint code {
+        background: var(--surface-2);
         color: var(--text-dim);
-    }
-
-    .out .k {
-        display: inline-block;
-        min-width: 5.5rem;
-        color: var(--link);
-    }
-
-    .ok {
-        color: var(--accent);
     }
 
     /* --- Currently researching ----------------------------------------- */
@@ -291,6 +272,11 @@ const rest = findings.slice(1);
     .area {
         padding: var(--sp-5);
         background: var(--surface);
+        transition: background-color var(--dur) var(--ease);
+    }
+
+    .area:hover {
+        background: var(--surface-2);
     }
 
     .area-head {
@@ -323,7 +309,32 @@ const rest = findings.slice(1);
     }
 
     .status.is-active {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
         color: var(--accent);
+    }
+
+    /* Latido solo en lo que está en curso */
+    .status.is-active::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: pulse 2.4s var(--ease) infinite;
+    }
+
+    @keyframes pulse {
+        0%,
+        100% {
+            opacity: 1;
+            box-shadow: 0 0 0 0 var(--accent-soft);
+        }
+        50% {
+            opacity: 0.55;
+            box-shadow: 0 0 0 4px transparent;
+        }
     }
 
     /* --- Findings ------------------------------------------------------- */
@@ -414,6 +425,14 @@ const rest = findings.slice(1);
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--radius);
+        transition:
+            border-color var(--dur) var(--ease),
+            transform var(--dur) var(--ease);
+    }
+
+    .finding:hover {
+        border-color: var(--border-strong);
+        transform: translateY(-2px);
     }
 
     .finding-meta {
@@ -449,32 +468,27 @@ const rest = findings.slice(1);
         line-height: var(--lh-snug);
     }
 
-    /* --- Evento --------------------------------------------------------- */
-    .event {
-        display: flex;
+    /* --- Banda de metodología ------------------------------------------- */
+    .loop-band {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
         align-items: center;
-        justify-content: space-between;
-        gap: var(--sp-5);
+        gap: var(--sp-6);
         padding: var(--sp-6);
-        background: linear-gradient(
-            120deg,
-            var(--accent-soft),
-            transparent 60%
-        );
+        background:
+            linear-gradient(120deg, var(--accent-soft), transparent 60%),
+            var(--surface);
         border: 1px solid var(--border-strong);
         border-radius: var(--radius);
         color: inherit;
-        transition:
-            border-color var(--dur) var(--ease),
-            transform var(--dur) var(--ease);
+        transition: border-color var(--dur) var(--ease);
     }
 
-    .event:hover {
+    .loop-band:hover {
         border-color: var(--accent-line);
-        transform: translateY(-2px);
     }
 
-    .event-kicker {
+    .loop-kicker {
         margin-bottom: var(--sp-2);
         color: var(--accent);
         font-size: var(--fs-xs);
@@ -482,27 +496,62 @@ const rest = findings.slice(1);
         text-transform: uppercase;
     }
 
-    .event-title {
+    .loop-title {
+        max-width: 26ch;
         margin-bottom: var(--sp-3);
         font-size: var(--fs-xl);
     }
 
-    .event-desc {
-        max-width: 68ch;
+    .loop-desc {
+        max-width: 44ch;
         margin: 0;
         color: var(--text-dim);
         font-size: var(--fs-base);
     }
 
-    .event-go {
-        flex-shrink: 0;
-        color: var(--accent);
-        font-size: var(--fs-xl);
-        transition: transform var(--dur) var(--ease);
+    /* Ciclo: cada paso se enciende por turnos, como un pipeline en marcha */
+    .loop {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--sp-2);
+        margin: 0;
+        padding: 0;
+        list-style: none;
     }
 
-    .event:hover .event-go {
-        transform: translateX(4px);
+    .loop li {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        font-size: var(--fs-sm);
+    }
+
+    .loop li span {
+        padding: var(--sp-2) var(--sp-4);
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        color: var(--text-dim);
+        animation: loop-pulse 6s var(--ease) infinite;
+        animation-delay: calc(var(--i) * 380ms);
+    }
+
+    .loop li:not(:last-child)::after {
+        content: "→";
+        color: var(--border-strong);
+    }
+
+    @keyframes loop-pulse {
+        0%,
+        12%,
+        100% {
+            border-color: var(--border);
+            color: var(--text-dim);
+        }
+        4% {
+            border-color: var(--accent-line);
+            color: var(--accent-strong);
+        }
     }
 
     /* --- Listados ------------------------------------------------------- */
@@ -553,10 +602,9 @@ const rest = findings.slice(1);
         }
     }
 
-    @media (max-width: 640px) {
-        .event {
-            flex-direction: column;
-            align-items: flex-start;
+    @media (max-width: 860px) {
+        .loop-band {
+            grid-template-columns: 1fr;
         }
     }
 

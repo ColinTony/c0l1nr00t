@@ -1,0 +1,558 @@
+---
+/**
+ * Terminal interactiva de la home.
+ *
+ * El HTML ya trae la salida del arranque escrita: sin JavaScript se lee como
+ * una captura de terminal normal. Con JavaScript esa misma salida se teclea
+ * paso a paso y luego aparece un prompt real que acepta comandos.
+ *
+ * Los datos salen de src/data/research.ts y se serializan a JSON para que el
+ * cliente responda `targets`, `findings`, etc. sin duplicar contenido.
+ */
+import { getCollection } from "astro:content";
+import {
+    identity,
+    platforms,
+    researchAreas,
+    findings,
+    hardware,
+    statusLabels,
+} from "../data/research";
+
+const lang = "es";
+
+const posts = (
+    await getCollection("blog", ({ id, data }) => {
+        return id.startsWith("es/") && !data.draft && data.visible !== false;
+    })
+)
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+    .slice(0, 5)
+    .map((post) => ({
+        date: post.data.date.toISOString().split("T")[0],
+        title: post.data.title,
+        href: `/${lang}/blog/${post.slug.split("/")[1]}`,
+    }));
+
+/** "Kindle Paperwhite…" se imprime bajo la etiqueta "Kindle": sin repetirla. */
+const targetLines = platforms.map((platform) => ({
+    name: platform.name,
+    device: platform.device.startsWith(platform.name)
+        ? platform.device.slice(platform.name.length).trim()
+        : platform.device,
+}));
+
+const term = {
+    whoami: [
+        `${identity.handle} — ${identity.role.toLowerCase()}`,
+        `${identity.location} · independiente`,
+        identity.tagline,
+    ],
+    targets: platforms.map((platform) => ({
+        name: platform.name,
+        device: platform.device,
+        surfaces: platform.surfaces.length,
+    })),
+    focus: researchAreas.map((area) => ({
+        name: area.title,
+        status: statusLabels[area.status] ?? area.status,
+    })),
+    findings: findings.map((finding) => ({
+        platform: finding.platform,
+        title: finding.title,
+        outcome: finding.outcome,
+    })),
+    hardware: hardware.map((item) => ({ name: item.name, use: item.use })),
+    posts,
+    routes: {
+        research: `/${lang}/research`,
+        blog: `/${lang}/blog`,
+        writeups: `/${lang}/writeups`,
+        about: `/${lang}/about`,
+        contact: `/${lang}/contact`,
+        home: `/${lang}`,
+    },
+};
+---
+
+<div class="terminal hero-terminal" data-terminal>
+    <div class="terminal-bar">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot is-live"></span>
+        <span class="terminal-title">c0l1nr00t@lab:~</span>
+        <span class="bar-hint mono">help</span>
+    </div>
+
+    <div class="terminal-body" data-term-body>
+        <div class="term-log" data-term-log>
+            <div class="blk" data-blk>
+                <p class="line">
+                    <span class="prompt" aria-hidden="true">&gt;</span>
+                    <span data-cmd>whoami</span>
+                </p>
+                <p class="out">
+                    {identity.handle} — security researcher<br />
+                    {identity.location} · independiente
+                </p>
+            </div>
+
+            <div class="blk" data-blk>
+                <p class="line">
+                    <span class="prompt" aria-hidden="true">&gt;</span>
+                    <span data-cmd>cat research/targets.txt</span>
+                </p>
+                <p class="out">
+                    {
+                        targetLines.map((target) => (
+                            <>
+                                <span class="k">{target.name}</span>
+                                {target.device}
+                                <br />
+                            </>
+                        ))
+                    }
+                </p>
+            </div>
+
+            <div class="blk" data-blk>
+                <p class="line">
+                    <span class="prompt" aria-hidden="true">&gt;</span>
+                    <span data-cmd>cat research/focus.txt</span>
+                </p>
+                <p class="out">
+                    browsers · parsers · fuzzing · <span class="ok"
+                        >memory corruption</span
+                    >
+                </p>
+            </div>
+        </div>
+
+        <form class="term-form" data-term-form>
+            <span class="prompt" aria-hidden="true">&gt;</span>
+            <input
+                class="term-field mono"
+                type="text"
+                autocomplete="off"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+                aria-label="Escribe un comando: help para ver la lista"
+                data-term-input
+            />
+        </form>
+    </div>
+</div>
+
+<script
+    is:inline
+    type="application/json"
+    data-term-data
+    set:html={JSON.stringify(term).replace(/</g, "\\u003c")}
+></script>
+
+<script>
+    type Item = { label: string; href: string };
+
+    const wait = (ms: number) =>
+        new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+    /** `constructor` no es un comando: solo cuentan las claves propias. */
+    const own = (obj: object, key: string) =>
+        Object.prototype.hasOwnProperty.call(obj, key);
+
+    function setupTerminal() {
+        const root = document.querySelector<HTMLElement>("[data-terminal]");
+        const raw = document.querySelector<HTMLElement>("[data-term-data]");
+        if (!root || !raw || root.dataset.ready) return;
+        root.dataset.ready = "1";
+
+        const body = root.querySelector<HTMLElement>("[data-term-body]");
+        const log = root.querySelector<HTMLElement>("[data-term-log]");
+        const form = root.querySelector<HTMLFormElement>("[data-term-form]");
+        const input = root.querySelector<HTMLInputElement>("[data-term-input]");
+        if (!body || !log || !form || !input) return;
+
+        const data = JSON.parse(raw.textContent || "{}");
+        const routes: Record<string, string> = data.routes ?? {};
+        const reduced = window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+        ).matches;
+
+        let skipBoot = false;
+        const history: string[] = [];
+        let historyAt = -1;
+
+        /* --- Salida ------------------------------------------------------ */
+
+        const toBottom = () => {
+            log.scrollTop = log.scrollHeight;
+        };
+
+        function echo(command: string) {
+            const line = document.createElement("p");
+            line.className = "line";
+            const prompt = document.createElement("span");
+            prompt.className = "prompt";
+            prompt.setAttribute("aria-hidden", "true");
+            prompt.textContent = ">";
+            line.append(prompt, ` ${command}`);
+            log.append(line);
+        }
+
+        // term-print conserva los saltos de línea; la salida del HTML no los usa
+        function print(text: string, extra = "") {
+            const el = document.createElement("p");
+            el.className = `out term-print ${extra}`.trim();
+            el.textContent = text;
+            log.append(el);
+        }
+
+        function printLinks(items: Item[]) {
+            const el = document.createElement("p");
+            el.className = "out";
+            items.forEach((item, i) => {
+                const link = document.createElement("a");
+                link.href = item.href;
+                link.textContent = item.label;
+                el.append(link);
+                if (i < items.length - 1) el.append(document.createElement("br"));
+            });
+            log.append(el);
+        }
+
+        const pad = (value: string, width: number) =>
+            value.length >= width ? value : value + " ".repeat(width - value.length);
+
+        /* --- Comandos ---------------------------------------------------- */
+
+        const commands: Record<string, (arg: string) => void> = {
+            help() {
+                print(
+                    [
+                        "comandos disponibles:",
+                        "  whoami      quién soy",
+                        "  targets     dispositivos bajo investigación",
+                        "  focus       áreas de investigación y su estado",
+                        "  findings    hallazgos publicables",
+                        "  hardware    laboratorio",
+                        "  posts       últimas entradas",
+                        "  open <sec>  research · blog · writeups · about · contact",
+                        "  clear       limpiar",
+                    ].join("\n"),
+                );
+            },
+            whoami() {
+                print((data.whoami ?? []).join("\n"));
+            },
+            targets() {
+                print(
+                    (data.targets ?? [])
+                        .map(
+                            (t: any) =>
+                                `${pad(t.name, 12)}${t.device}  [${t.surfaces} superficies]`,
+                        )
+                        .join("\n"),
+                );
+            },
+            focus() {
+                print(
+                    (data.focus ?? [])
+                        .map((f: any) => `${pad(f.name, 34)}${f.status}`)
+                        .join("\n"),
+                );
+            },
+            findings() {
+                print(
+                    (data.findings ?? [])
+                        .map(
+                            (f: any) =>
+                                `[${f.platform}] ${f.title}\n            ${f.outcome}`,
+                        )
+                        .join("\n"),
+                );
+                print(
+                    "detalle a alto nivel mientras la divulgación siga abierta.",
+                    "dim",
+                );
+            },
+            hardware() {
+                print(
+                    (data.hardware ?? [])
+                        .map((h: any) => `${pad(h.name, 32)}${h.use}`)
+                        .join("\n"),
+                );
+            },
+            posts() {
+                const items: Item[] = (data.posts ?? []).map((p: any) => ({
+                    label: `${p.date}  ${p.title}`,
+                    href: p.href,
+                }));
+                if (!items.length) return print("todavía no hay entradas.");
+                printLinks(items);
+            },
+            ls() {
+                print(Object.keys(routes).join("  "));
+            },
+            open(arg) {
+                const key = arg.replace(/^\/+|\/+$/g, "").toLowerCase();
+                const href = own(routes, key) ? routes[key] : "";
+                if (!href) {
+                    print(
+                        `open: sección desconocida "${arg || ""}". Prueba: ${Object.keys(routes).join(", ")}`,
+                        "warn",
+                    );
+                    return;
+                }
+                print(`abriendo ${href}…`);
+                window.setTimeout(() => window.location.assign(href), 220);
+            },
+            clear() {
+                log.replaceChildren();
+            },
+            sudo() {
+                print("Aquí nadie es root sin encontrar un bug antes.", "warn");
+            },
+            exit() {
+                print("Esta terminal no se cierra. Prueba `open research`.");
+            },
+        };
+
+        commands.cd = commands.open;
+        commands.man = commands.help;
+
+        function run(raw: string) {
+            const line = raw.trim();
+            if (!line) return;
+
+            echo(line);
+            history.push(line);
+            historyAt = history.length;
+
+            const [name, ...rest] = line.split(/\s+/);
+            const key = name.toLowerCase();
+
+            if (own(commands, key)) commands[key](rest.join(" "));
+            else
+                print(`comando no encontrado: ${name}. Escribe \`help\`.`, "warn");
+
+            toBottom();
+        }
+
+        /* --- Arranque ----------------------------------------------------- */
+
+        function type(el: HTMLElement, text: string) {
+            return new Promise<void>((resolve) => {
+                let i = 0;
+                const step = () => {
+                    if (skipBoot) {
+                        el.textContent = text;
+                        return resolve();
+                    }
+                    el.textContent = text.slice(0, ++i);
+                    if (i >= text.length) return resolve();
+                    window.setTimeout(step, 24 + Math.random() * 30);
+                };
+                step();
+            });
+        }
+
+        async function boot() {
+            const blocks = Array.from(
+                log.querySelectorAll<HTMLElement>("[data-blk]"),
+            );
+
+            for (const block of blocks) {
+                block.classList.add("is-on");
+                const cmd = block.querySelector<HTMLElement>("[data-cmd]");
+                const out = block.querySelector<HTMLElement>(".out");
+
+                if (cmd) {
+                    const text = cmd.textContent ?? "";
+                    out?.classList.add("is-pending");
+                    cmd.textContent = "";
+                    await type(cmd, text);
+                    out?.classList.remove("is-pending");
+                }
+
+                toBottom();
+                if (!skipBoot) await wait(180);
+            }
+
+            form.classList.add("is-on");
+            log.setAttribute("aria-live", "polite");
+            toBottom();
+        }
+
+        /* --- Eventos ------------------------------------------------------ */
+
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            run(input.value);
+            input.value = "";
+        });
+
+        input.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                if (!history.length) return;
+                event.preventDefault();
+                historyAt += event.key === "ArrowUp" ? -1 : 1;
+                historyAt = Math.max(0, Math.min(history.length, historyAt));
+                input.value = history[historyAt] ?? "";
+            } else if (event.key === "Tab") {
+                const partial = input.value.trim().toLowerCase();
+                if (!partial) return;
+                const hit = Object.keys(commands).find((name) =>
+                    name.startsWith(partial),
+                );
+                if (!hit) return;
+                event.preventDefault();
+                input.value = hit;
+            }
+        });
+
+        // Un clic en cualquier parte adelanta el arranque y deja el cursor listo
+        root.addEventListener("click", (event) => {
+            if ((event.target as HTMLElement).closest("a")) return;
+            skipBoot = true;
+            if (form.classList.contains("is-on")) input.focus();
+        });
+
+        if (reduced) {
+            log.querySelectorAll("[data-blk]").forEach((block) =>
+                block.classList.add("is-on"),
+            );
+            form.classList.add("is-on");
+        } else {
+            boot();
+        }
+    }
+
+    setupTerminal();
+    document.addEventListener("astro:page-load", setupTerminal);
+</script>
+
+<style>
+    .hero-terminal {
+        font-size: var(--fs-sm);
+    }
+
+    .bar-hint {
+        margin-left: auto;
+        padding: 0.05rem 0.4rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-faint);
+        font-size: 0.6875rem;
+    }
+
+    .terminal-body {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-2);
+        padding: var(--sp-4) var(--sp-5);
+        line-height: 1.75;
+        cursor: text;
+    }
+
+    /* Solo el registro hace scroll: el prompt vivo nunca se va de la vista */
+    .term-log {
+        max-height: 23rem;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    /* Las líneas de respuesta las crea el JavaScript, así que no llevan el
+       atributo de scope de Astro: se estilan como descendientes globales. */
+    .term-log :global(.line) {
+        margin: 0;
+        color: var(--text-strong);
+    }
+
+    .term-log :global(.line .prompt) {
+        margin-right: var(--sp-2);
+    }
+
+    .term-log :global(.out) {
+        margin: 0 0 var(--sp-4);
+        padding-left: 1.1rem;
+        color: var(--text-dim);
+    }
+
+    /* Solo la salida generada en cliente conserva saltos y alineación */
+    .term-log :global(.out.term-print) {
+        white-space: pre-wrap;
+    }
+
+    .term-log :global(.out a) {
+        color: var(--link);
+        text-decoration: underline;
+        text-decoration-color: var(--border-strong);
+        text-underline-offset: 3px;
+    }
+
+    .term-log :global(.out.dim) {
+        color: var(--text-faint);
+    }
+
+    .term-log :global(.out.warn) {
+        color: var(--warn);
+    }
+
+    .term-log :global(.k) {
+        display: inline-block;
+        min-width: 5.5rem;
+        color: var(--link);
+    }
+
+    .term-log :global(.ok) {
+        color: var(--accent);
+    }
+
+    /* Con JS el arranque se teclea: los bloques entran uno a uno */
+    :global(html.js) .blk {
+        opacity: 0;
+        transition: opacity 200ms var(--ease);
+    }
+
+    :global(html.js) .blk.is-on {
+        opacity: 1;
+    }
+
+    :global(html.js) .out.is-pending {
+        visibility: hidden;
+    }
+
+    /* El prompt vivo solo existe si hay JavaScript */
+    .term-form {
+        display: none;
+        align-items: center;
+        gap: var(--sp-2);
+        margin-top: auto;
+        padding-top: var(--sp-2);
+    }
+
+    :global(html.js) .term-form.is-on {
+        display: flex;
+    }
+
+    .term-field {
+        flex: 1;
+        min-width: 0;
+        padding: 0;
+        background: none;
+        border: 0;
+        outline: none;
+        color: var(--text-strong);
+        font-size: inherit;
+        caret-color: var(--accent);
+    }
+
+    /* En pantallas estrechas el texto envuelve más: el registro necesita altura
+       suficiente para que el arranque se vea entero sin scroll. */
+    @media (max-width: 900px) {
+        .term-log {
+            max-height: 25rem;
+        }
+    }
+</style>

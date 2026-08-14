@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Reactions from "../../../components/Reactions.astro";
 import { useTranslations } from "../../../i18n/utils";
 
 export async function getStaticPaths() {
@@ -99,6 +100,8 @@ const meta = [
                 <Content />
             </div>
         </article>
+
+        <Reactions entry={`/${lang}/writeups/${post.slug.split("/")[1]}`} />
     </div>
 </BaseLayout>
 

@@ -1,0 +1,531 @@
+---
+/**
+ * Paleta de comandos del sitio (Ctrl/⌘ + K, o `/`).
+ *
+ * El sitio es una terminal: navegar debería sentirse como escribir un comando.
+ * Los elementos se pintan en el HTML y el filtro solo los oculta, así que la
+ * lista existe aunque el JavaScript falle.
+ *
+ * Cualquier elemento con `data-palette-open` la abre.
+ */
+import { getCollection } from "astro:content";
+import { platforms } from "../data/research";
+
+const lang = "es";
+
+/** Sin acentos y en minúsculas: "metodologia" debe encontrar "Metodología". */
+const plain = (value: string) =>
+    value
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+const posts = (
+    await getCollection("blog", ({ id, data }) => {
+        return id.startsWith("es/") && !data.draft && data.visible !== false;
+    })
+)
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+    .slice(0, 6);
+
+const groups = [
+    {
+        title: "Ir a",
+        items: [
+            { label: "Home", hint: "/es", href: `/${lang}`, keys: "inicio home" },
+            {
+                label: "Security Research",
+                hint: "/es/research",
+                href: `/${lang}/research`,
+                keys: "research investigacion plataformas hallazgos",
+            },
+            {
+                label: "Research Log",
+                hint: "/es/blog",
+                href: `/${lang}/blog`,
+                keys: "blog posts entradas notas",
+            },
+            {
+                label: "Writeups",
+                hint: "/es/writeups",
+                href: `/${lang}/writeups`,
+                keys: "writeups tecnicos",
+            },
+            {
+                label: "Sobre mí",
+                hint: "/es/about",
+                href: `/${lang}/about`,
+                keys: "about bio perfil timeline toolset",
+            },
+            {
+                label: "Contacto",
+                hint: "/es/contact",
+                href: `/${lang}/contact`,
+                keys: "contact contacto email",
+            },
+        ],
+    },
+    {
+        title: "Plataformas",
+        items: platforms.map((platform) => ({
+            label: platform.name,
+            hint: platform.device,
+            href: `/${lang}/research#${platform.id}`,
+            keys: `${platform.id} ${platform.surfaces.join(" ")}`,
+        })),
+    },
+    {
+        title: "Últimas entradas",
+        items: posts.map((post) => ({
+            label: post.data.title,
+            hint: post.data.category ?? "Blog",
+            href: `/${lang}/blog/${post.slug.split("/")[1]}`,
+            keys: (post.data.tags ?? []).join(" "),
+        })),
+    },
+    {
+        title: "Acciones",
+        items: [
+            {
+                label: "Descargar CV",
+                hint: "PDF",
+                href: "/files/cv.pdf",
+                keys: "cv curriculum resume pdf",
+            },
+            {
+                label: "Feed RSS",
+                hint: "/es/rss.xml",
+                href: `/${lang}/rss.xml`,
+                keys: "rss feed suscribir",
+            },
+            {
+                label: "Metodología",
+                hint: "/es/research#methodology",
+                href: `/${lang}/research#methodology`,
+                keys: "metodologia proceso preguntas loop",
+            },
+        ],
+    },
+];
+---
+
+<div class="palette" id="palette" hidden>
+    <div class="backdrop" data-palette-close></div>
+
+    <div
+        class="box"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Paleta de comandos"
+    >
+        <div class="input-row">
+            <span class="prompt mono" aria-hidden="true">&gt;</span>
+            <input
+                id="palette-input"
+                class="input-field mono"
+                type="text"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="escribe para buscar: research, kindle, fuzzing…"
+                aria-label="Buscar en el sitio"
+                aria-controls="palette-list"
+            />
+            <button
+                class="close mono"
+                type="button"
+                data-palette-close
+                aria-label="Cerrar">esc</button
+            >
+        </div>
+
+        <div class="results" id="palette-list" role="listbox" tabindex="-1">
+            {
+                groups.map((group) => (
+                    <section class="group" role="group" aria-label={group.title}>
+                        <p class="group-title mono">{group.title}</p>
+                        <ul role="none">
+                            {group.items.map((item) => (
+                                <li role="none">
+                                    <a
+                                        class="item"
+                                        href={item.href}
+                                        role="option"
+                                        aria-selected="false"
+                                        data-keys={plain(
+                                            `${item.label} ${item.hint} ${item.keys}`,
+                                        )}
+                                    >
+                                        <span class="item-label">
+                                            {item.label}
+                                        </span>
+                                        <span class="item-hint mono">
+                                            {item.hint}
+                                        </span>
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                ))
+            }
+
+            <p class="no-results mono" hidden>Sin coincidencias.</p>
+        </div>
+
+        <footer class="hints mono">
+            <span><span class="kbd">↑</span><span class="kbd">↓</span> mover</span>
+            <span><span class="kbd">↵</span> abrir</span>
+            <span><span class="kbd">esc</span> cerrar</span>
+        </footer>
+    </div>
+</div>
+
+<script>
+    const palette = () => document.getElementById("palette");
+
+    let items: HTMLAnchorElement[] = [];
+    let visible: HTMLAnchorElement[] = [];
+    let index = 0;
+    let lastFocus: HTMLElement | null = null;
+
+    function refresh() {
+        const root = palette();
+        if (!root) return;
+        items = Array.from(root.querySelectorAll<HTMLAnchorElement>(".item"));
+        visible = items;
+        index = 0;
+    }
+
+    /**
+     * Cada palabra escrita debe aparecer en el texto del elemento.
+     * "kindle browser" encuentra la plataforma; nada de subsecuencias sueltas,
+     * que con textos largos acaban casando con todo.
+     */
+    function matches(haystack: string, needle: string) {
+        if (!needle) return true;
+        return needle.split(/\s+/).every((word) => haystack.includes(word));
+    }
+
+    function filter(query: string) {
+        const root = palette();
+        if (!root) return;
+        const needle = query
+            .trim()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+
+        visible = [];
+        for (const item of items) {
+            const hit = matches(item.dataset.keys ?? "", needle);
+            (item.parentElement as HTMLElement).hidden = !hit;
+            if (hit) visible.push(item);
+        }
+
+        root.querySelectorAll<HTMLElement>(".group").forEach((group) => {
+            const any = group.querySelector("li:not([hidden])");
+            group.hidden = !any;
+        });
+
+        const empty = root.querySelector<HTMLElement>(".no-results");
+        if (empty) empty.hidden = visible.length > 0;
+
+        index = 0;
+        highlight();
+    }
+
+    function highlight() {
+        items.forEach((item) => {
+            item.classList.remove("is-active");
+            item.setAttribute("aria-selected", "false");
+        });
+
+        const current = visible[index];
+        if (!current) return;
+        current.classList.add("is-active");
+        current.setAttribute("aria-selected", "true");
+        current.scrollIntoView({ block: "nearest" });
+    }
+
+    function open() {
+        const root = palette();
+        if (!root || !root.hidden) return;
+
+        lastFocus = document.activeElement as HTMLElement | null;
+        root.hidden = false;
+        document.body.style.overflow = "hidden";
+
+        refresh();
+        const input = document.getElementById(
+            "palette-input",
+        ) as HTMLInputElement | null;
+        if (input) {
+            input.value = "";
+            filter("");
+            input.focus();
+        }
+    }
+
+    function close() {
+        const root = palette();
+        if (!root || root.hidden) return;
+        root.hidden = true;
+        document.body.style.overflow = "";
+        lastFocus?.focus?.();
+    }
+
+    function isTyping(target: EventTarget | null) {
+        const el = target as HTMLElement | null;
+        if (!el) return false;
+        return (
+            el.tagName === "INPUT" ||
+            el.tagName === "TEXTAREA" ||
+            el.tagName === "SELECT" ||
+            el.isContentEditable
+        );
+    }
+
+    document.addEventListener("keydown", (event) => {
+        const root = palette();
+        if (!root) return;
+
+        const combo = (event.ctrlKey || event.metaKey) && event.key === "k";
+        if (combo) {
+            event.preventDefault();
+            root.hidden ? open() : close();
+            return;
+        }
+
+        if (root.hidden) {
+            if (event.key === "/" && !isTyping(event.target)) {
+                event.preventDefault();
+                open();
+            }
+            return;
+        }
+
+        if (event.key === "Escape") {
+            event.preventDefault();
+            close();
+        } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            if (!visible.length) return;
+            const step = event.key === "ArrowDown" ? 1 : -1;
+            index = (index + step + visible.length) % visible.length;
+            highlight();
+        } else if (event.key === "Enter") {
+            const current = visible[index];
+            if (!current) return;
+            event.preventDefault();
+            close();
+            current.click();
+        }
+    });
+
+    document.addEventListener("click", (event) => {
+        const target = event.target as HTMLElement | null;
+        if (target?.closest("[data-palette-open]")) {
+            event.preventDefault();
+            open();
+            return;
+        }
+        if (target?.closest("[data-palette-close]")) {
+            close();
+            return;
+        }
+        if (target?.closest(".item")) close();
+    });
+
+    document.addEventListener("input", (event) => {
+        const target = event.target as HTMLElement | null;
+        if (target?.id === "palette-input") {
+            filter((target as HTMLInputElement).value);
+        }
+    });
+
+    document.addEventListener("pointermove", (event) => {
+        const item = (event.target as HTMLElement | null)?.closest?.(
+            ".item",
+        ) as HTMLAnchorElement | null;
+        if (!item) return;
+        const at = visible.indexOf(item);
+        if (at >= 0 && at !== index) {
+            index = at;
+            highlight();
+        }
+    });
+
+    // Tras navegar, la paleta del documento nuevo empieza cerrada
+    document.addEventListener("astro:page-load", () => {
+        document.body.style.overflow = "";
+        refresh();
+    });
+
+    refresh();
+</script>
+
+<style>
+    .palette {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: clamp(1rem, 10vh, 7rem) var(--sp-4) var(--sp-4);
+    }
+
+    .backdrop {
+        position: absolute;
+        inset: 0;
+        background: color-mix(in srgb, var(--bg) 72%, transparent);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+
+    .box {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: min(100%, 620px);
+        max-height: min(70vh, 34rem);
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        animation: palette-in 180ms var(--ease);
+    }
+
+    @keyframes palette-in {
+        from {
+            opacity: 0;
+            transform: translateY(-8px) scale(0.99);
+        }
+    }
+
+    .input-row {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-3);
+        padding: var(--sp-3) var(--sp-4);
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-2);
+    }
+
+    .prompt {
+        color: var(--accent);
+    }
+
+    .input-field {
+        flex: 1;
+        min-width: 0;
+        padding: 0;
+        background: none;
+        border: 0;
+        outline: none;
+        color: var(--text-strong);
+        font-size: var(--fs-base);
+    }
+
+    .input-field::placeholder {
+        color: var(--text-faint);
+    }
+
+    .close {
+        padding: 0.15rem 0.45rem;
+        background: none;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        cursor: pointer;
+    }
+
+    .close:hover {
+        color: var(--text);
+        border-color: var(--text-faint);
+    }
+
+    .results {
+        flex: 1;
+        overflow-y: auto;
+        padding: var(--sp-2) 0 var(--sp-3);
+    }
+
+    .group-title {
+        margin: var(--sp-3) 0 var(--sp-1);
+        padding-inline: var(--sp-4);
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wider);
+        text-transform: uppercase;
+    }
+
+    .group ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .item {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--sp-4);
+        padding: var(--sp-2) var(--sp-4);
+        border-left: 2px solid transparent;
+        color: var(--text);
+        font-size: var(--fs-base);
+    }
+
+    .item-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .item-hint {
+        flex-shrink: 0;
+        max-width: 45%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+    }
+
+    .item.is-active {
+        background: var(--surface-2);
+        border-left-color: var(--accent);
+        color: var(--accent-strong);
+    }
+
+    .no-results {
+        margin: var(--sp-5) 0;
+        color: var(--text-faint);
+        font-size: var(--fs-sm);
+        text-align: center;
+    }
+
+    .hints {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--sp-4);
+        padding: var(--sp-2) var(--sp-4);
+        border-top: 1px solid var(--border);
+        background: var(--surface-2);
+        color: var(--text-faint);
+        font-size: var(--fs-xs);
+    }
+
+    .hints .kbd {
+        margin-right: 2px;
+    }
+
+    @media (max-width: 520px) {
+        .hints span:last-child {
+            display: none;
+        }
+    }
+</style>
