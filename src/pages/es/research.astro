@@ -107,7 +107,12 @@ const sections = [
 
                 <!-- Registro de investigación ---------------------------- -->
                 <section class="block" id="log">
-                    <h2 class="section-title">{t("section.research_log")}</h2>
+                    <div class="section-head">
+                        <h2 class="section-title">
+                            {t("section.research_log")}
+                        </h2>
+                        <span class="badge">{identity.standing}</span>
+                    </div>
 
                     <ol class="log">
                         {
@@ -433,6 +438,21 @@ const sections = [
     }
 
     /* --- Registro de investigación ---------------------------------------- */
+    /* El título trae su propia línea de continuación, así que la credencial
+       se cuelga al final de esa línea en vez de dentro del encabezado. */
+    .section-head {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-4);
+        margin-bottom: var(--sp-6);
+    }
+
+    .section-head .section-title {
+        flex: 1;
+        min-width: 0;
+        margin-bottom: 0;
+    }
+
     .log {
         margin: 0;
         padding: 0 0 0 var(--sp-5);

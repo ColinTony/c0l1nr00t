@@ -59,6 +59,7 @@ Reglas al tocar ese contenido:
 
 - **Aquí no se publica ninguna vulnerabilidad.** Ni la clase de bug, ni la superficie concreta donde apareció, ni el impacto. Los reportes siguen divulgación coordinada; si algún día uno se hace público, se publica como writeup, no ampliando el registro.
 - **Nada de dinero.** Ni cifras de recompensa, ni totales, ni por hallazgo. El estado de un reporte se expresa con una etiqueta (`Bounty`, `Aceptado`, `Reportado`, `En curso`) y ahí se acaba.
+- `identity.standing` ("Top hacker · Amazon Devices") se muestra como `.badge` en la home, `/es/research` y `/es/about`, y en el `whoami` de la terminal. Va sin posición numérica: es una credencial, no un marcador.
 - `researchLog` dice **qué hice y en qué estado quedó**, nunca qué encontré. Una entrada es como mucho "Investigación en dispositivo Amazon" más su plataforma y su estado.
 - Cuidado con los cruces: `platforms[].surfaces` se mantiene en categorías amplias porque la lista de funcionalidades concretas, junto al registro, sería un mapa de dónde mirar.
 - **Nunca inventar** CVEs, recompensas, severidades, impactos ni vulnerabilidades. Solo entra lo que el autor ha confirmado.

@@ -8,7 +8,12 @@
     flex-wrap: wrap;
 }
 
-.about-header .badge {
+/* Dos credenciales: se apilan a la derecha y bajan a fila en pantallas anchas */
+.header-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--sp-2);
     margin-top: var(--sp-2);
 }
 

@@ -43,10 +43,13 @@ const toolset = [
                     {identity.role} · {identity.location}
                 </p>
             </div>
-            <span class="badge">
-                <span class="pulse" aria-hidden="true"></span>
-                Status: Researching
-            </span>
+            <div class="header-badges">
+                <span class="badge">{identity.standing}</span>
+                <span class="badge">
+                    <span class="pulse" aria-hidden="true"></span>
+                    Status: Researching
+                </span>
+            </div>
         </header>
 
         <section class="panel intro-panel" data-spotlight>
