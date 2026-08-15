@@ -15,9 +15,10 @@ Construido con Astro, TypeScript y Markdown. Estático, sin framework de UI.
 
 ```bash
 npm install
-npm run dev      # http://localhost:4321
+npm run dev      # http://localhost:4321 (sin API de reacciones)
 npm run build    # genera dist/
 npm run preview  # sirve dist/
+npm run dev:api  # http://localhost:8788 — sitio + /api/reactions con D1 local
 ```
 
 ## Estructura
@@ -36,6 +37,8 @@ src/
   pages/es/         # Rutas del sitio
   styles/           # Sistema de diseño (global.css) + CSS por página
   utils/            # reading-time, slug
+worker/             # API de reacciones (Cloudflare Worker)
+migrations/         # Esquema de la base D1
 ```
 
 ## Secciones
@@ -74,6 +77,34 @@ clave `es`.
 Sistema de tokens en `src/styles/global.css`. Convenciones en
 `docs/style-guide.md`.
 
+## Reacciones
+
+Cada entrada tiene cuatro reacciones (👍 🔥 🤯 ❤️) con contador. Sin comentarios.
+Las cuentas viven en **Cloudflare D1** y las sirve `worker/index.js` en
+`/api/reactions`. Una reacción por persona y entrada: pulsar la misma la quita y
+pulsar otra la sustituye.
+
+Alta de la base, una sola vez:
+
+```bash
+npm run db:create          # crea la base y devuelve el database_id
+                           # pega ese id en wrangler.jsonc
+npm run db:migrate:local   # tablas para el entorno local (npm run dev:api)
+npm run db:migrate         # tablas en producción
+npm run deploy
+```
+
+Opcional, para que el identificador de votante no dependa de un valor por
+defecto:
+
+```bash
+npx wrangler secret put REACTIONS_SALT
+```
+
+No se guarda ninguna IP: el votante es un hash con sal de IP + user agent, y
+solo sirve para evitar el voto repetido. Mientras la base no esté configurada,
+la API responde 503 y el bloque de reacciones no se muestra.
+
 ## Interacción
 
 - `Ctrl/⌘ + K` (o `/`) abre la paleta de comandos para navegar el sitio.
@@ -90,11 +121,11 @@ activar Plausible, define `PUBLIC_ANALYTICS_ID` en `.env`.
 
 ## Despliegue
 
-Cloudflare, sirviendo `dist/` según `wrangler.jsonc`:
+Cloudflare, según `wrangler.jsonc`: el enrutador de assets sirve `dist/` y el
+worker atiende `/api/reactions`.
 
 ```bash
-npm run build
-npx wrangler deploy
+npm run deploy   # equivale a: astro build && wrangler deploy
 ```
 
 > Pendiente: `site` en `astro.config.mjs` sigue apuntando al placeholder

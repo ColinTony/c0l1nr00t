@@ -99,6 +99,8 @@ los redefinas por página. El ancho de lectura está fijado en `--measure` (68ch
 - `Terminal.astro` — terminal interactiva de la home (arranque tecleado + prompt).
 - `CommandPalette.astro` — navegación por teclado, `Ctrl/⌘ + K` o `/`.
 - `Motion.astro` — capa de movimiento común, cargada desde `BaseLayout`.
+- `Reactions.astro` — reacciones al pie de cada entrada. Nace con `hidden` y solo
+  aparece si la API responde: nunca deja un contador roto a la vista.
 
 ## Movimiento
 

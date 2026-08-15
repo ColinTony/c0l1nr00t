@@ -5,17 +5,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Comandos
 
 ```bash
-npm run dev       # servidor de desarrollo en http://localhost:4321
+npm run dev       # servidor de desarrollo en http://localhost:4321 (sin API)
 npm run build     # genera dist/ (SSG puro, sin adapter)
 npm run preview   # sirve dist/ localmente
-npx wrangler deploy   # publica dist/ en Cloudflare (worker "colintony-site")
+npm run dev:api   # build + wrangler dev en :8788 — sitio Y /api/reactions
+npm run deploy    # build + wrangler deploy
 ```
+
+`npm run dev` no sirve `/api/reactions`, así que el bloque de reacciones no aparece; para verlo hay que usar `npm run dev:api`. Ver **Reacciones** más abajo.
 
 No hay tests, linter ni `astro check` instalado (`@astrojs/check` no está en dependencias). La única verificación disponible es que `npm run build` complete sin errores: los esquemas Zod de `src/content/config.ts` fallan el build si un frontmatter es inválido.
 
 ## Arquitectura
 
-Sitio personal estático en **Astro 5** (blog + writeups + CV), estética "terminal hacker". Sin framework de UI, sin JS de cliente más allá de scripts inline en componentes.
+Sitio personal en **Astro 5** (blog + writeups + CV), estética "terminal hacker". Sin framework de UI, sin JS de cliente más allá de scripts inline en componentes.
+
+Las páginas son estáticas (SSG puro, sin adapter). Lo único dinámico es la API de reacciones, que vive en un Worker aparte (`worker/index.js`) y no interviene en el render.
 
 ### Enrutamiento e i18n — el punto más importante
 
@@ -23,8 +28,8 @@ La configuración declara `es` y `en`, pero **solo existe español**. Antes de t
 
 - `src/pages/` solo contiene `es/`. La raíz `src/pages/index.astro` redirige a `/es`.
 - `src/i18n/dict.ts` solo define el objeto `es`; `languages` en `utils.ts` solo lista `es`.
-- `LangSwitch.astro` sigue pintando un enlace a `/en/...` que devuelve 404. `astro.config.mjs` sigue declarando `locales: ['es','en']`.
-- Las páginas bajo `src/pages/es/` **hardcodean** `const lang = "es"` en lugar de usar `getLangFromUrl()`; los componentes compartidos (`Header`, `LangSwitch`, `BaseLayout`) sí lo derivan de la URL.
+- `LangSwitch.astro` existe pero **no lo importa nadie**: es código huérfano que apunta a `/en/...` (404 si se montara). `astro.config.mjs` sigue declarando `locales: ['es','en']`.
+- Las páginas bajo `src/pages/es/` **hardcodean** `const lang = "es"` en lugar de usar `getLangFromUrl()`; los componentes compartidos (`Header`, `BaseLayout`) sí lo derivan de la URL.
 
 Si se añade inglés hay que crear `src/pages/en/` completo, la clave `en` en `dict.ts` y en `languages`.
 
@@ -106,6 +111,37 @@ Los listeners de documento se enlazan al evaluar el módulo (una vez) y el escan
 `Terminal.astro` (solo en la home) trae el arranque ya escrito en el HTML y, con JavaScript, lo teclea y añade un prompt real. Los datos de los comandos salen de `src/data/research.ts` serializados a un `<script type="application/json">`, para no duplicar contenido. Al añadir un comando, acuérdate de `help`.
 
 **Ojo con los estilos scoped**: los nodos que crea el JavaScript no llevan el atributo `data-astro-cid-*`, así que en `Terminal.astro` las líneas de salida se estilan como `.term-log :global(.out)`. Cualquier estilo para markup generado en cliente necesita ese `:global()`.
+
+## Reacciones
+
+Cada entrada (blog y writeups) lleva cuatro reacciones con contador, sin comentarios. Es lo único del sitio que no es estático.
+
+- **UI**: `src/components/Reactions.astro`, montado al final de `blog/[slug].astro` y `writeups/[slug].astro`.
+- **API**: `worker/index.js`, ruta `/api/reactions`. El resto de peticiones las sigue sirviendo el enrutador de assets de Cloudflare; el worker solo responde lo que no es un archivo de `dist/` (y en ese caso devuelve la 404 del propio sitio).
+- **Datos**: Cloudflare D1, tablas en `migrations/0001_reactions.sql`.
+
+La clave de cada entrada es **la ruta publicada** (`/es/blog/<slug>`), no el nombre del archivo. Al renombrar un `.md` cambia la URL y las reacciones acumuladas quedan huérfanas.
+
+Reglas del endpoint:
+
+- `GET /api/reactions?entry=…` devuelve `{ counts, you }`; `you` es la reacción de quien pregunta.
+- `POST` alterna: la misma reacción otra vez la quita, otra distinta sustituye a la anterior. Una persona, una reacción por entrada.
+- El votante es un hash con sal de IP + user agent (`REACTIONS_SALT`, opcional). **No se guarda ninguna IP.** Dos personas tras la misma IP y navegador cuentan como una: es un contador, no una urna.
+- El worker valida la forma de `entry` y además comprueba con el binding `ASSETS` que la página exista de verdad, para que nadie cree filas de entradas inventadas.
+- Los tipos válidos son `up`, `fire`, `mind`, `heart`, en el worker y en el componente. Si añades uno, tócalo en los dos sitios.
+
+Alta de la base (una sola vez, requiere cuenta de Cloudflare):
+
+```bash
+npm run db:create          # devuelve el database_id
+# pega ese id en wrangler.jsonc (hoy: PENDIENTE_PEGAR_ID_DE_wrangler_d1_create)
+npm run db:migrate:local   # crea las tablas para wrangler dev
+npm run db:migrate         # crea las tablas en producción
+```
+
+Si `env.DB` no está configurado, la API responde 503 y **el bloque de reacciones se oculta solo**: el sitio nunca muestra un contador roto. El componente arranca con `hidden` y solo se descubre cuando la API contesta.
+
+Cuidado con el patrón de doble arranque: el `setup` marca `data-ready` **antes** del primer `await`. Como la función corre dos veces (carga directa y `astro:page-load`), marcarlo después engancha dos listeners y cada clic manda dos votos que se anulan entre sí.
 
 ## Servicios externos
 
