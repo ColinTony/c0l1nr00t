@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Standing from "../../components/Standing.astro";
 import { useTranslations } from "../../i18n/utils";
 import "../../styles/pages/about.css";
 import {
@@ -44,7 +45,7 @@ const toolset = [
                 </p>
             </div>
             <div class="header-badges">
-                <span class="badge">{identity.standing}</span>
+                <Standing />
                 <span class="badge">
                     <span class="pulse" aria-hidden="true"></span>
                     Status: Researching

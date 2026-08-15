@@ -101,6 +101,9 @@ los redefinas por página. El ancho de lectura está fijado en `--measure` (68ch
 - `Motion.astro` — capa de movimiento común, cargada desde `BaseLayout`.
 - `Reactions.astro` — reacciones al pie de cada entrada. Nace con `hidden` y solo
   aparece si la API responde: nunca deja un contador roto a la vista.
+- `Standing.astro` — insignia del programa de bug bounty. Sale con el texto
+  genérico en el HTML y lo sustituye por la posición real si `/api/rank`
+  contesta.
 
 ## Movimiento
 

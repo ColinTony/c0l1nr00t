@@ -1,0 +1,77 @@
+---
+/**
+ * Credencial del programa de bug bounty.
+ *
+ * El HTML sale con el texto genérico de `identity.standing`, así que sin
+ * JavaScript, sin worker o sin base configurada la insignia se lee igual. Si
+ * `/api/rank` contesta, el texto se sustituye por la posición real, que el
+ * worker refresca una vez al día desde la tabla pública del programa.
+ */
+import { identity } from "../data/research";
+---
+
+<span class="badge" data-standing data-program={identity.standingProgram}>
+    {identity.standing}
+</span>
+
+<script>
+    const API = "/api/rank";
+
+    type Rank = {
+        rank: number;
+        total: number;
+        reputation: number;
+        checkedAt: number;
+    };
+
+    /* La respuesta se pide una sola vez por sesión: con ViewTransitions este
+       script vuelve a correr en cada navegación y la posición no cambia
+       entre una página y la siguiente. */
+    let pending: Promise<Rank | null> | null = null;
+
+    function load(): Promise<Rank | null> {
+        pending ??= fetch(API, { headers: { accept: "application/json" } })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) =>
+                Number(data?.rank) > 0 ? (data as Rank) : null,
+            )
+            .catch(() => null);
+
+        return pending;
+    }
+
+    function paint(el: HTMLElement, data: Rank) {
+        const program = el.dataset.program ?? "";
+        el.textContent = program
+            ? `Top ${data.rank} · ${program}`
+            : `Top ${data.rank}`;
+
+        const parts = [`#${data.rank} de ${data.total}`];
+        if (data.reputation) parts.push(`${data.reputation} de reputación`);
+        if (data.checkedAt) {
+            parts.push(
+                `comprobado el ${new Date(data.checkedAt).toLocaleDateString("es-MX")}`,
+            );
+        }
+        el.title = parts.join(" · ");
+    }
+
+    async function setupStanding() {
+        const items = document.querySelectorAll<HTMLElement>(
+            "[data-standing]:not([data-ready])",
+        );
+        if (!items.length) return;
+
+        // La marca va antes del `await`: esta función corre dos veces (carga
+        // directa y astro:page-load) y si no, se pinta por duplicado.
+        items.forEach((el) => (el.dataset.ready = "1"));
+
+        const data = await load();
+        if (!data) return; // Sin dato se queda el texto del HTML.
+
+        items.forEach((el) => paint(el, data));
+    }
+
+    setupStanding();
+    document.addEventListener("astro:page-load", setupStanding);
+</script>

@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PostRow from "../../components/PostRow.astro";
 import Terminal from "../../components/Terminal.astro";
+import Standing from "../../components/Standing.astro";
 import { getCollection } from "astro:content";
 import { useTranslations } from "../../i18n/utils";
 import { readingTime } from "../../utils/reading-time";
@@ -92,7 +93,7 @@ const sortedPosts = posts
     <section class="container section-sm">
         <div class="section-head">
             <h2 class="section-title">{t("section.research_log")}</h2>
-            <span class="badge">{identity.standing}</span>
+            <Standing />
         </div>
 
         <ol class="log">

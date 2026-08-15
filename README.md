@@ -106,6 +106,21 @@ No se guarda ninguna IP: el votante es un hash con sal de IP + user agent, y
 solo sirve para evitar el voto repetido. Mientras la base no esté configurada,
 la API responde 503 y el bloque de reacciones no se muestra.
 
+## Posición en HackerOne
+
+La insignia del programa de bug bounty se actualiza sola: un cron diario del
+worker consulta la tabla pública de agradecimientos de
+[`amazonvrp-devices`](https://hackerone.com/amazonvrp-devices/thanks), guarda la
+posición en D1 y `GET /api/rank` la sirve. `Standing.astro` la pinta.
+
+El HTML sale siempre con el texto genérico (`Top hacker · Amazon Devices`), así
+que si la consulta falla, el worker no está o la base no está configurada, la
+insignia se lee igual. La consulta usa el GraphQL de la web de HackerOne, que no
+es una API documentada: puede cambiar sin aviso y por eso nada depende de ella.
+
+El programa y el usuario se configuran en `vars` de `wrangler.jsonc`
+(`HACKERONE_PROGRAM`, `HACKERONE_USERNAME`).
+
 ## Interacción
 
 - `Ctrl/⌘ + K` (o `/`) abre la paleta de comandos para navegar el sitio.

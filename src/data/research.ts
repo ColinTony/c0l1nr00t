@@ -15,9 +15,11 @@ export const identity = {
     tagline:
         "I break browsers, devices and weird attack surfaces to understand how they work.",
     lead: "Investigo Kindle, Fire TV, Echo Show y Ring: browsers embebidos, parsers, fuzzing y memory corruption.",
-    // Posición en el programa de Amazon Devices. Sin posición numérica ni
-    // cifras: es una credencial, no un marcador.
+    // Posición en el programa de Amazon Devices. Este texto es el que se
+    // publica en el HTML; si la API responde, `Standing.astro` lo sustituye
+    // por la posición real ("Top 11 · Amazon Devices").
     standing: "Top hacker · Amazon Devices",
+    standingProgram: "Amazon Devices",
     short: "Empecé rompiendo aplicaciones web. Ahora paso la mayor parte del tiempo intentando entender qué ocurre por debajo: dispositivos, navegadores embebidos y las superficies raras que quedan entre unos y otros.",
 };
 

@@ -2,10 +2,13 @@
  * Worker del sitio. El HTML lo sigue sirviendo el enrutador de assets de
  * Cloudflare; aquí solo llegan las rutas que no son un archivo de `dist/`.
  *
- * Única ruta propia: /api/reactions — las reacciones de cada entrada, contra D1.
+ * Rutas propias, ambas contra D1:
  *
  *   GET  /api/reactions?entry=/es/blog/<slug>
  *   POST /api/reactions   { "entry": "/es/blog/<slug>", "kind": "up" }
+ *   GET  /api/rank        posición en la tabla de HackerOne
+ *
+ * Además hay un `scheduled` que refresca esa posición una vez al día.
  *
  * El POST alterna: la misma reacción otra vez la quita, y una distinta sustituye
  * a la anterior. Una persona, una reacción por entrada.
@@ -28,12 +31,23 @@ const JSON_HEADERS = {
     "cache-control": "no-store",
 };
 
+/* Posición en HackerOne. Se puede cambiar sin tocar código con las variables
+   HACKERONE_PROGRAM y HACKERONE_USERNAME de wrangler.jsonc. */
+const DEFAULT_PROGRAM = "amazonvrp-devices";
+const DEFAULT_USERNAME = "c0l1nr00t";
+const STALE_AFTER_MS = 24 * 60 * 60 * 1000;
+const THANKS_UA = "c0l1nr00t.dev rank checker (+https://github.com/ColinTony/c0l1nr00t)";
+
 export default {
-    async fetch(request, env) {
+    async fetch(request, env, ctx) {
         const url = new URL(request.url);
 
         if (url.pathname === "/api/reactions") {
             return withCors(request, await handleReactions(request, env, url));
+        }
+
+        if (url.pathname === "/api/rank") {
+            return withCors(request, await handleRank(request, env, ctx));
         }
 
         // Cualquier otra cosa que no fuese un asset: la 404 del propio sitio.
@@ -45,6 +59,11 @@ export default {
             status: 404,
             headers: notFound.headers,
         });
+    },
+
+    /** Cron de wrangler.jsonc: refresca la posición una vez al día. */
+    async scheduled(event, env, ctx) {
+        ctx.waitUntil(refreshRank(env));
     },
 };
 
@@ -96,6 +115,139 @@ async function handleReactions(request, env, url) {
     }
 
     return json({ error: "method_not_allowed" }, 405);
+}
+
+/**
+ * Posición en la tabla de agradecimientos del programa.
+ *
+ * Se sirve siempre lo que hay en la base: la consulta a HackerOne la hace el
+ * cron, no la visita. Solo se busca en caliente cuando todavía no hay ninguna
+ * fila (primer arranque), y si el dato está viejo se devuelve igual y el
+ * refresco se manda a segundo plano.
+ */
+async function handleRank(request, env, ctx) {
+    if (request.method === "OPTIONS") return new Response(null, { status: 204 });
+    if (request.method !== "GET") {
+        return json({ error: "method_not_allowed" }, 405);
+    }
+    if (!env.DB) return json({ error: "rank_unavailable" }, 503);
+
+    const program = env.HACKERONE_PROGRAM ?? DEFAULT_PROGRAM;
+    let row = await readRank(env, program);
+
+    if (!row) {
+        row = await refreshRank(env);
+        if (!row) return json({ error: "rank_unavailable" }, 503);
+    } else if (Date.now() - row.checked_at > STALE_AFTER_MS) {
+        ctx?.waitUntil(refreshRank(env));
+    }
+
+    return json({
+        program: row.program,
+        username: row.username,
+        rank: row.rank,
+        reputation: row.reputation,
+        total: row.total,
+        checkedAt: row.checked_at,
+    });
+}
+
+function readRank(env, program) {
+    return env.DB.prepare(
+        `SELECT program, username, rank, reputation, total, checked_at
+           FROM hackerone_rank WHERE program = ?1`,
+    )
+        .bind(program)
+        .first();
+}
+
+/**
+ * Consulta la tabla pública del programa y guarda la posición.
+ *
+ * Se apoya en el mismo GraphQL que usa la web de HackerOne, que no es una API
+ * documentada: puede cambiar sin aviso. Por eso nunca lanza — si falla, se
+ * queda el último valor bueno y el sitio sigue enseñando su texto de siempre.
+ */
+async function refreshRank(env) {
+    const program = env.HACKERONE_PROGRAM ?? DEFAULT_PROGRAM;
+    const username = (env.HACKERONE_USERNAME ?? DEFAULT_USERNAME).toLowerCase();
+
+    try {
+        const found = await findInThanks(program, username);
+        if (!found) return null;
+
+        const checkedAt = Date.now();
+        await env.DB.prepare(
+            `INSERT INTO hackerone_rank
+                 (program, username, rank, reputation, total, checked_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+             ON CONFLICT(program) DO UPDATE SET
+                 username = ?2, rank = ?3, reputation = ?4,
+                 total = ?5, checked_at = ?6`,
+        )
+            .bind(
+                program,
+                found.username,
+                found.rank,
+                found.reputation,
+                found.total,
+                checkedAt,
+            )
+            .run();
+
+        return { program, ...found, checked_at: checkedAt };
+    } catch {
+        return null;
+    }
+}
+
+/** Pagina la tabla hasta encontrar al usuario. Corta a los 10 bloques. */
+async function findInThanks(program, username) {
+    const query = `query($handle:String!,$after:String){
+        team(handle:$handle){
+            thanks_items(first:100, after:$after){
+                total_count
+                pageInfo{ hasNextPage endCursor }
+                edges{ node{ rank reputation user{ username } } }
+            }
+        }
+    }`;
+
+    let after = null;
+
+    for (let page = 0; page < 10; page++) {
+        const res = await fetch("https://hackerone.com/graphql", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+                accept: "application/json",
+                "user-agent": THANKS_UA,
+            },
+            body: JSON.stringify({ query, variables: { handle: program, after } }),
+        });
+
+        if (!res.ok) return null;
+
+        const items = (await res.json())?.data?.team?.thanks_items;
+        if (!items) return null;
+
+        for (const edge of items.edges ?? []) {
+            const node = edge?.node;
+            if (node?.user?.username?.toLowerCase() !== username) continue;
+
+            return {
+                username: node.user.username,
+                rank: Number(node.rank) || 0,
+                reputation: Number(node.reputation) || 0,
+                total: Number(items.total_count) || 0,
+            };
+        }
+
+        if (!items.pageInfo?.hasNextPage) return null;
+        after = items.pageInfo.endCursor;
+    }
+
+    return null;
 }
 
 /* --- Datos -------------------------------------------------------------- */

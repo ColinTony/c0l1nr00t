@@ -59,7 +59,7 @@ Reglas al tocar ese contenido:
 
 - **Aquí no se publica ninguna vulnerabilidad.** Ni la clase de bug, ni la superficie concreta donde apareció, ni el impacto. Los reportes siguen divulgación coordinada; si algún día uno se hace público, se publica como writeup, no ampliando el registro.
 - **Nada de dinero.** Ni cifras de recompensa, ni totales, ni por hallazgo. El estado de un reporte se expresa con una etiqueta (`Bounty`, `Aceptado`, `Reportado`, `En curso`) y ahí se acaba.
-- `identity.standing` ("Top hacker · Amazon Devices") se muestra como `.badge` en la home, `/es/research` y `/es/about`, y en el `whoami` de la terminal. Va sin posición numérica: es una credencial, no un marcador.
+- `identity.standing` ("Top hacker · Amazon Devices") es el **texto de reserva** de la insignia; la posición real la pone `Standing.astro` desde `/api/rank`. Ver **Posición en HackerOne** más abajo.
 - `researchLog` dice **qué hice y en qué estado quedó**, nunca qué encontré. Una entrada es como mucho "Investigación en dispositivo Amazon" más su plataforma y su estado.
 - Cuidado con los cruces: `platforms[].surfaces` se mantiene en categorías amplias porque la lista de funcionalidades concretas, junto al registro, sería un mapa de dónde mirar.
 - **Nunca inventar** CVEs, recompensas, severidades, impactos ni vulnerabilidades. Solo entra lo que el autor ha confirmado.
@@ -145,6 +145,19 @@ npm run db:migrate         # crea las tablas en producción
 Si `env.DB` no está configurado, la API responde 503 y **el bloque de reacciones se oculta solo**: el sitio nunca muestra un contador roto. El componente arranca con `hidden` y solo se descubre cuando la API contesta.
 
 Cuidado con el patrón de doble arranque: el `setup` marca `data-ready` **antes** del primer `await`. Como la función corre dos veces (carga directa y `astro:page-load`), marcarlo después engancha dos listeners y cada clic manda dos votos que se anulan entre sí.
+
+## Posición en HackerOne
+
+La insignia del programa de bug bounty se actualiza sola. El HTML sale siempre con el texto genérico de `identity.standing` y, si la API responde, `src/components/Standing.astro` lo sustituye por la posición real ("Top 11 · Amazon Devices") y añade el detalle en el `title`.
+
+- **Origen**: la tabla pública de agradecimientos del programa (`hackerone.com/amazonvrp-devices/thanks`). Esa página es un shell de JavaScript, así que el worker consulta el mismo **GraphQL** que usa la web de HackerOne (`POST https://hackerone.com/graphql`, campo `team.thanks_items`).
+- **Ojo**: ese endpoint **no es una API documentada** y puede cambiar o cerrarse sin aviso. `refreshRank()` no lanza nunca: si falla, se conserva el último valor bueno y, si no hay ninguno, la insignia se queda con el texto del HTML. Nada del sitio depende de que funcione.
+- **Cron**: `triggers.crons` en `wrangler.jsonc`, una vez al día (06:20 UTC). El `scheduled` del worker es el único escritor habitual.
+- **Lecturas**: `GET /api/rank` sirve lo que hay en D1. Solo consulta en caliente cuando **no hay ninguna fila** (primer arranque); si el dato pasa de 24 h, se devuelve igual y el refresco se manda a segundo plano con `waitUntil`.
+- **Configuración**: `HACKERONE_PROGRAM` y `HACKERONE_USERNAME` en `vars` de `wrangler.jsonc`. Cambiar de programa no toca código.
+- **Datos**: tabla `hackerone_rank` en `migrations/0002_hackerone_rank.sql`, una fila por programa.
+
+Para probarlo en local: `npx wrangler dev --test-scheduled` y `curl "http://localhost:8788/__scheduled?cron=20+6+*+*+*"` dispara el refresco a mano.
 
 ## Servicios externos
 

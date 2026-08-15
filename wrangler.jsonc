@@ -3,11 +3,21 @@
     "compatibility_date": "2026-01-05",
 
     // El HTML lo sirve el enrutador de assets; lo que no sea un archivo de
-    // dist/ (hoy solo /api/reactions) entra al worker.
+    // dist/ (/api/reactions y /api/rank) entra al worker.
     "main": "worker/index.js",
     "assets": {
         "directory": "./dist",
         "binding": "ASSETS"
+    },
+
+    // Refresco diario de la posición en HackerOne (06:20 UTC).
+    "triggers": {
+        "crons": ["20 6 * * *"]
+    },
+
+    "vars": {
+        "HACKERONE_PROGRAM": "amazonvrp-devices",
+        "HACKERONE_USERNAME": "c0l1nr00t"
     },
 
     // Alta de la base (una sola vez):
