@@ -517,6 +517,38 @@ a.chip:hover {
   padding: var(--sp-5);
 }
 
+/* Tira de cifras. Sin cajas: una regla de acento por número, para no añadir
+   otra tarjeta más a una página que ya son todo tarjetas. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--sp-5) var(--sp-6);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding-left: var(--sp-4);
+  border-left: 2px solid var(--accent-line);
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--accent-strong);
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
 /* Estado vacío */
 .empty-state {
   padding: var(--sp-8) var(--sp-5);

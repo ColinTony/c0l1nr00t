@@ -11,6 +11,7 @@ import {
     researchAreas,
     statusLabels,
     researchLog,
+    stats,
     methodology,
 } from "../../data/research";
 
@@ -33,6 +34,7 @@ const sortedPosts = posts
 <BaseLayout
     title={`${identity.handle} | ${identity.role}`}
     description={`${identity.role} mexicano. ${identity.lead}`}
+    image="/og/home.png"
 >
     <section class="hero">
         <div class="container hero-inner">
@@ -65,6 +67,24 @@ const sortedPosts = posts
         </div>
     </section>
 
+    <section class="band" aria-label="Trayectoria">
+        <div class="container">
+            <div class="stats">
+                {
+                    stats.map((stat) => (
+                        <div class="stat">
+                            <span class="stat-value" data-count>
+                                {stat.value}
+                            </span>
+                            <span class="stat-label">{stat.label}</span>
+                        </div>
+                    ))
+                }
+                <Standing variant="stat" />
+            </div>
+        </div>
+    </section>
+
     <section class="container section">
         <h2 class="section-title">{t("section.currently_researching")}</h2>
 
@@ -90,7 +110,8 @@ const sortedPosts = posts
         </ul>
     </section>
 
-    <section class="container section-sm">
+    <section class="band band-lg">
+        <div class="container">
         <div class="section-head">
             <h2 class="section-title">{t("section.research_log")}</h2>
             <Standing />
@@ -122,6 +143,7 @@ const sortedPosts = posts
         </ol>
 
         <p class="disclosure mono">{t("research.disclosure")}</p>
+        </div>
     </section>
 
     <section class="container section-sm">
@@ -315,6 +337,19 @@ const sortedPosts = posts
             opacity: 0.55;
             box-shadow: 0 0 0 4px transparent;
         }
+    }
+
+    /* --- Bandas a ancho completo ---------------------------------------- */
+    /* Rompen la sucesión de secciones sobre el mismo fondo: la página deja de
+       ser una lista de tarjetas y pasa a tener ritmo. */
+    .band {
+        padding-block: var(--sp-7);
+        background: var(--bg-soft);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .band-lg {
+        padding-block: var(--sp-9);
     }
 
     /* --- Research log --------------------------------------------------- */

@@ -130,6 +130,17 @@ El programa y el usuario se configuran en `vars` de `wrangler.jsonc`
   descifra, contadores) vive en `src/components/Motion.astro` y se apaga con
   `prefers-reduced-motion`. Sin JavaScript el contenido se ve completo.
 
+## Tarjetas sociales
+
+Cada entrada y cada página fija generan su imagen de Open Graph en build
+(`src/pages/og/[...slug].png.ts`): una ventana de terminal con el título, la
+sección y la fecha. Se dibujan como SVG y las rasteriza `sharp`, que Astro ya
+incluye — sin dependencias nuevas y sin red.
+
+Usan las fuentes del sistema donde se compila, y el salto de línea del título se
+estima (no hay motor de layout), así que si cambias el tipo conviene mirar una
+tarjeta larga antes de publicar.
+
 ## Analytics
 
 Cloudflare Web Analytics está integrado en `src/components/BaseHead.astro`. Para

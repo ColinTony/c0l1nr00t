@@ -42,6 +42,7 @@ const entryPath = `/${lang}/blog/${slugOf(post)}`;
 <BaseLayout
     title={`${post.data.title} | c0l1nr00t`}
     description={post.data.description}
+    image={`/og/blog-${slugOf(post)}.png`}
     type="article"
     publishedDate={post.data.date}
     tags={post.data.tags}

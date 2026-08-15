@@ -1,18 +1,43 @@
 ---
 /**
- * Credencial del programa de bug bounty.
+ * Credencial del programa de bug bounty, en dos formas.
  *
  * El HTML sale con el texto genérico de `identity.standing`, así que sin
- * JavaScript, sin worker o sin base configurada la insignia se lee igual. Si
- * `/api/rank` contesta, el texto se sustituye por la posición real, que el
- * worker refresca una vez al día desde la tabla pública del programa.
+ * JavaScript, sin worker o sin base configurada se lee igual. Si `/api/rank`
+ * contesta, el texto se sustituye por la posición real, que el worker refresca
+ * una vez al día desde la tabla pública del programa.
+ *
+ * - `badge` (por defecto): insignia junto a un título.
+ * - `stat`: una cifra más dentro de la tira de la home.
  */
 import { identity } from "../data/research";
+
+interface Props {
+    variant?: "badge" | "stat";
+}
+
+const { variant = "badge" } = Astro.props;
 ---
 
-<span class="badge" data-standing data-program={identity.standingProgram}>
-    {identity.standing}
-</span>
+{
+    variant === "stat" ? (
+        <div class="stat">
+            {/* Sin data-count: el texto llega por red y todavía no es un número */}
+            <span class="stat-value" data-standing-rank>
+                Top
+            </span>
+            <span class="stat-label">{identity.standingProgram}</span>
+        </div>
+    ) : (
+        <span
+            class="badge"
+            data-standing
+            data-program={identity.standingProgram}
+        >
+            {identity.standing}
+        </span>
+    )
+}
 
 <script>
     const API = "/api/rank";
@@ -32,20 +57,13 @@ import { identity } from "../data/research";
     function load(): Promise<Rank | null> {
         pending ??= fetch(API, { headers: { accept: "application/json" } })
             .then((res) => (res.ok ? res.json() : null))
-            .then((data) =>
-                Number(data?.rank) > 0 ? (data as Rank) : null,
-            )
+            .then((data) => (Number(data?.rank) > 0 ? (data as Rank) : null))
             .catch(() => null);
 
         return pending;
     }
 
-    function paint(el: HTMLElement, data: Rank) {
-        const program = el.dataset.program ?? "";
-        el.textContent = program
-            ? `Top ${data.rank} · ${program}`
-            : `Top ${data.rank}`;
-
+    function describe(data: Rank) {
         const parts = [`#${data.rank} de ${data.total}`];
         if (data.reputation) parts.push(`${data.reputation} de reputación`);
         if (data.checkedAt) {
@@ -53,23 +71,40 @@ import { identity } from "../data/research";
                 `comprobado el ${new Date(data.checkedAt).toLocaleDateString("es-MX")}`,
             );
         }
-        el.title = parts.join(" · ");
+        return parts.join(" · ");
     }
 
     async function setupStanding() {
-        const items = document.querySelectorAll<HTMLElement>(
+        const badges = document.querySelectorAll<HTMLElement>(
             "[data-standing]:not([data-ready])",
         );
-        if (!items.length) return;
+        const ranks = document.querySelectorAll<HTMLElement>(
+            "[data-standing-rank]:not([data-ready])",
+        );
+        if (!badges.length && !ranks.length) return;
 
         // La marca va antes del `await`: esta función corre dos veces (carga
         // directa y astro:page-load) y si no, se pinta por duplicado.
-        items.forEach((el) => (el.dataset.ready = "1"));
+        badges.forEach((el) => (el.dataset.ready = "1"));
+        ranks.forEach((el) => (el.dataset.ready = "1"));
 
         const data = await load();
         if (!data) return; // Sin dato se queda el texto del HTML.
 
-        items.forEach((el) => paint(el, data));
+        const detail = describe(data);
+
+        badges.forEach((el) => {
+            const program = el.dataset.program ?? "";
+            el.textContent = program
+                ? `Top ${data.rank} · ${program}`
+                : `Top ${data.rank}`;
+            el.title = detail;
+        });
+
+        ranks.forEach((el) => {
+            el.textContent = `Top ${data.rank}`;
+            el.title = detail;
+        });
     }
 
     setupStanding();

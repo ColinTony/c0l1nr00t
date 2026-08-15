@@ -167,9 +167,16 @@ Para probarlo en local: `npx wrangler dev --test-scheduled` y `curl "http://loca
 
 ## SEO
 
+Las **tarjetas sociales se generan en build**: `src/pages/og/[...slug].png.ts` emite un PNG por entrada publicada y por página fija, dibujando el SVG de `src/utils/og.ts` y rasterizándolo con `sharp` (Astro ya lo trae; no hay dependencia nueva). Cada página pasa su `image` a `BaseLayout`.
+
+Dos cosas al tocarlo:
+
+- El ancho del texto se **estima** (`perChar = size * 0.64`, medido sobre DejaVu Sans Bold) porque no hay motor de layout. Si cambias el tipo o el tamaño, comprueba que el título no se salga del panel.
+- Las fuentes son las del sistema donde se compila. Se piden por familia concreta con alternativas; en una máquina sin DejaVu el resultado cambia.
+
 `BaseHead.astro` emite canonical, Open Graph, Twitter Card, keywords y **JSON-LD**: siempre un `Person` (rol, `knowsAbout`, `sameAs`) y, cuando la página pasa `publishedDate`, un `BlogPosting`. Las páginas de detalle deben pasar `type="article"`, `publishedDate` y `tags` a `BaseLayout`. El feed vive en `src/pages/es/rss.xml.ts`.
 
-**Pendiente conocido**: `site` en `astro.config.mjs` sigue siendo el placeholder `https://c0l1nr00t.netlify.app` — decisión explícita del autor de dejarlo por ahora. Es lo que se emite en canonical, sitemap, Open Graph y JSON-LD, así que hay que cambiarlo cuando exista dominio propio (también aparece como fallback en `rss.xml.ts`).
+**Pendiente conocido** (ahora importa más: la URL de `og:image` es absoluta, así que con el placeholder ningún crawler carga las tarjetas): `site` en `astro.config.mjs` sigue siendo el placeholder `https://c0l1nr00t.netlify.app` — decisión explícita del autor de dejarlo por ahora. Es lo que se emite en canonical, sitemap, Open Graph y JSON-LD, así que hay que cambiarlo cuando exista dominio propio (también aparece como fallback en `rss.xml.ts`).
 
 `docs/deploy.md` describe un estado anterior (Netlify Forms y despliegue en Netlify); el proyecto usa Cloudflare + FormSubmit.
 

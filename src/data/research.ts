@@ -195,6 +195,17 @@ export const researchLog = [
     },
 ];
 
+/**
+ * Cifras de la home. Ninguna es dinero: reportes, hallazgos y alcance.
+ * La posición en el programa no está aquí — la pone `Standing.astro` desde
+ * `/api/rank`, que es el único número que se actualiza solo.
+ */
+export const stats = [
+    { value: "+15", label: "Reportes con bounty" },
+    { value: "+35", label: "Private findings" },
+    { value: "4", label: "Plataformas Amazon" },
+];
+
 /** Lo que sale de la investigación además de los bugs. */
 export const methodology = {
     loop: ["observar", "cuestionar", "experimentar", "romper", "entender", "demostrar"],

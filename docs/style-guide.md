@@ -64,6 +64,14 @@ código nuevo usa los tokens de la tabla.
 <span class="badge">Status: Active</span>
 <span class="difficulty hard">hard</span>
 
+<!-- Tira de cifras (sin cajas: una regla de acento por número) -->
+<div class="stats">
+  <div class="stat">
+    <span class="stat-value" data-count>+15</span>
+    <span class="stat-label">Reportes con bounty</span>
+  </div>
+</div>
+
 <!-- Estado vacío -->
 <p class="empty-state"><strong>WRITEUPS: 0</strong>Nada publicado todavía.</p>
 
