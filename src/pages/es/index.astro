@@ -9,8 +9,7 @@ import {
     identity,
     researchAreas,
     statusLabels,
-    findings,
-    track,
+    researchLog,
     methodology,
 } from "../../data/research";
 
@@ -28,9 +27,6 @@ const sortedPosts = posts
         return b.data.date.valueOf() - a.data.date.valueOf();
     })
     .slice(0, 4);
-
-const featured = findings[0];
-const rest = findings.slice(1);
 ---
 
 <BaseLayout
@@ -94,54 +90,34 @@ const rest = findings.slice(1);
     </section>
 
     <section class="container section-sm">
-        <h2 class="section-title">{t("section.findings")}</h2>
+        <h2 class="section-title">{t("section.research_log")}</h2>
 
-        <article class="featured" data-spotlight data-reveal>
-            <div class="featured-main">
-                <p class="featured-meta mono">
-                    <span class="platform">{featured.platform}</span>
-                    <span class="sep" aria-hidden="true">/</span>
-                    <span class="codename">{featured.codename}</span>
-                </p>
-                <h3>{featured.title}</h3>
-                <p class="featured-desc">{featured.summary}</p>
-            </div>
-            <dl class="featured-side mono">
-                <div>
-                    <dt>{t("research.outcome")}</dt>
-                    <dd>{featured.outcome}</dd>
-                </div>
-                <div>
-                    <dt>{t("research.reward")}</dt>
-                    <dd class="reward" data-count>{featured.reward}</dd>
-                </div>
-            </dl>
-        </article>
-
-        <ul class="findings">
+        <ol class="log">
             {
-                rest.map((finding, i) => (
+                researchLog.map((item, i) => (
                     <li
-                        class="finding"
+                        class="log-item"
                         data-spotlight
                         data-reveal
-                        style={`--reveal-delay:${i * 70}ms`}
+                        style={`--reveal-delay:${i * 60}ms`}
                     >
-                        <p class="finding-meta mono">
-                            <span class="platform">{finding.platform}</span>
+                        <span class="log-mark" aria-hidden="true" />
+                        <p class="log-entry">{item.entry}</p>
+                        <p class="log-meta mono">
+                            <span class="platform">{item.platform}</span>
+                            <span
+                                class="log-status"
+                                data-status={item.status}
+                            >
+                                {item.status}
+                            </span>
                         </p>
-                        <h3>{finding.title}</h3>
-                        <p>{finding.summary}</p>
-                        <p class="finding-outcome mono">{finding.outcome}</p>
                     </li>
                 ))
             }
-        </ul>
+        </ol>
 
-        <p class="disclosure mono">
-            {t("research.disclosure")} · {track.rewards}
-            {track.rewardsScope} ({track.rewardsAsOf}).
-        </p>
+        <p class="disclosure mono">{t("research.disclosure")}</p>
     </section>
 
     <section class="container section-sm">
@@ -337,22 +313,68 @@ const rest = findings.slice(1);
         }
     }
 
-    /* --- Findings ------------------------------------------------------- */
-    .featured {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 14rem;
-        gap: var(--sp-5);
-        padding: var(--sp-6);
-        background: var(--surface);
-        border: 1px solid var(--accent-line);
-        border-radius: var(--radius);
+    /* --- Research log --------------------------------------------------- */
+    .log {
+        margin: 0;
+        padding: 0 0 0 var(--sp-5);
+        border-left: 1px solid var(--border);
+        list-style: none;
     }
 
-    .featured-meta {
+    .log-item {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--sp-3) var(--sp-5);
+        padding: var(--sp-4) var(--sp-5);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        transition:
+            border-color var(--dur) var(--ease),
+            transform var(--dur) var(--ease);
+    }
+
+    .log-item + .log-item {
+        margin-top: var(--sp-3);
+    }
+
+    .log-item:hover {
+        border-color: var(--border-strong);
+        transform: translateX(2px);
+    }
+
+    /* El punto se apoya sobre la línea vertical de la lista */
+    .log-mark {
+        position: absolute;
+        top: 50%;
+        left: calc(var(--sp-5) * -1 - 4px);
+        width: 7px;
+        height: 7px;
+        background: var(--bg);
+        border: 1px solid var(--border-strong);
+        border-radius: 50%;
+        transform: translateY(-50%);
+    }
+
+    .log-item:first-child .log-mark {
+        background: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .log-entry {
+        margin: 0;
+        color: var(--text-strong);
+        font-size: var(--fs-md);
+        line-height: var(--lh-snug);
+    }
+
+    .log-meta {
         display: flex;
         align-items: center;
-        gap: var(--sp-3);
-        margin-bottom: var(--sp-3);
+        gap: var(--sp-4);
+        margin: 0;
         font-size: var(--fs-xs);
         letter-spacing: var(--tracking-wide);
     }
@@ -362,103 +384,18 @@ const rest = findings.slice(1);
         text-transform: uppercase;
     }
 
-    .sep {
-        color: var(--border-strong);
-    }
-
-    .codename {
-        color: var(--text-faint);
-    }
-
-    .featured h3 {
-        margin-bottom: var(--sp-3);
-        font-size: var(--fs-xl);
-    }
-
-    .featured-desc {
-        max-width: 60ch;
-        margin: 0;
+    .log-status {
+        padding: 0.15rem 0.6rem;
         color: var(--text-dim);
-    }
-
-    .featured-side {
-        display: flex;
-        flex-direction: column;
-        gap: var(--sp-4);
-        margin: 0;
-        padding-left: var(--sp-5);
-        border-left: 1px solid var(--border);
-    }
-
-    .featured-side dt {
-        margin-bottom: var(--sp-1);
-        color: var(--text-faint);
-        font-size: var(--fs-xs);
-        letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
-    }
-
-    .featured-side dd {
-        margin: 0;
-        color: var(--text);
-        font-size: var(--fs-sm);
-    }
-
-    .reward {
-        color: var(--accent-strong);
-        font-size: var(--fs-lg) !important;
-    }
-
-    .findings {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-        gap: var(--sp-5);
-        margin: var(--sp-5) 0 0;
-        padding: 0;
-        list-style: none;
-    }
-
-    .finding {
-        display: flex;
-        flex-direction: column;
-        padding: var(--sp-5);
-        background: var(--surface);
         border: 1px solid var(--border);
-        border-radius: var(--radius);
-        transition:
-            border-color var(--dur) var(--ease),
-            transform var(--dur) var(--ease);
+        border-radius: var(--radius-pill);
+        white-space: nowrap;
     }
 
-    .finding:hover {
-        border-color: var(--border-strong);
-        transform: translateY(-2px);
-    }
-
-    .finding-meta {
-        margin-bottom: var(--sp-2);
-        font-size: var(--fs-xs);
-        letter-spacing: var(--tracking-wide);
-    }
-
-    .finding h3 {
-        margin-bottom: var(--sp-2);
-        font-size: var(--fs-md);
-    }
-
-    .finding p {
-        margin: 0;
-        color: var(--text-dim);
-        font-size: var(--fs-base);
-        line-height: var(--lh-snug);
-    }
-
-    .finding-outcome {
-        margin-top: auto !important;
-        padding-top: var(--sp-3);
-        border-top: 1px solid var(--border);
-        color: var(--text-faint) !important;
-        font-size: var(--fs-xs) !important;
+    .log-status[data-status="Bounty"] {
+        color: var(--accent-strong);
+        border-color: var(--accent-line);
+        background: var(--accent-soft);
     }
 
     .disclosure {
@@ -589,16 +526,9 @@ const rest = findings.slice(1);
             max-width: none;
         }
 
-        .featured {
-            grid-template-columns: 1fr;
-        }
-
-        .featured-side {
-            flex-direction: row;
-            gap: var(--sp-6);
-            padding: var(--sp-4) 0 0;
-            border-left: none;
-            border-top: 1px solid var(--border);
+        /* El estado baja bajo la entrada en vez de comprimirla */
+        .log-item {
+            grid-template-columns: minmax(0, 1fr);
         }
     }
 

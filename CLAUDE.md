@@ -53,14 +53,16 @@ Las entradas de blog llevan además `category` (tema, de `BLOG_CATEGORIES`) y `t
 
 ### Narrativa: identidad e investigación
 
-La identidad del sitio (**c0l1nr00t — Security Researcher**) no está escrita en las plantillas: vive en **`src/data/research.ts`**, que es la fuente única para la home, `/es/research` y `/es/about` — áreas de investigación, plataformas (Kindle, Fire TV, Echo Show, Ring), hallazgos publicables, metodología, hardware, timeline y trabajo de pentesting. Para actualizar el mensaje del sitio se edita ese archivo, no el HTML.
+La identidad del sitio (**c0l1nr00t — Security Researcher**) no está escrita en las plantillas: vive en **`src/data/research.ts`**, que es la fuente única para la home, `/es/research`, `/es/about` y la terminal — áreas de investigación, plataformas (Kindle, Fire TV, Echo Show, Ring), registro de investigación, metodología, hardware, timeline y trabajo de pentesting. Para actualizar el mensaje del sitio se edita ese archivo, no el HTML.
 
 Reglas al tocar ese contenido:
 
+- **Aquí no se publica ninguna vulnerabilidad.** Ni la clase de bug, ni la superficie concreta donde apareció, ni el impacto. Los reportes siguen divulgación coordinada; si algún día uno se hace público, se publica como writeup, no ampliando el registro.
+- **Nada de dinero.** Ni cifras de recompensa, ni totales, ni por hallazgo. El estado de un reporte se expresa con una etiqueta (`Bounty`, `Aceptado`, `Reportado`, `En curso`) y ahí se acaba.
+- `researchLog` dice **qué hice y en qué estado quedó**, nunca qué encontré. Una entrada es como mucho "Investigación en dispositivo Amazon" más su plataforma y su estado.
+- Cuidado con los cruces: `platforms[].surfaces` se mantiene en categorías amplias porque la lista de funcionalidades concretas, junto al registro, sería un mapa de dónde mirar.
 - **Nunca inventar** CVEs, recompensas, severidades, impactos ni vulnerabilidades. Solo entra lo que el autor ha confirmado.
-- Separar lo ya público de lo que sigue bajo divulgación coordinada; ante la duda, mantenerlo genérico y a alto nivel.
-- Las cifras de bug bounty son contexto, nunca el titular: la narrativa es la investigación.
-- El pentesting es trabajo profesional **secundario**; la identidad principal es security research.
+- El pentesting es trabajo profesional **secundario**; la identidad principal es security research. Las clases de vulnerabilidad de `pentesting.findings` sí son públicas: describen el servicio, no la investigación privada.
 - Voz: titulares y terminología técnica en inglés, explicaciones y cuerpo en español.
 
 ### Visibilidad del contenido: dos mecanismos superpuestos

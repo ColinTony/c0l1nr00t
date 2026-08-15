@@ -1,10 +1,11 @@
 /**
  * Fuente única de la narrativa de investigación.
- * La consumen la home, /es/research y /es/about.
+ * La consumen la home, /es/research, /es/about y la terminal.
  *
- * REGLA: aquí solo entra información que puede hacerse pública. Los detalles
- * técnicos de vulnerabilidades no divulgadas se mantienen a alto nivel, y no se
- * inventan CVEs, severidades ni impactos.
+ * REGLA: aquí no se publica ninguna vulnerabilidad. Ni la clase de bug, ni la
+ * superficie concreta donde apareció, ni el impacto, ni cifras de recompensa.
+ * Lo que sí puede contarse es la actividad y en qué estado quedó (ver
+ * `researchLog`). Tampoco se inventan CVEs, severidades ni impactos.
  */
 
 export const identity = {
@@ -80,12 +81,11 @@ export const platforms = [
         // El nombre de la plataforma ya encabeza el panel: aquí solo el modelo
         device: "Paperwhite Signature Edition · 12th Gen",
         intro: "La plataforma que más he investigado. Donde el web security clásico se cruza con un dispositivo real.",
+        // A propósito en categorías amplias: la lista de funcionalidades
+        // concretas, junto al registro de abajo, sería un mapa de dónde mirar.
         surfaces: [
             "Experimental Browser",
-            "Store",
-            "Search",
-            "Reviews",
-            "Shared Lists",
+            "Contenido remoto",
             "APIs internas",
             "Navegación interna",
             "Parsing de contenido",
@@ -149,49 +149,46 @@ export const platforms = [
 ];
 
 /**
- * Hallazgos publicables, descritos a alto nivel.
- * Sin severidades ni identificadores que no existan.
+ * Registro de investigación: qué hice y en qué estado quedó. Nunca qué
+ * encontré.
+ *
+ * Aquí NO entra la clase de vulnerabilidad, ni la superficie concreta, ni el
+ * impacto, ni el dinero. Mientras la divulgación siga abierta, una entrada es
+ * como mucho "Investigación en dispositivo Amazon" y su estado. Si algún día
+ * un hallazgo se hace público, se publica como writeup, no ampliando esto.
  */
-export const findings = [
+export const researchLog = [
     {
-        codename: "KindleDoom",
-        title: "Persistent Browser Denial of Service",
+        entry: "Investigación en dispositivo Amazon",
         platform: "Kindle",
-        summary:
-            "Comportamiento capaz de dejar componentes del navegador de Kindle en un estado de denegación de servicio persistente mediante contenido controlado.",
-        outcome: "Aceptado en el programa Amazon Devices",
-        reward: "USD $3,000",
+        status: "Bounty",
     },
     {
-        title: "Stored Cross-Site Scripting",
+        entry: "Investigación en dispositivo Amazon",
         platform: "Kindle",
-        summary:
-            "Stored XSS en superficies de contenido compartido: contenido controlado alcanzaba contextos internos donde no debería ejecutarse código.",
-        outcome: "Reportado a Amazon Devices",
+        status: "Aceptado",
     },
     {
-        title: "Stored HTML Injection",
+        entry: "Investigación en dispositivo Amazon",
         platform: "Kindle",
-        summary:
-            "Distintos vectores de inyección HTML en superficies como reviews, search y contenido almacenado.",
-        outcome: "Reportado a Amazon Devices",
+        status: "Reportado",
     },
     {
-        // Guion no separable en "UTF-8" para que no parta al final de línea.
-        title: "Malformed UTF‑8 → Denial of Service",
+        entry: "Investigación en dispositivo Amazon",
         platform: "Echo Show",
-        summary:
-            "Un ESP32 emitiendo SSIDs de Wi-Fi y nombres de dispositivo Bluetooth controlados: ciertas secuencias UTF-8 inválidas cerraban inesperadamente interfaces de configuración del dispositivo.",
-        outcome: "Reportado como DoS de bajo impacto",
+        status: "Reportado",
+    },
+    {
+        entry: "Fuzzing de parsers y componentes nativos",
+        platform: "Fire TV",
+        status: "En curso",
+    },
+    {
+        entry: "Reversing de aplicación y librerías nativas",
+        platform: "Ring",
+        status: "En curso",
     },
 ];
-
-/** Cifras de contexto. Indicador de experiencia, nunca el titular. */
-export const track = {
-    rewards: "USD $18,500",
-    rewardsScope: "en Amazon Devices, principalmente por Kindle",
-    rewardsAsOf: "julio de 2026",
-};
 
 /** Lo que sale de la investigación además de los bugs. */
 export const methodology = {
@@ -211,7 +208,7 @@ export const methodology = {
 
 /** Hardware que uso para llegar al dispositivo por vías que no son software. */
 export const hardware = [
-    { name: "ESP32 DevKit", use: "BLE, Bluetooth Classic, SSIDs y malformed input" },
+    { name: "ESP32 DevKit", use: "BLE, Bluetooth Classic y Wi-Fi" },
     { name: "Raspberry Pi", use: "Automatización y soporte de laboratorio" },
     { name: "Adaptadores Bluetooth / Wi-Fi", use: "Discovery y onboarding" },
     { name: "Capturadora HDMI", use: "Fire TV, HDMI y HDMI-CEC" },

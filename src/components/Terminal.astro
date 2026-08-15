@@ -7,14 +7,14 @@
  * paso a paso y luego aparece un prompt real que acepta comandos.
  *
  * Los datos salen de src/data/research.ts y se serializan a JSON para que el
- * cliente responda `targets`, `findings`, etc. sin duplicar contenido.
+ * cliente responda `targets`, `log`, etc. sin duplicar contenido.
  */
 import { getCollection } from "astro:content";
 import {
     identity,
     platforms,
     researchAreas,
-    findings,
+    researchLog,
     hardware,
     statusLabels,
 } from "../data/research";
@@ -57,10 +57,10 @@ const term = {
         name: area.title,
         status: statusLabels[area.status] ?? area.status,
     })),
-    findings: findings.map((finding) => ({
-        platform: finding.platform,
-        title: finding.title,
-        outcome: finding.outcome,
+    log: researchLog.map((item) => ({
+        platform: item.platform,
+        entry: item.entry,
+        status: item.status,
     })),
     hardware: hardware.map((item) => ({ name: item.name, use: item.use })),
     posts,
@@ -234,7 +234,7 @@ const term = {
                         "  whoami      quién soy",
                         "  targets     dispositivos bajo investigación",
                         "  focus       áreas de investigación y su estado",
-                        "  findings    hallazgos publicables",
+                        "  log         registro de investigación",
                         "  hardware    laboratorio",
                         "  posts       últimas entradas",
                         "  open <sec>  research · blog · writeups · about · contact",
@@ -262,17 +262,17 @@ const term = {
                         .join("\n"),
                 );
             },
-            findings() {
+            log() {
                 print(
-                    (data.findings ?? [])
+                    (data.log ?? [])
                         .map(
-                            (f: any) =>
-                                `[${f.platform}] ${f.title}\n            ${f.outcome}`,
+                            (item: any) =>
+                                `${pad(item.status, 12)}${pad(item.platform, 12)}${item.entry}`,
                         )
                         .join("\n"),
                 );
                 print(
-                    "detalle a alto nivel mientras la divulgación siga abierta.",
+                    "qué hice, no qué encontré: la divulgación sigue abierta.",
                     "dim",
                 );
             },

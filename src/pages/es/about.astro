@@ -7,7 +7,6 @@ import {
     timeline,
     pentesting,
     methodology,
-    track,
 } from "../../data/research";
 
 const lang = "es";
@@ -89,14 +88,15 @@ const toolset = [
                     </div>
                 ))
             }
+            <!-- Sin data-count: no es un número y no hay nada que contar -->
             <div
                 class="metric"
                 data-spotlight
                 data-reveal
                 style={`--reveal-delay:${metrics.length * 70}ms`}
             >
-                <span class="metric-value mono" data-count>{track.rewards}</span>
-                <span class="metric-label mono">Amazon Devices rewards</span>
+                <span class="metric-value mono">Bounty</span>
+                <span class="metric-label mono">Amazon Devices</span>
             </div>
         </section>
 

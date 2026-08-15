@@ -4,8 +4,7 @@ import { useTranslations } from "../../i18n/utils";
 import {
     identity,
     platforms,
-    findings,
-    track,
+    researchLog,
     methodology,
     hardware,
 } from "../../data/research";
@@ -15,7 +14,7 @@ const t = useTranslations(lang);
 
 const sections = [
     { id: "platforms", label: t("section.platforms") },
-    { id: "findings", label: t("section.findings") },
+    { id: "log", label: t("section.research_log") },
     { id: "methodology", label: t("section.methodology") },
     { id: "hardware", label: t("section.hardware") },
 ];
@@ -106,49 +105,31 @@ const sections = [
                     </div>
                 </section>
 
-                <!-- Hallazgos -------------------------------------------- -->
-                <section class="block" id="findings">
-                    <h2 class="section-title">{t("section.findings")}</h2>
+                <!-- Registro de investigación ---------------------------- -->
+                <section class="block" id="log">
+                    <h2 class="section-title">{t("section.research_log")}</h2>
 
-                    <ol class="findings">
+                    <ol class="log">
                         {
-                            findings.map((finding, i) => (
+                            researchLog.map((item, i) => (
                                 <li
-                                    class="finding"
+                                    class="log-item"
                                     data-spotlight
                                     data-reveal
                                     style={`--reveal-delay:${i * 60}ms`}
                                 >
-                                    <div class="finding-head">
-                                        <p class="finding-meta mono">
-                                            <span class="platform-tag">
-                                                {finding.platform}
-                                            </span>
-                                            {finding.codename && (
-                                                <>
-                                                    <span
-                                                        class="sep"
-                                                        aria-hidden="true"
-                                                    >
-                                                        /
-                                                    </span>
-                                                    <span class="codename">
-                                                        {finding.codename}
-                                                    </span>
-                                                </>
-                                            )}
-                                        </p>
-                                        {finding.reward && (
-                                            <span class="badge">
-                                                {finding.reward}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <h3>{finding.title}</h3>
-                                    <p class="finding-desc">{finding.summary}</p>
-                                    <p class="finding-outcome mono">
-                                        {finding.outcome}
+                                    <span class="log-mark" aria-hidden="true" />
+                                    <p class="log-entry">{item.entry}</p>
+                                    <p class="log-meta mono">
+                                        <span class="platform-tag">
+                                            {item.platform}
+                                        </span>
+                                        <span
+                                            class="log-status"
+                                            data-status={item.status}
+                                        >
+                                            {item.status}
+                                        </span>
                                     </p>
                                 </li>
                             ))
@@ -156,11 +137,10 @@ const sections = [
                     </ol>
 
                     <p class="track mono">
-                        <span data-count>{track.rewards}</span> en recompensas {
-                            track.rewardsScope
-                        }, hasta {track.rewardsAsOf}. La cifra es contexto, no el
-                        objetivo: lo que persigo es investigar lo bastante hondo
-                        como para encontrar vulnerabilidades que importen.
+                        El registro dice qué hice y en qué estado quedó, nunca
+                        qué encontré. Los reportes siguen divulgación coordinada
+                        con el fabricante: si algún día uno se hace público,
+                        aparecerá como writeup y no ampliando esta lista.
                     </p>
                 </section>
 
@@ -452,20 +432,21 @@ const sections = [
         color: var(--accent-strong);
     }
 
-    /* --- Hallazgos ------------------------------------------------------- */
-    .findings {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-        gap: var(--sp-4);
+    /* --- Registro de investigación ---------------------------------------- */
+    .log {
         margin: 0;
-        padding: 0;
+        padding: 0 0 0 var(--sp-5);
+        border-left: 1px solid var(--border);
         list-style: none;
     }
 
-    .finding {
-        display: flex;
-        flex-direction: column;
-        padding: var(--sp-5);
+    .log-item {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--sp-3) var(--sp-5);
+        padding: var(--sp-4) var(--sp-5);
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--radius);
@@ -474,29 +455,44 @@ const sections = [
             transform var(--dur) var(--ease);
     }
 
-    .finding:hover {
-        transform: translateY(-2px);
+    .log-item + .log-item {
+        margin-top: var(--sp-3);
+    }
+
+    .log-item:hover {
+        transform: translateX(2px);
         border-color: var(--border-strong);
     }
 
-    /* El hallazgo principal ocupa la fila completa */
-    .finding:first-child {
-        grid-column: 1 / -1;
-        border-color: var(--accent-line);
+    /* El punto se apoya sobre la línea vertical de la lista */
+    .log-mark {
+        position: absolute;
+        top: 50%;
+        left: calc(var(--sp-5) * -1 - 4px);
+        width: 7px;
+        height: 7px;
+        background: var(--bg);
+        border: 1px solid var(--border-strong);
+        border-radius: 50%;
+        transform: translateY(-50%);
     }
 
-    .finding-head {
+    .log-item:first-child .log-mark {
+        background: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .log-entry {
+        margin: 0;
+        color: var(--text-strong);
+        font-size: var(--fs-md);
+        line-height: var(--lh-snug);
+    }
+
+    .log-meta {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         gap: var(--sp-4);
-        margin-bottom: var(--sp-3);
-    }
-
-    .finding-meta {
-        display: flex;
-        align-items: center;
-        gap: var(--sp-3);
         margin: 0;
         font-size: var(--fs-xs);
         letter-spacing: var(--tracking-wide);
@@ -507,36 +503,18 @@ const sections = [
         text-transform: uppercase;
     }
 
-    .sep {
-        color: var(--border-strong);
-    }
-
-    .codename {
-        color: var(--text-faint);
-    }
-
-    .finding h3 {
-        margin-bottom: var(--sp-2);
-        font-size: var(--fs-lg);
-    }
-
-    .finding-desc {
-        max-width: 76ch;
-        margin: 0;
+    .log-status {
+        padding: 0.15rem 0.6rem;
         color: var(--text-dim);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        white-space: nowrap;
     }
 
-    .finding-outcome {
-        margin: var(--sp-4) 0 0;
-        padding-top: var(--sp-3);
-        border-top: 1px solid var(--border);
-        color: var(--text-faint);
-        font-size: var(--fs-xs);
-        letter-spacing: var(--tracking-wide);
-    }
-
-    .finding-desc + .finding-outcome {
-        margin-top: auto;
+    .log-status[data-status="Bounty"] {
+        color: var(--accent-strong);
+        border-color: var(--accent-line);
+        background: var(--accent-soft);
     }
 
     .track {
@@ -545,10 +523,6 @@ const sections = [
         color: var(--text-dim);
         font-size: var(--fs-sm);
         line-height: var(--lh-snug);
-    }
-
-    .track [data-count] {
-        color: var(--accent-strong);
     }
 
     /* --- Metodología ------------------------------------------------------ */
@@ -751,6 +725,11 @@ const sections = [
         .block {
             margin-top: var(--sp-8);
             scroll-margin-top: calc(var(--header-h) * 2 + var(--sp-4));
+        }
+
+        /* El estado baja bajo la entrada en vez de comprimirla */
+        .log-item {
+            grid-template-columns: minmax(0, 1fr);
         }
     }
 </style>

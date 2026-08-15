@@ -31,7 +31,7 @@ src/
     blog/es/        # Research log (Markdown)
     writeups/es/    # Writeups técnicos (Markdown)
   data/
-    research.ts     # Identidad, plataformas, hallazgos, timeline → home/research/about
+    research.ts     # Identidad, plataformas, registro, timeline → home/research/about
   i18n/             # Diccionario de textos
   layouts/          # BaseLayout
   pages/es/         # Rutas del sitio
@@ -45,8 +45,8 @@ migrations/         # Esquema de la base D1
 
 | Ruta | Qué es |
 | --- | --- |
-| `/es` | Hero con terminal interactiva, áreas de investigación activas, hallazgos destacados, últimos posts |
-| `/es/research` | Plataformas investigadas, hallazgos, metodología, hardware |
+| `/es` | Hero con terminal interactiva, áreas de investigación activas, registro de investigación, últimos posts |
+| `/es/research` | Plataformas investigadas, registro de investigación, metodología, hardware |
 | `/es/blog` | Research log: research notes, lab notes, deep dives |
 | `/es/blog/categoria/<slug>` | Entradas por categoría (solo las que tienen contenido) |
 | `/es/writeups` | Writeups técnicos completos (fuera del menú mientras esté vacío) |
@@ -62,9 +62,10 @@ La narrativa del sitio se edita en `src/data/research.ts`, no en las plantillas.
 2. Incluye el frontmatter requerido (ver `docs/content-guide.md`).
 3. Astro lo detecta y lo publica. Con `draft: true` o `visible: false` queda oculto.
 
-Regla de contenido: nada de CVEs, recompensas o impactos inventados, y los
-detalles de vulnerabilidades bajo divulgación coordinada se mantienen a alto
-nivel.
+Regla de contenido: el sitio no publica vulnerabilidades. Ni la clase de bug, ni
+la superficie, ni el impacto, ni cifras de recompensa. El registro de
+`src/data/research.ts` dice qué se hizo y en qué estado quedó — nunca qué se
+encontró. Tampoco se inventan CVEs, severidades ni impactos.
 
 ## Idioma
 
@@ -109,7 +110,7 @@ la API responde 503 y el bloque de reacciones no se muestra.
 
 - `Ctrl/⌘ + K` (o `/`) abre la paleta de comandos para navegar el sitio.
 - La terminal de la home acepta comandos: `help`, `targets`, `focus`,
-  `findings`, `hardware`, `posts`, `open <sección>`, `clear`.
+  `log`, `hardware`, `posts`, `open <sección>`, `clear`.
 - Todo el movimiento (aparición al hacer scroll, foco de puntero, texto que se
   descifra, contadores) vive en `src/components/Motion.astro` y se apaga con
   `prefers-reduced-motion`. Sin JavaScript el contenido se ve completo.

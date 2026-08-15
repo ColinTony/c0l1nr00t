@@ -21,7 +21,7 @@ export const ui = {
         'cta.contact': '$ contacto',
 
         'section.currently_researching': 'Currently Researching',
-        'section.findings': 'Selected Findings',
+        'section.research_log': 'Research Log',
         'section.platforms': 'Research Platforms',
         'section.timeline': 'How I Got Here',
         'section.methodology': 'Methodology',
@@ -34,11 +34,10 @@ export const ui = {
 
         'research.title': 'Security Research',
         'research.lead': 'Dispositivos, navegadores embebidos y las superficies raras que quedan entre ellos.',
-        'research.disclosure': 'Los detalles técnicos se mantienen a alto nivel mientras la divulgación siga abierta.',
+        'research.disclosure': 'Registro de actividad, no de hallazgos: mientras la divulgación siga abierta no se publican detalles técnicos.',
         'research.surfaces': 'Superficies',
         'research.device': 'Dispositivo',
-        'research.outcome': 'Resultado',
-        'research.reward': 'Reward',
+        'research.status': 'Estado',
 
         'blog.read_time': 'min de lectura',
         'blog.back': 'Volver al blog',
